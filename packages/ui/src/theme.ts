@@ -1,14 +1,14 @@
 export const colors = {
-  bg: '#0f172a',
-  surface: '#1e293b',
-  surfaceMuted: '#334155',
-  text: '#f8fafc',
-  textMuted: '#94a3b8',
-  primary: '#38bdf8',
-  primaryText: '#0f172a',
-  danger: '#fb7185',
-  success: '#34d399',
-  border: '#475569',
+  bg: '#f8fafc',
+  surface: '#ffffff',
+  surfaceMuted: '#f1f5f9',
+  text: '#0f172a',
+  textMuted: '#64748b',
+  primary: '#0f766e',
+  primaryText: '#ffffff',
+  danger: '#dc2626',
+  success: '#047857',
+  border: '#e2e8f0',
 } as const;
 
 export const space = {

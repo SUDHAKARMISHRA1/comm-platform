@@ -1,16 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { toUserMessage } from '@comm-platform/api';
 import { Button, TextField, colors, radius, space, type } from '@comm-platform/ui';
 import { updateProfileSchema, type UpdateProfileInput } from '@comm-platform/validation';
 
 import { FormMessage } from '@/components/auth-screen';
+import { AppShell } from '@/components/app-shell';
 import { fetchOwnProfile } from '@/lib/auth-actions';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
@@ -109,8 +108,9 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.card}>
+    <AppShell>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <View style={styles.card}>
         <Text style={styles.title}>Your profile</Text>
         {profileQuery.isLoading ? <ActivityIndicator color={colors.primary} /> : null}
         {profileQuery.isError ? <FormMessage message="Could not load profile." /> : null}
@@ -166,22 +166,14 @@ export default function ProfileScreen() {
             saveMutation.mutate(parsed);
           })}
         />
-        <Button
-          label="Sign out"
-          variant="ghost"
-          onPress={async () => {
-            queryClient.clear();
-            await getSupabase().auth.signOut();
-            router.replace('/login');
-          }}
-        />
-      </View>
-    </SafeAreaView>
+        </View>
+      </ScrollView>
+    </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg, padding: space.lg, alignItems: 'center' },
+  scroll: { flexGrow: 1, padding: space.lg, alignItems: 'center' },
   card: {
     width: '100%',
     maxWidth: 560,

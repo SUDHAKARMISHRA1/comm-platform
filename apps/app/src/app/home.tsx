@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link, router } from 'expo-router';
+import { Link } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, colors, radius, space, type } from '@comm-platform/ui';
 
+import { AppShell } from '@/components/app-shell';
 import { fetchOwnProfile } from '@/lib/auth-actions';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
@@ -18,10 +18,28 @@ export default function HomeScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.card}>
+    <AppShell>
+      <View style={styles.page}>
+        <View style={styles.card}>
         <Text style={styles.kicker}>Home</Text>
-        <Text style={styles.title}>Welcome back</Text>
+        <Text style={styles.title}>{user ? 'Welcome back' : 'A better place to stay connected'}</Text>
+        {!user ? (
+          <>
+            <Text style={styles.body}>Create an account to join conversations, manage your profile, and access your workspace.</Text>
+            <Link href="/signup" asChild>
+              <Pressable style={styles.primaryAction}>
+                <Text style={styles.primaryActionText}>Create an account</Text>
+              </Pressable>
+            </Link>
+            <Link href="/login" asChild>
+              <Pressable>
+                <Text style={styles.link}>Already have an account? Sign in</Text>
+              </Pressable>
+            </Link>
+          </>
+        ) : null}
+        {user ? (
+          <>
         {profileQuery.isLoading ? <ActivityIndicator color={colors.primary} /> : null}
         {profileQuery.isError ? (
           <Text style={styles.error}>Could not load your profile. Pull back later or open Profile to retry.</Text>
@@ -42,21 +60,16 @@ export default function HomeScreen() {
             <Text style={styles.link}>Edit profile</Text>
           </Pressable>
         </Link>
-        <Button
-          label="Sign out"
-          variant="secondary"
-          onPress={async () => {
-            await getSupabase().auth.signOut();
-            router.replace('/login');
-          }}
-        />
+          </>
+        ) : null}
+        </View>
       </View>
-    </SafeAreaView>
+    </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg, padding: space.lg, alignItems: 'center', justifyContent: 'center' },
+  page: { flex: 1, padding: space.lg, alignItems: 'center', justifyContent: 'center' },
   card: {
     width: '100%',
     maxWidth: 560,
@@ -73,4 +86,6 @@ const styles = StyleSheet.create({
   muted: { color: colors.textMuted, fontSize: type.body },
   error: { color: colors.danger, fontSize: type.body },
   link: { color: colors.primary, fontWeight: '600', fontSize: type.body },
+  primaryAction: { backgroundColor: colors.primary, borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm + 4, alignItems: 'center' },
+  primaryActionText: { color: colors.primaryText, fontSize: type.body, fontWeight: '700' },
 });

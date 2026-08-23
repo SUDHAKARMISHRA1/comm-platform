@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Comm Platform',
-  description: 'Public website and admin portal for Comm Platform.',
+  description: 'A thoughtful home for conversations that move work forward.',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

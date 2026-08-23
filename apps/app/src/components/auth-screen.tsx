@@ -1,8 +1,9 @@
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ReactNode } from 'react';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
+
+import { AppShell } from '@/components/app-shell';
 
 type AuthScreenProps = {
   title: string;
@@ -10,10 +11,9 @@ type AuthScreenProps = {
   children: ReactNode;
 };
 
-//Test
 export function AuthScreen({ title, subtitle, children }: AuthScreenProps) {
   return (
-    <SafeAreaView style={styles.safe}>
+    <AppShell>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.card}>
@@ -24,7 +24,7 @@ export function AuthScreen({ title, subtitle, children }: AuthScreenProps) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </AppShell>
   );
 }
 
@@ -38,7 +38,6 @@ export function FormMessage({ message, tone = 'danger' }: { message?: string; to
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { flexGrow: 1, justifyContent: 'center', padding: space.lg, alignItems: 'center' },
   card: {

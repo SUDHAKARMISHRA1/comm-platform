@@ -5,7 +5,8 @@ import { colors } from '@comm-platform/ui';
 
 import { useAuth } from '@/providers/auth-provider';
 
-const PUBLIC_SEGMENTS = new Set(['login', 'signup', 'forgot-password', 'reset-password']);
+const PUBLIC_SEGMENTS = new Set(['home', 'login', 'signup', 'forgot-password', 'reset-password']);
+const AUTH_SEGMENTS = new Set(['login', 'signup', 'forgot-password']);
 
 export function AuthGate() {
   const { configured, loading, session } = useAuth();
@@ -30,27 +31,25 @@ export function AuthGate() {
     return <Redirect href="/login" />;
   }
 
-  if (configured && session && onPublicScreen && first !== 'reset-password') {
+  if (configured && session && AUTH_SEGMENTS.has(String(first))) {
     return <Redirect href="/home" />;
   }
 
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colors.bg },
-        headerTintColor: colors.text,
-        headerTitleStyle: { fontWeight: '600' },
+        headerShown: false,
         contentStyle: { backgroundColor: colors.bg },
       }}
     >
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="setup" options={{ title: 'Setup required' }} />
-      <Stack.Screen name="login" options={{ title: 'Sign in' }} />
-      <Stack.Screen name="signup" options={{ title: 'Create account' }} />
-      <Stack.Screen name="forgot-password" options={{ title: 'Reset password' }} />
-      <Stack.Screen name="reset-password" options={{ title: 'New password' }} />
-      <Stack.Screen name="home" options={{ title: 'Home', headerBackVisible: false }} />
-      <Stack.Screen name="profile" options={{ title: 'Profile' }} />
+      <Stack.Screen name="index" />
+      <Stack.Screen name="setup" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="signup" />
+      <Stack.Screen name="forgot-password" />
+      <Stack.Screen name="reset-password" />
+      <Stack.Screen name="home" />
+      <Stack.Screen name="profile" />
     </Stack>
   );
 }
