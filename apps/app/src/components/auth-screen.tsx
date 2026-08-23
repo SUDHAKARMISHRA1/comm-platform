@@ -10,6 +10,7 @@ type AuthScreenProps = {
   children: ReactNode;
 };
 
+//Test
 export function AuthScreen({ title, subtitle, children }: AuthScreenProps) {
   return (
     <SafeAreaView style={styles.safe}>
