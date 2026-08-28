@@ -9,9 +9,12 @@ import { signUpSchema, type SignUpInput } from '@comm-platform/validation';
 
 import { AuthScreen, FormMessage } from '@/components/auth-screen';
 import { signUp } from '@/lib/auth-actions';
+import { isDemoAuthEnabled } from '@/lib/demo-auth';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { useAuth } from '@/providers/auth-provider';
 
 export default function SignUpScreen() {
+  const { signInDemo } = useAuth();
   const [formError, setFormError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
   const [submitting, setSubmitting] = useState(false);
@@ -22,6 +25,11 @@ export default function SignUpScreen() {
 
   const onSubmit = handleSubmit(async (values) => {
     if (!isSupabaseConfigured()) {
+      if (isDemoAuthEnabled()) {
+        signInDemo(values.email);
+        router.replace('/home');
+        return;
+      }
       router.replace('/setup');
       return;
     }

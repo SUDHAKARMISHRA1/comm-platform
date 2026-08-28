@@ -8,6 +8,8 @@ import {
   type TypedSupabaseClient,
 } from '@comm-platform/api';
 
+import { createSafeAuthStorage } from '@/lib/safe-web-storage';
+
 let client: TypedSupabaseClient | null = null;
 
 export function isSupabaseConfigured(): boolean {
@@ -27,7 +29,7 @@ export function getSupabase(): TypedSupabaseClient {
       EXPO_PUBLIC_SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
       EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     }),
-    storage: Platform.OS === 'web' ? undefined : AsyncStorage,
+    storage: Platform.OS === 'web' ? createSafeAuthStorage() : AsyncStorage,
     detectSessionInUrl: Platform.OS === 'web',
   });
 

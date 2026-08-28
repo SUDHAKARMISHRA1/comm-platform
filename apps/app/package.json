@@ -16,9 +16,13 @@
   },
   "dependencies": {
     "@comm-platform/api": "workspace:*",
+    "@comm-platform/coding": "workspace:*",
     "@comm-platform/types": "workspace:*",
     "@comm-platform/ui": "workspace:*",
     "@comm-platform/validation": "workspace:*",
+    "@monaco-editor/react": "^4.7.0",
+    "monaco-editor": "^0.52.2",
+    "react-markdown": "^10.1.0",
     "@hookform/resolvers": "^5.2.1",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@tanstack/react-query": "^5.85.5",

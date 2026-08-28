@@ -9,9 +9,12 @@ import { signInSchema, type SignInInput } from '@comm-platform/validation';
 
 import { AuthScreen, FormMessage } from '@/components/auth-screen';
 import { signIn } from '@/lib/auth-actions';
+import { isDemoAuthEnabled } from '@/lib/demo-auth';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { useAuth } from '@/providers/auth-provider';
 
 export default function LoginScreen() {
+  const { signInDemo } = useAuth();
   const [formError, setFormError] = useState<string | undefined>();
   const [submitting, setSubmitting] = useState(false);
   const { control, handleSubmit } = useForm<SignInInput>({
@@ -21,6 +24,11 @@ export default function LoginScreen() {
 
   const onSubmit = handleSubmit(async (values) => {
     if (!isSupabaseConfigured()) {
+      if (isDemoAuthEnabled()) {
+        signInDemo(values.email);
+        router.replace('/home');
+        return;
+      }
       router.replace('/setup');
       return;
     }
@@ -36,7 +44,7 @@ export default function LoginScreen() {
   });
 
   return (
-    <AuthScreen title="Sign in" subtitle="Use the email and password for your Comm Platform account.">
+    <AuthScreen title="Sign in" subtitle={isDemoAuthEnabled() ? 'Demo mode: use any valid email and password (8+ chars) to explore the app locally.' : 'Use the email and password for your Comm Platform account.'}>
       <Controller
         control={control}
         name="email"

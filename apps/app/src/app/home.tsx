@@ -60,6 +60,11 @@ export default function HomeScreen() {
             <Text style={styles.link}>Edit profile</Text>
           </Pressable>
         </Link>
+        <Link href="/practice" asChild>
+          <Pressable style={styles.primaryAction}>
+            <Text style={styles.primaryActionText}>Start coding practice</Text>
+          </Pressable>
+        </Link>
           </>
         ) : null}
         </View>

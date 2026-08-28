@@ -5,16 +5,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
 
-import { getSupabase } from '@/lib/supabase';
+import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { session } = useAuth();
+  const { session, demoMode, signOutDemo } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
 
   async function signOut() {
     setSigningOut(true);
-    await getSupabase().auth.signOut();
+    if (demoMode && !isSupabaseConfigured()) {
+      signOutDemo();
+    } else {
+      await getSupabase().auth.signOut();
+    }
     router.replace('/login');
   }
 
@@ -31,6 +35,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Pressable>
           {session ? (
             <>
+              <Pressable accessibilityRole="link" onPress={() => router.push('/dashboard')} style={styles.navButton}>
+                <Text style={styles.navText}>Dashboard</Text>
+              </Pressable>
+              <Pressable accessibilityRole="link" onPress={() => router.push('/practice')} style={styles.navButton}>
+                <Text style={styles.navText}>Practice</Text>
+              </Pressable>
+              <Pressable accessibilityRole="link" onPress={() => router.push('/submissions')} style={styles.navButton}>
+                <Text style={styles.navText}>Submissions</Text>
+              </Pressable>
               <Pressable accessibilityRole="link" onPress={() => router.push('/profile')} style={styles.navButton}>
                 <Text style={styles.navText}>Profile</Text>
               </Pressable>

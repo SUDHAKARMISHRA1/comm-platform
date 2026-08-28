@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@comm-platform/api": "workspace:*",
+    "@comm-platform/coding": "workspace:*",
     "@comm-platform/types": "workspace:*",
     "@comm-platform/ui": "workspace:*",
     "@comm-platform/validation": "workspace:*",

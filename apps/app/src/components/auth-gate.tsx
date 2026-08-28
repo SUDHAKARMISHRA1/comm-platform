@@ -9,11 +9,12 @@ const PUBLIC_SEGMENTS = new Set(['home', 'login', 'signup', 'forgot-password', '
 const AUTH_SEGMENTS = new Set(['login', 'signup', 'forgot-password']);
 
 export function AuthGate() {
-  const { configured, loading, session } = useAuth();
+  const { configured, demoMode, loading, session } = useAuth();
   const segments = useSegments();
   const navigation = useRootNavigationState();
   const first = segments[0];
   const onPublicScreen = !first || PUBLIC_SEGMENTS.has(String(first));
+  const authReady = configured || demoMode;
 
   if (!navigation?.key || loading) {
     return (
@@ -23,15 +24,15 @@ export function AuthGate() {
     );
   }
 
-  if (!configured && !onPublicScreen && first !== 'setup') {
+  if (!authReady && !onPublicScreen && first !== 'setup') {
     return <Redirect href="/setup" />;
   }
 
-  if (configured && !session && !onPublicScreen && first !== 'setup') {
+  if (authReady && !session && !onPublicScreen && first !== 'setup') {
     return <Redirect href="/login" />;
   }
 
-  if (configured && session && AUTH_SEGMENTS.has(String(first))) {
+  if (authReady && session && AUTH_SEGMENTS.has(String(first))) {
     return <Redirect href="/home" />;
   }
 
@@ -49,6 +50,11 @@ export function AuthGate() {
       <Stack.Screen name="forgot-password" />
       <Stack.Screen name="reset-password" />
       <Stack.Screen name="home" />
+      <Stack.Screen name="dashboard" />
+      <Stack.Screen name="practice/index" />
+      <Stack.Screen name="practice/[questionId]" />
+      <Stack.Screen name="submissions/index" />
+      <Stack.Screen name="submissions/[id]" />
       <Stack.Screen name="profile" />
     </Stack>
   );
