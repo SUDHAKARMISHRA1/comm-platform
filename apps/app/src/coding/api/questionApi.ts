@@ -4,6 +4,7 @@ import {
   getAdjacentQuestionIds,
   listMockQuestions,
   type DashboardStats,
+  type LanguageKey,
   type QuestionDetail,
   type QuestionsResponse,
 } from '@comm-platform/coding';
@@ -12,6 +13,7 @@ import { USE_MOCK_API, apiFetch } from './client';
 
 export type QuestionDetailResponse = QuestionDetail & {
   navigation: { prev: number | null; next: number | null };
+  codeTemplates?: Partial<Record<LanguageKey, string>>;
 };
 
 export async function fetchQuestions(params: Record<string, string | number | undefined>): Promise<QuestionsResponse> {

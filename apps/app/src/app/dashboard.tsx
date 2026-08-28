@@ -12,8 +12,12 @@ import { fetchDashboard } from '@/coding/api/questionApi';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function DashboardScreen() {
-  const { user } = useAuth();
-  const { data, isLoading, error } = useQuery({ queryKey: ['dashboard'], queryFn: fetchDashboard });
+  const { user, session, loading: authLoading } = useAuth();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: fetchDashboard,
+    enabled: Boolean(session) && !authLoading,
+  });
 
   return (
     <AppShell>

@@ -1,9 +1,16 @@
-import { router } from 'expo-router';
+import type { Session } from '@supabase/supabase-js';
 
 import { getSupabase } from '@/lib/supabase';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000/api';
 export const USE_MOCK_API = process.env.EXPO_PUBLIC_USE_MOCK_API === 'true';
+
+let boundSession: Session | null = null;
+
+/** Called by AuthProvider so API calls use the active session token. */
+export function bindApiSession(session: Session | null) {
+  boundSession = session;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -15,13 +22,14 @@ export class ApiError extends Error {
   }
 }
 
-async function getAccessToken(): Promise<string | null> {
+async function resolveAccessToken(): Promise<string | null> {
+  if (boundSession?.access_token) return boundSession.access_token;
   const { data } = await getSupabase().auth.getSession();
   return data.session?.access_token ?? null;
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = await getAccessToken();
+  const token = await resolveAccessToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(init?.headers as Record<string, string>),
@@ -32,12 +40,11 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   try {
     response = await fetch(`${BASE_URL}${path}`, { ...init, headers });
   } catch {
-    throw new ApiError('Network error. Check your connection and try again.', 0);
+    throw new ApiError('Network error. Check that the API server is running (pnpm dev:web).', 0);
   }
 
   if (response.status === 401) {
-    router.replace('/login');
-    throw new ApiError('Session expired. Please sign in again.', 401);
+    throw new ApiError('Session expired or invalid. Please sign in again.', 401);
   }
   if (response.status === 429) {
     throw new ApiError('You have reached the execution limit. Please wait a moment before trying again.', 429);

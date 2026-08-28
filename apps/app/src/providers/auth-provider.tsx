@@ -11,6 +11,7 @@ import {
   saveDemoSession,
 } from '@/lib/demo-auth';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { bindApiSession } from '@/coding/api/client';
 
 type AuthContextValue = {
   configured: boolean;
@@ -85,6 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data.subscription.unsubscribe();
     };
   }, [configured, demoMode]);
+
+  useEffect(() => {
+    bindApiSession(session);
+  }, [session]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

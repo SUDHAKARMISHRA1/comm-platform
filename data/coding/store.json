@@ -1,0 +1,271 @@
+{
+  "practiceSets": [
+    {
+      "id": "ps-fundamentals",
+      "title": "Fundamentals",
+      "slug": "fundamentals",
+      "description": "Core DSA practice problems",
+      "topics": [
+        "Array",
+        "String",
+        "Math",
+        "Searching",
+        "Dynamic Programming"
+      ],
+      "languages": [
+        "java",
+        "c",
+        "cpp"
+      ],
+      "sequence": 1,
+      "published": true,
+      "createdAt": "2026-08-28T16:57:52.294Z",
+      "updatedAt": "2026-08-28T16:57:52.294Z"
+    }
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "practiceSetId": "ps-fundamentals",
+      "sequence": 1,
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "EASY",
+      "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+      "inputFormat": "First line: n (array length)\nSecond line: n space-separated integers\nThird line: target",
+      "outputFormat": "Two space-separated indices (0-based).",
+      "constraints": "2 <= n <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9",
+      "examples": [
+        {
+          "input": "4\n2 7 11 15\n9",
+          "output": "0 1",
+          "explanation": "nums[0] + nums[1] = 2 + 7 = 9"
+        },
+        {
+          "input": "3\n3 2 4\n6",
+          "output": "1 2"
+        }
+      ],
+      "topics": [
+        "Array",
+        "HashMap"
+      ],
+      "supportedLanguages": [
+        "java",
+        "c",
+        "cpp"
+      ],
+      "codeTemplates": {
+        "java": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        \n    }\n}",
+        "c": "#include <stdio.h>\n\nint main() {\n    return 0;\n}",
+        "cpp": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    return 0;\n}"
+      },
+      "testCases": [
+        {
+          "id": "t1-1",
+          "input": "4\n2 7 11 15\n9",
+          "expectedOutput": "0 1",
+          "hidden": false,
+          "sequence": 1
+        },
+        {
+          "id": "t1-2",
+          "input": "3\n3 2 4\n6",
+          "expectedOutput": "1 2",
+          "hidden": true,
+          "sequence": 2
+        }
+      ],
+      "published": true,
+      "createdAt": "2026-08-28T16:57:52.294Z",
+      "updatedAt": "2026-08-28T16:57:52.294Z"
+    },
+    {
+      "id": 2,
+      "practiceSetId": "ps-fundamentals",
+      "sequence": 2,
+      "title": "Reverse String",
+      "slug": "reverse-string",
+      "difficulty": "EASY",
+      "description": "Given a string `s`, reverse the string in-place and print the result.",
+      "inputFormat": "A single line containing the string s.",
+      "outputFormat": "The reversed string.",
+      "constraints": "1 <= s.length <= 10^5\ns consists of printable ASCII characters.",
+      "examples": [
+        {
+          "input": "hello",
+          "output": "olleh"
+        }
+      ],
+      "topics": [
+        "String"
+      ],
+      "supportedLanguages": [
+        "java",
+        "c",
+        "cpp"
+      ],
+      "codeTemplates": {
+        "java": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        \n    }\n}",
+        "c": "#include <stdio.h>\n\nint main() {\n    return 0;\n}",
+        "cpp": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    return 0;\n}"
+      },
+      "testCases": [
+        {
+          "id": "t2-1",
+          "input": "hello",
+          "expectedOutput": "olleh",
+          "hidden": false,
+          "sequence": 1
+        }
+      ],
+      "published": true,
+      "createdAt": "2026-08-28T16:57:52.294Z",
+      "updatedAt": "2026-08-28T16:57:52.294Z"
+    },
+    {
+      "id": 3,
+      "practiceSetId": "ps-fundamentals",
+      "sequence": 3,
+      "title": "Palindrome Number",
+      "slug": "palindrome-number",
+      "difficulty": "EASY",
+      "description": "Given an integer `x`, return `true` if `x` is a palindrome, and `false` otherwise.",
+      "inputFormat": "A single integer x.",
+      "outputFormat": "Print `true` or `false`.",
+      "constraints": "-2^31 <= x <= 2^31 - 1",
+      "examples": [
+        {
+          "input": "121",
+          "output": "true"
+        },
+        {
+          "input": "-121",
+          "output": "false"
+        }
+      ],
+      "topics": [
+        "Math"
+      ],
+      "supportedLanguages": [
+        "java",
+        "c",
+        "cpp"
+      ],
+      "codeTemplates": {
+        "java": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        \n    }\n}",
+        "c": "#include <stdio.h>\n\nint main() {\n    return 0;\n}",
+        "cpp": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    return 0;\n}"
+      },
+      "testCases": [
+        {
+          "id": "t3-1",
+          "input": "121",
+          "expectedOutput": "true",
+          "hidden": false,
+          "sequence": 1
+        },
+        {
+          "id": "t3-2",
+          "input": "-121",
+          "expectedOutput": "false",
+          "hidden": true,
+          "sequence": 2
+        }
+      ],
+      "published": true,
+      "createdAt": "2026-08-28T16:57:52.294Z",
+      "updatedAt": "2026-08-28T16:57:52.294Z"
+    },
+    {
+      "id": 4,
+      "practiceSetId": "ps-fundamentals",
+      "sequence": 4,
+      "title": "Binary Search",
+      "slug": "binary-search",
+      "difficulty": "MEDIUM",
+      "description": "Given a sorted array of integers and a target value, return the index if the target is found. If not, return -1.",
+      "inputFormat": "First line: n\nSecond line: n sorted integers\nThird line: target",
+      "outputFormat": "Index of target or -1.",
+      "constraints": "1 <= n <= 10^4\n-10^4 <= nums[i], target <= 10^4",
+      "examples": [
+        {
+          "input": "5\n-1 0 3 5 9\n3",
+          "output": "2"
+        }
+      ],
+      "topics": [
+        "Searching",
+        "Array"
+      ],
+      "supportedLanguages": [
+        "java",
+        "c",
+        "cpp"
+      ],
+      "codeTemplates": {
+        "java": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        \n    }\n}",
+        "c": "#include <stdio.h>\n\nint main() {\n    return 0;\n}",
+        "cpp": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    return 0;\n}"
+      },
+      "testCases": [
+        {
+          "id": "t4-1",
+          "input": "5\n-1 0 3 5 9\n3",
+          "expectedOutput": "2",
+          "hidden": false,
+          "sequence": 1
+        }
+      ],
+      "published": true,
+      "createdAt": "2026-08-28T16:57:52.294Z",
+      "updatedAt": "2026-08-28T16:57:52.294Z"
+    },
+    {
+      "id": 5,
+      "practiceSetId": "ps-fundamentals",
+      "sequence": 5,
+      "title": "Maximum Subarray",
+      "slug": "maximum-subarray",
+      "difficulty": "MEDIUM",
+      "description": "Given an integer array `nums`, find the contiguous subarray with the largest sum, and return its sum.",
+      "inputFormat": "First line: n\nSecond line: n integers",
+      "outputFormat": "Maximum subarray sum.",
+      "constraints": "1 <= n <= 10^5\n-10^4 <= nums[i] <= 10^4",
+      "examples": [
+        {
+          "input": "9\n-2 1 -3 4 -1 2 1 -5 4",
+          "output": "6"
+        }
+      ],
+      "topics": [
+        "Array",
+        "Dynamic Programming"
+      ],
+      "supportedLanguages": [
+        "java",
+        "c",
+        "cpp"
+      ],
+      "codeTemplates": {
+        "java": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        \n    }\n}",
+        "c": "#include <stdio.h>\n\nint main() {\n    return 0;\n}",
+        "cpp": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    return 0;\n}"
+      },
+      "testCases": [
+        {
+          "id": "t5-1",
+          "input": "9\n-2 1 -3 4 -1 2 1 -5 4",
+          "expectedOutput": "6",
+          "hidden": false,
+          "sequence": 1
+        }
+      ],
+      "published": true,
+      "createdAt": "2026-08-28T16:57:52.294Z",
+      "updatedAt": "2026-08-28T16:57:52.294Z"
+    }
+  ],
+  "progress": [],
+  "submissions": []
+}

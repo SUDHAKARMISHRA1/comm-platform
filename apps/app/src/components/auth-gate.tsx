@@ -42,20 +42,6 @@ export function AuthGate() {
         headerShown: false,
         contentStyle: { backgroundColor: colors.bg },
       }}
-    >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="setup" />
-      <Stack.Screen name="login" />
-      <Stack.Screen name="signup" />
-      <Stack.Screen name="forgot-password" />
-      <Stack.Screen name="reset-password" />
-      <Stack.Screen name="home" />
-      <Stack.Screen name="dashboard" />
-      <Stack.Screen name="practice/index" />
-      <Stack.Screen name="practice/[questionId]" />
-      <Stack.Screen name="submissions/index" />
-      <Stack.Screen name="submissions/[id]" />
-      <Stack.Screen name="profile" />
-    </Stack>
+    />
   );
 }

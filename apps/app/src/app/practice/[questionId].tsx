@@ -13,8 +13,8 @@ import {
   View,
 } from 'react-native';
 
-import type { SubmitCodeResponse } from '@comm-platform/coding';
-import { LANGUAGES, type ExecutionResult, type LanguageKey } from '@comm-platform/coding';
+import type { SubmitCodeResponse, ExecutionResult, LanguageKey } from '@comm-platform/coding';
+import { LANGUAGES } from '@comm-platform/coding';
 import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
@@ -26,8 +26,10 @@ import { DifficultyBadge } from '@/coding/components/DifficultyBadge';
 import { MarkdownView } from '@/coding/components/MarkdownView';
 import { useEditorDraft } from '@/coding/hooks/useEditorDraft';
 import { ApiError } from '@/coding/api/client';
+import { useAuth } from '@/providers/auth-provider';
 
 export default function QuestionDetailScreen() {
+  const { session, loading: authLoading } = useAuth();
   const { questionId } = useLocalSearchParams<{ questionId: string }>();
   const id = Number(questionId);
   const { width } = useWindowDimensions();
@@ -36,11 +38,12 @@ export default function QuestionDetailScreen() {
   const { data: question, isLoading, error } = useQuery({
     queryKey: ['question', id],
     queryFn: () => fetchQuestion(id),
-    enabled: Number.isFinite(id),
+    enabled: Number.isFinite(id) && Boolean(session) && !authLoading,
   });
 
   const [language, setLanguage] = useState<LanguageKey>('java');
-  const template = LANGUAGES[language].template;
+  const template =
+    question?.codeTemplates?.[language] ?? LANGUAGES[language].template;
   const { code, setCode, resetDraft } = useEditorDraft(id, language, template);
   const [customInput, setCustomInput] = useState('');
   const [runResult, setRunResult] = useState<ExecutionResult | null>(null);

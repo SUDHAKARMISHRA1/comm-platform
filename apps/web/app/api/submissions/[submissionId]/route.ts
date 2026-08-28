@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getMockSubmission } from '@comm-platform/coding';
+import { getSubmissionForUser } from '@comm-platform/coding';
 
 import { requireApiUser } from '@/lib/api-auth';
 
@@ -11,9 +11,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   if ('error' in auth) return auth.error;
 
   const { submissionId } = await params;
-  const submission = getMockSubmission(submissionId);
-  if (!submission) {
-    return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
-  }
+  const submission = await getSubmissionForUser(auth.user.id, submissionId);
+  if (!submission) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json(submission);
 }

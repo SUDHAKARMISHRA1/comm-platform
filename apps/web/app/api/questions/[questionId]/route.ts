@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getAdjacentQuestionIds, getMockQuestion } from '@comm-platform/coding';
+import { getQuestionForUser } from '@comm-platform/coding';
 
 import { requireApiUser } from '@/lib/api-auth';
 
@@ -11,12 +11,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   if ('error' in auth) return auth.error;
 
   const { questionId } = await params;
-  const id = Number(questionId);
-  const question = getMockQuestion(id);
-  if (!question) {
-    return NextResponse.json({ error: 'Question not found' }, { status: 404 });
-  }
-
-  const navigation = getAdjacentQuestionIds(id);
-  return NextResponse.json({ ...question, navigation });
+  const question = await getQuestionForUser(auth.user.id, Number(questionId));
+  if (!question) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+  return NextResponse.json(question);
 }

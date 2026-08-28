@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { mapAdminUser } from '@comm-platform/api';
 
 import { requireAdmin } from '@/lib/require-admin';
@@ -35,7 +37,11 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   return (
     <div>
       <header className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
-        <p className="font-semibold">Comm Platform admin</p>
+        <div className="flex items-center gap-4">
+          <p className="font-semibold">Comm Platform admin</p>
+          <Link className="text-sm font-semibold text-[var(--color-text)]" href="/admin">Users</Link>
+          <Link className="text-sm text-[var(--color-primary)]" href="/admin/practice">Practice</Link>
+        </div>
         <form action={adminLogout}>
           <button className="text-sm text-[var(--color-primary)]" type="submit">
             Sign out

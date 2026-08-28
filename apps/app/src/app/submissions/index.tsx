@@ -6,9 +6,15 @@ import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
 import { fetchSubmissions } from '@/coding/api/submissionApi';
+import { useAuth } from '@/providers/auth-provider';
 
 export default function SubmissionsScreen() {
-  const { data, isLoading, error } = useQuery({ queryKey: ['submissions'], queryFn: fetchSubmissions });
+  const { session, loading: authLoading } = useAuth();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['submissions'],
+    queryFn: fetchSubmissions,
+    enabled: Boolean(session) && !authLoading,
+  });
 
   return (
     <AppShell>

@@ -17,12 +17,14 @@ import { AppShell } from '@/components/app-shell';
 import { DifficultyBadge } from '@/coding/components/DifficultyBadge';
 import { StatusBadge } from '@/coding/components/StatusBadge';
 import { fetchQuestions } from '@/coding/api/questionApi';
+import { useAuth } from '@/providers/auth-provider';
 
 const TOPICS = ['Array', 'String', 'Searching', 'Dynamic Programming', 'Math', 'HashMap'];
 const DIFFICULTIES = ['', 'EASY', 'MEDIUM', 'HARD'];
 const STATUSES = ['ALL', 'SOLVED', 'ATTEMPTED', 'NOT_ATTEMPTED'];
 
 export default function PracticeScreen() {
+  const { session, loading: authLoading } = useAuth();
   const params = useLocalSearchParams<{ q?: string; page?: string }>();
   const [search, setSearch] = useState(params.q ?? '');
   const [difficulty, setDifficulty] = useState('');
@@ -38,6 +40,7 @@ export default function PracticeScreen() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['questions', queryParams],
     queryFn: () => fetchQuestions(queryParams),
+    enabled: Boolean(session) && !authLoading,
   });
 
   return (
@@ -79,8 +82,8 @@ export default function PracticeScreen() {
           ))}
         </View>
 
-        {isLoading ? <Text style={styles.muted}>Loading questions...</Text> : null}
-        {error ? <Text style={styles.error}>Failed to load questions.</Text> : null}
+        {authLoading || isLoading ? <Text style={styles.muted}>Loading questions...</Text> : null}
+        {error ? <Text style={styles.error}>{error instanceof Error ? error.message : 'Failed to load questions.'}</Text> : null}
 
         <View style={styles.table}>
           <View style={styles.tableHead}>
