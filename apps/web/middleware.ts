@@ -1,4 +1,3 @@
-import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 const ALLOWED_ORIGINS = new Set([
@@ -30,30 +29,13 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) {
-    return NextResponse.next();
+  const response = NextResponse.next({ request });
+  if (pathname.startsWith('/admin')) {
+    response.headers.set('Cache-Control', 'private, no-store');
   }
-
-  let response = NextResponse.next({ request });
-  const supabase = createServerClient(url, anonKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-      },
-    },
-  });
-
-  await supabase.auth.getUser();
   return response;
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/:path*'],
+  matcher: ['/admin', '/admin/:path*', '/api/:path*'],
 };

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getQuestionForUser } from '@comm-platform/coding';
+import { getQuestionForUser } from '@comm-platform/coding/server';
 
 import { requireApiUser } from '@/lib/api-auth';
 

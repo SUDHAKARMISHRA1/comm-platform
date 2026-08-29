@@ -1,21 +1,20 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { upsertQuestion } from '../../../actions';
 import { loadQuestionForAdmin } from '@/lib/coding-admin';
-import { requireAdmin } from '@/lib/require-admin';
+
+export const dynamic = 'force-dynamic';
 
 type Props = { params: Promise<{ setId: string; questionId: string }> };
 
 export default async function AdminQuestionEditPage({ params }: Props) {
-  await requireAdmin();
   const { setId, questionId } = await params;
   const q = await loadQuestionForAdmin(setId, Number(questionId));
   if (!q) notFound();
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10 space-y-6">
-      <Link className="text-[var(--color-primary)]" href={`/admin/practice/${setId}`}>← Back to set</Link>
+      <a className="text-[var(--color-primary)]" href={`/admin/practice/${setId}`}>← Back to set</a>
       <h1 className="text-2xl font-semibold">Edit: {q.title}</h1>
       <form action={upsertQuestion} className="grid gap-3 rounded-2xl border p-6">
         <input type="hidden" name="id" value={q.id} />

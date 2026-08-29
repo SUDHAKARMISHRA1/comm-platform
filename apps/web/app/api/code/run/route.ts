@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { runUserCode, validateLanguage } from '@comm-platform/coding';
+import { runUserCode } from '@comm-platform/coding/server';
+import { validateLanguage } from '@comm-platform/coding';
 
 import { rateLimitResponse, requireApiUser } from '@/lib/api-auth';
 

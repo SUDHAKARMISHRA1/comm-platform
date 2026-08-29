@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { toUserMessage } from '@comm-platform/api';
@@ -30,17 +31,18 @@ export async function adminLogin(_prev: { error?: string } | undefined, formData
     ? await supabase.from('user_roles').select('role').eq('user_id', user.id).maybeSingle()
     : { data: null };
 
-  const access = resolveAdminAccess({ userId: user?.id, role: roleRow?.role });
-  if (access !== 'allowed') {
+  if (resolveAdminAccess({ userId: user?.id, role: roleRow?.role }) !== 'allowed') {
     await supabase.auth.signOut();
     return { error: 'This account is not an admin.' };
   }
 
+  revalidatePath('/admin', 'layout');
   redirect('/admin');
 }
 
 export async function adminLogout() {
   const supabase = await createServerSupabase();
   await supabase.auth.signOut();
+  revalidatePath('/admin', 'layout');
   redirect('/admin/login');
 }

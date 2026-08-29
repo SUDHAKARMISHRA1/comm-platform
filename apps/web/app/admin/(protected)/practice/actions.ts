@@ -11,7 +11,7 @@ import {
   reorderPracticeSets,
   savePracticeSet,
   saveQuestion,
-} from '@comm-platform/coding';
+} from '@comm-platform/coding/server';
 import type { Difficulty, LanguageKey } from '@comm-platform/coding';
 
 import { requireAdmin } from '@/lib/require-admin';

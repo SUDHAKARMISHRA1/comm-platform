@@ -2,11 +2,11 @@ import { notFound } from 'next/navigation';
 
 import { mapAdminUser } from '@comm-platform/api';
 
-import { requireAdmin } from '@/lib/require-admin';
 import { createServiceSupabase } from '@/lib/supabase/service';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
   const { id } = await params;
   const service = createServiceSupabase();
   const { data } = await service.from('admin_user_overview').select('*').eq('id', id).maybeSingle();

@@ -17,8 +17,8 @@
     "@comm-platform/types": "workspace:*",
     "@comm-platform/ui": "workspace:*",
     "@comm-platform/validation": "workspace:*",
-    "@supabase/ssr": "^0.7.0",
-    "@supabase/supabase-js": "^2.57.0",
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.112.4",
     "next": "16.3.2",
     "react": "19.2.3",
     "react-dom": "19.2.3"

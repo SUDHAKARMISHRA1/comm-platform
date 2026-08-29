@@ -2,7 +2,7 @@ import {
   getQuestionRecord,
   listPracticeSets,
   listQuestionsAdmin,
-} from '@comm-platform/coding';
+} from '@comm-platform/coding/server';
 
 /** Server-only data loaders for admin RSC pages. Not server actions. */
 export async function loadPracticeSets() {

@@ -1,26 +1,19 @@
-import Link from 'next/link';
-
 import { movePracticeSetDown, movePracticeSetUp, removePracticeSetAction, upsertPracticeSet } from './actions';
-import { adminLogout } from '../login/actions';
+import { AdminHeader } from '@/components/admin-header';
 import { loadPracticeSets } from '@/lib/coding-admin';
-import { requireAdmin } from '@/lib/require-admin';
 
-export default async function AdminPracticePage() {
-  await requireAdmin();
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+type SearchParams = Promise<{ q?: string }>;
+
+export default async function AdminPracticePage({ searchParams }: { searchParams: SearchParams }) {
+  await searchParams;
   const sets = await loadPracticeSets();
 
   return (
     <div>
-      <header className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
-        <div className="flex items-center gap-4">
-          <p className="font-semibold">Comm Platform admin</p>
-          <Link className="text-sm text-[var(--color-primary)]" href="/admin">Users</Link>
-          <Link className="text-sm font-semibold text-[var(--color-text)]" href="/admin/practice">Practice</Link>
-        </div>
-        <form action={adminLogout}>
-          <button className="text-sm text-[var(--color-primary)]" type="submit">Sign out</button>
-        </form>
-      </header>
+      <AdminHeader active="practice" />
       <main className="mx-auto max-w-5xl px-6 py-10 space-y-8">
         <h1 className="text-3xl font-semibold">Practice sets</h1>
 
@@ -45,7 +38,7 @@ export default async function AdminPracticePage() {
               {sets.map((set) => (
                 <tr key={set.id} className="border-t border-[var(--color-border)]">
                   <td className="px-4 py-3">{set.sequence}</td>
-                  <td className="px-4 py-3"><Link className="text-[var(--color-primary)]" href={`/admin/practice/${set.id}`}>{set.title}</Link></td>
+                  <td className="px-4 py-3"><a className="text-[var(--color-primary)]" href={`/admin/practice/${set.id}`}>{set.title}</a></td>
                   <td className="px-4 py-3">{set.topics.join(', ')}</td>
                   <td className="px-4 py-3">{set.published ? 'Yes' : 'No'}</td>
                   <td className="px-4 py-3 flex gap-2">

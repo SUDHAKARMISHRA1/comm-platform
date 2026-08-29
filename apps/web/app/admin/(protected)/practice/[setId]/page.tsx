@@ -1,18 +1,17 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import type { LanguageKey } from '@comm-platform/coding';
 import { LANGUAGES } from '@comm-platform/coding';
 
 import { moveQuestionDown, moveQuestionUp, removeQuestionAction, upsertQuestion } from '../actions';
-import { adminLogout } from '../../login/actions';
+import { AdminHeader } from '@/components/admin-header';
 import { loadPracticeSetWithQuestions } from '@/lib/coding-admin';
-import { requireAdmin } from '@/lib/require-admin';
+
+export const dynamic = 'force-dynamic';
 
 type Props = { params: Promise<{ setId: string }> };
 
 export default async function AdminPracticeSetPage({ params }: Props) {
-  await requireAdmin();
   const { setId } = await params;
   const data = await loadPracticeSetWithQuestions(setId);
   if (!data) notFound();
@@ -26,13 +25,11 @@ export default async function AdminPracticeSetPage({ params }: Props) {
 
   return (
     <div>
-      <header className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
-        <div className="flex items-center gap-4">
-          <Link className="text-sm text-[var(--color-primary)]" href="/admin/practice">← Practice sets</Link>
-        </div>
-        <form action={adminLogout}><button className="text-sm text-[var(--color-primary)]" type="submit">Sign out</button></form>
-      </header>
+      <AdminHeader active="practice" />
       <main className="mx-auto max-w-6xl px-6 py-10 space-y-8">
+        <a className="text-sm text-[var(--color-primary)]" href="/admin/practice">
+          ← Practice sets
+        </a>
         <h1 className="text-3xl font-semibold">{set.title}</h1>
         <p className="text-[var(--color-text-muted)]">{set.description}</p>
 
@@ -67,7 +64,7 @@ export default async function AdminPracticeSetPage({ params }: Props) {
                 <tr key={q.id} className="border-t">
                   <td className="px-4 py-3">{q.sequence}</td>
                   <td className="px-4 py-3">
-                    <Link className="text-[var(--color-primary)]" href={`/admin/practice/${setId}/questions/${q.id}`}>{q.title}</Link>
+                    <a className="text-[var(--color-primary)]" href={`/admin/practice/${setId}/questions/${q.id}`}>{q.title}</a>
                   </td>
                   <td className="px-4 py-3">{q.difficulty}</td>
                   <td className="px-4 py-3">{q.testCases.length}</td>
