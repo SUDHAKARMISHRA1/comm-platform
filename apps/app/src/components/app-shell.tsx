@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
 
+import { HeaderAccount } from '@/components/header-account';
+import { persistSessionBackup } from '@/lib/session-backup';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -17,6 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (demoMode && !isSupabaseConfigured()) {
       signOutDemo();
     } else {
+      persistSessionBackup(null);
       await getSupabase().auth.signOut();
     }
     router.replace('/home');
@@ -33,12 +36,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Pressable accessibilityRole="link" onPress={() => router.push('/practice')} style={styles.navButton}>
         <Text style={styles.navText}>Practice</Text>
       </Pressable>
-      <Pressable accessibilityRole="link" onPress={() => router.push('/profile')} style={styles.navButton}>
-        <Text style={styles.navText}>Profile</Text>
-      </Pressable>
-      <Pressable accessibilityRole="button" disabled={signingOut} onPress={signOut} style={styles.primaryButton}>
-        <Text style={styles.primaryButtonText}>{signingOut ? 'Logging out…' : 'Log out'}</Text>
-      </Pressable>
+      <HeaderAccount signingOut={signingOut} onSignOut={signOut} />
     </>
   ) : (
     <>
@@ -136,12 +134,12 @@ html, body, #root {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  header: { width: '100%', alignSelf: 'stretch', minHeight: 72, paddingHorizontal: space.lg, borderBottomWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
+  header: { width: '100%', alignSelf: 'stretch', minHeight: 72, paddingHorizontal: space.lg, borderBottomWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm, overflow: 'visible', zIndex: 40 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
   brandMark: { width: 32, height: 32, borderRadius: radius.sm, backgroundColor: colors.text, alignItems: 'center', justifyContent: 'center' },
   brandDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#67e8f9' },
   brandName: { color: colors.text, fontSize: type.body, fontWeight: '700', flexShrink: 1 },
-  navigation: { flexDirection: 'row', alignItems: 'center', gap: space.xs, flexShrink: 0 },
+  navigation: { flexDirection: 'row', alignItems: 'center', gap: space.xs, flexShrink: 0, overflow: 'visible', zIndex: 40 },
   navButton: { minHeight: 40, justifyContent: 'center', paddingHorizontal: space.sm },
   navText: { color: colors.textMuted, fontSize: type.small, fontWeight: '600' },
   primaryButton: { minHeight: 38, justifyContent: 'center', paddingHorizontal: space.sm + 4, borderRadius: radius.sm, backgroundColor: colors.text },

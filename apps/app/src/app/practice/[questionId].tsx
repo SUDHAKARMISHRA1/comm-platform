@@ -18,7 +18,9 @@ import { LANGUAGES } from '@comm-platform/coding';
 import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
+import { ResultDialog } from '@/components/result-dialog';
 import { runCode, runTests, submitCode } from '@/coding/api/executionApi';
+import { submitToastCopy } from '@/lib/notifications';
 import { fetchQuestion } from '@/coding/api/questionApi';
 import { CodeEditor } from '@/coding/components/CodeEditor';
 import { ConsolePanel } from '@/coding/components/ConsolePanel';
@@ -52,6 +54,7 @@ export default function QuestionDetailScreen() {
   const [testResult, setTestResult] = useState<RunTestsResponse | null>(null);
   const [submitResult, setSubmitResult] = useState<SubmitCodeResponse | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [submitToast, setSubmitToast] = useState<{ title: string; body: string; ok: boolean } | null>(null);
 
   useEffect(() => {
     setRunResult(null);
@@ -117,9 +120,14 @@ export default function QuestionDetailScreen() {
     },
     onSuccess: (result) => {
       setSubmitResult(result);
+      setSubmitToast(submitToastCopy(result.status, result.passedTestCases, result.totalTestCases));
       invalidateProgress();
     },
-    onError: (e) => setApiError(e instanceof ApiError ? e.message : 'Submit failed'),
+    onError: (e) => {
+      const message = e instanceof ApiError ? e.message : 'Submit failed';
+      setApiError(message);
+      setSubmitToast(submitToastCopy('INTERNAL_ERROR', 0, 0, message));
+    },
   });
 
   const pending = runMutation.isPending || testsMutation.isPending || submitMutation.isPending;
@@ -254,6 +262,13 @@ export default function QuestionDetailScreen() {
         {problemPanel}
         {editorPanel}
       </View>
+      <ResultDialog
+        visible={Boolean(submitToast)}
+        title={submitToast?.title ?? ''}
+        body={submitToast?.body ?? ''}
+        ok={submitToast?.ok ?? false}
+        onClose={() => setSubmitToast(null)}
+      />
     </AppShell>
   );
 }

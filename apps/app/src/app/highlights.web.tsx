@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchDashboard } from '@/coding/api/questionApi';
 import { AppShell } from '@/components/app-shell';
+import { spaNavigate } from '@/lib/spa-nav';
 import { useAuth } from '@/providers/auth-provider';
 
 const WEEK = [
@@ -59,7 +60,11 @@ export default function HighlightsScreen() {
               Hello {name}. These numbers come from your submissions and progress. The peer and weekly views are directional until live cohort analytics are wired from admin.
             </p>
           </div>
-          <a className="hl-cta" href={nextProblem ? `/practice/${nextProblem.id}` : '/practice'}>
+          <a
+            className="hl-cta"
+            href={nextProblem ? `/practice/${nextProblem.id}` : '/practice'}
+            onClick={(e) => spaNavigate(nextProblem ? `/practice/${nextProblem.id}` : '/practice', e)}
+          >
             {nextProblem ? `Continue ${nextProblem.title}` : 'Open practice'}
           </a>
         </header>
@@ -126,7 +131,7 @@ export default function HighlightsScreen() {
               <ul className="hl-list">
                 {recent.slice(0, 5).map((s) => (
                   <li key={s.id}>
-                    <a href={`/submissions/${s.id}`}>
+                    <a href={`/submissions/${s.id}`} onClick={(e) => spaNavigate(`/submissions/${s.id}`, e)}>
                       <strong>{s.questionTitle}</strong>
                       <span className={s.status === 'ACCEPTED' ? 'ok' : 'warn'}>{s.status.replace(/_/g, ' ')}</span>
                     </a>
@@ -144,7 +149,7 @@ export default function HighlightsScreen() {
               <ul className="hl-list">
                 {data!.recommended.slice(0, 4).map((q) => (
                   <li key={q.id}>
-                    <a href={`/practice/${q.id}`}>
+                    <a href={`/practice/${q.id}`} onClick={(e) => spaNavigate(`/practice/${q.id}`, e)}>
                       <strong>{q.title}</strong>
                       <span>{q.difficulty}</span>
                     </a>

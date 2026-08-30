@@ -9,6 +9,7 @@ import { signUpSchema, type SignUpInput } from '@comm-platform/validation';
 
 import { AuthScreen, FormMessage } from '@/components/auth-screen';
 import { signUp } from '@/lib/auth-actions';
+import { persistSessionBackup } from '@/lib/session-backup';
 import { isDemoAuthEnabled } from '@/lib/demo-auth';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
@@ -37,6 +38,10 @@ export default function SignUpScreen() {
     setFormError(undefined);
     setSuccess(undefined);
     const result = await signUp(getSupabase(), values);
+    if (result.ok && !result.needsEmailConfirmation) {
+      const { data } = await getSupabase().auth.getSession();
+      persistSessionBackup(data.session ?? null);
+    }
     setSubmitting(false);
     if (!result.ok) {
       setFormError(result.message);

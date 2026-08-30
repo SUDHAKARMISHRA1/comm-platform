@@ -10,6 +10,7 @@ import {
   loadDemoSession,
   saveDemoSession,
 } from '@/lib/demo-auth';
+import { persistSessionBackup, readSessionBackup } from '@/lib/session-backup';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { bindApiSession } from '@/coding/api/client';
 
@@ -58,27 +59,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const supabase = getSupabase();
     let active = true;
+    let restoring = true;
 
-    supabase.auth
-      .getSession()
-      .then(({ data, error }) => {
-        if (!active) return;
+    function applySession(next: Session | null) {
+      if (!active) return;
+      persistSessionBackup(next);
+      setSession(next);
+    }
+
+    async function restore() {
+      try {
+        const { data, error } = await supabase.auth.getSession();
         if (error) {
           log.error('Failed to restore session', error);
         }
-        setSession(data.session ?? null);
-        setLoading(false);
-      })
-      .catch((error: unknown) => {
-        log.error('Failed to restore session', error);
-        if (active) {
-          setLoading(false);
+        let next = data.session ?? null;
+        if (!next) {
+          const backup = readSessionBackup();
+          if (backup) {
+            const recovered = await supabase.auth.setSession(backup);
+            if (recovered.error) {
+              log.error('Failed to recover backed-up session', recovered.error);
+              persistSessionBackup(null);
+            } else {
+              next = recovered.data.session ?? null;
+            }
+          }
         }
-      });
+        if (!active) return;
+        restoring = false;
+        applySession(next);
+        setLoading(false);
+      } catch (error: unknown) {
+        log.error('Failed to restore session', error);
+        if (!active) return;
+        restoring = false;
+        applySession(null);
+        setLoading(false);
+      }
+    }
 
-    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    void restore();
+
+    const { data } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!active) return;
+      if (restoring && (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') && !nextSession) {
+        return;
+      }
+      persistSessionBackup(nextSession);
       setSession(nextSession);
-      setLoading(false);
+      if (!restoring) {
+        setLoading(false);
+      }
     });
 
     return () => {

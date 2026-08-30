@@ -4,12 +4,11 @@ let storageAvailable: boolean | null = null;
 
 /** Chrome can block localStorage (third-party cookies, iframe, privacy settings). */
 export function isWebStorageAvailable(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
   if (storageAvailable !== null) return storageAvailable;
   try {
-    if (typeof window === 'undefined') {
-      storageAvailable = false;
-      return false;
-    }
     const testKey = '__comm_storage_test__';
     window.localStorage.setItem(testKey, '1');
     window.localStorage.removeItem(testKey);
@@ -18,6 +17,12 @@ export function isWebStorageAvailable(): boolean {
     storageAvailable = false;
   }
   return storageAvailable;
+}
+
+/** Prefer the browser localStorage object so Supabase can persist across hard refresh. */
+export function getBrowserLocalStorage(): Storage | undefined {
+  if (!isWebStorageAvailable()) return undefined;
+  return window.localStorage;
 }
 
 export function getWebStorageItem(key: string): string | null {
@@ -52,8 +57,12 @@ export function removeWebStorageItem(key: string): void {
 
 export function createSafeAuthStorage() {
   return {
-    getItem: (key: string) => getWebStorageItem(key),
-    setItem: (key: string, value: string) => setWebStorageItem(key, value),
-    removeItem: (key: string) => removeWebStorageItem(key),
+    getItem: async (key: string) => getWebStorageItem(key),
+    setItem: async (key: string, value: string) => {
+      setWebStorageItem(key, value);
+    },
+    removeItem: async (key: string) => {
+      removeWebStorageItem(key);
+    },
   };
 }

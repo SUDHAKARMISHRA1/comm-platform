@@ -38,18 +38,26 @@ type AuthStorage = {
   removeItem: (key: string) => Promise<void> | void;
 };
 
+type AuthLock = <R>(name: string, acquireTimeout: number, fn: () => Promise<R>) => Promise<R>;
+
 export function createBrowserSupabaseClient(options?: {
   env?: PublicEnv;
   storage?: AuthStorage;
   detectSessionInUrl?: boolean;
+  storageKey?: string;
+  lock?: AuthLock;
+  persistSession?: boolean;
+  autoRefreshToken?: boolean;
 }): TypedSupabaseClient {
   const { supabaseUrl, supabaseAnonKey } = options?.env ?? readPublicEnv();
   return createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: true,
-      autoRefreshToken: true,
+      persistSession: options?.persistSession ?? true,
+      autoRefreshToken: options?.autoRefreshToken ?? true,
       detectSessionInUrl: options?.detectSessionInUrl ?? true,
       storage: options?.storage,
+      ...(options?.storageKey ? { storageKey: options.storageKey } : {}),
+      ...(options?.lock ? { lock: options.lock } : {}),
     },
   });
 }

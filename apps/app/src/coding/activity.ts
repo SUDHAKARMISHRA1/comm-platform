@@ -110,7 +110,7 @@ export function inLastMonths(iso: string, months: number, now = new Date()) {
 
 export function formatDayLabel(dateKey: string) {
   const [y, m, d] = dateKey.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+  return new Date(y ?? 0, (m ?? 1) - 1, d ?? 1).toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',

@@ -9,6 +9,7 @@ import { signInSchema, type SignInInput } from '@comm-platform/validation';
 
 import { AuthScreen, FormMessage } from '@/components/auth-screen';
 import { signIn } from '@/lib/auth-actions';
+import { persistSessionBackup } from '@/lib/session-backup';
 import { isDemoAuthEnabled } from '@/lib/demo-auth';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
@@ -35,6 +36,10 @@ export default function LoginScreen() {
     setSubmitting(true);
     setFormError(undefined);
     const result = await signIn(getSupabase(), values);
+    if (result.ok) {
+      const { data } = await getSupabase().auth.getSession();
+      persistSessionBackup(data.session ?? null);
+    }
     setSubmitting(false);
     if (!result.ok) {
       setFormError(result.message);

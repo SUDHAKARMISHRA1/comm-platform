@@ -6,6 +6,7 @@ import { fetchSubmissions } from '@/coding/api/submissionApi';
 import { inLastMonths } from '@/coding/activity';
 import { SubmissionCalendar } from '@/coding/components/SubmissionCalendar';
 import { AppShell } from '@/components/app-shell';
+import { spaNavigate } from '@/lib/spa-nav';
 import { useAuth } from '@/providers/auth-provider';
 
 const HISTORY_MONTHS = 3;
@@ -58,7 +59,7 @@ export default function DashboardScreen() {
               <ul>
                 {data.recentPractice.map((item) => (
                   <li key={item.questionId}>
-                    <a href={`/practice/${item.questionId}`}>
+                    <a href={`/practice/${item.questionId}`} onClick={(e) => spaNavigate(`/practice/${item.questionId}`, e)}>
                       <strong>{item.title}</strong>
                       <span>{item.status.replace(/_/g, ' ')}</span>
                     </a>
@@ -72,7 +73,7 @@ export default function DashboardScreen() {
               <ul>
                 {data.recommended.map((q) => (
                   <li key={q.id}>
-                    <a href={`/practice/${q.id}`}>
+                    <a href={`/practice/${q.id}`} onClick={(e) => spaNavigate(`/practice/${q.id}`, e)}>
                       <strong>{q.title}</strong>
                       <span>{q.difficulty}</span>
                     </a>
@@ -92,7 +93,12 @@ export default function DashboardScreen() {
           ) : (
             <div className="db-preview">
               {preview.map((s) => (
-                <a key={s.id} className="db-preview-card" href={`/submissions/${s.id}`}>
+                <a
+                  key={s.id}
+                  className="db-preview-card"
+                  href={`/submissions/${s.id}`}
+                  onClick={(e) => spaNavigate(`/submissions/${s.id}`, e)}
+                >
                   <p className="db-kicker">{s.language}</p>
                   <h3>{s.questionTitle}</h3>
                   <p>
@@ -124,7 +130,11 @@ export default function DashboardScreen() {
                 <tbody>
                   {history.map((s) => (
                     <tr key={s.id}>
-                      <td><a href={`/submissions/${s.id}`}>{s.questionTitle}</a></td>
+                      <td>
+                        <a href={`/submissions/${s.id}`} onClick={(e) => spaNavigate(`/submissions/${s.id}`, e)}>
+                          {s.questionTitle}
+                        </a>
+                      </td>
                       <td>{s.language}</td>
                       <td className={s.status === 'ACCEPTED' ? 'ok' : 'warn'}>{s.status.replace(/_/g, ' ')}</td>
                       <td>{s.executionTime}</td>

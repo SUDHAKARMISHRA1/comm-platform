@@ -6,13 +6,15 @@ import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
 import { fetchSubmission } from '@/coding/api/submissionApi';
+import { useAuth } from '@/providers/auth-provider';
 
 export default function SubmissionDetailScreen() {
+  const { session, loading: authLoading } = useAuth();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, isLoading, error } = useQuery({
     queryKey: ['submission', id],
     queryFn: () => fetchSubmission(id!),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && Boolean(session) && !authLoading,
   });
 
   return (
@@ -28,6 +30,9 @@ export default function SubmissionDetailScreen() {
             <Text style={styles.meta}>Runtime: {data.executionTime} · Memory: {data.memory}</Text>
             <Text style={styles.meta}>{data.passedTestCases} / {data.totalTestCases} test cases passed</Text>
             <Text style={styles.meta}>{new Date(data.createdAt).toLocaleString()}</Text>
+            <Link href={`/practice/${data.questionId}`} asChild>
+              <Text style={styles.link}>Open problem in editor</Text>
+            </Link>
             <Text style={styles.section}>Submitted Code</Text>
             <View style={styles.code}>
               <Text style={styles.codeText}>{data.sourceCode}</Text>
