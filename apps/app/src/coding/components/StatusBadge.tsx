@@ -11,7 +11,7 @@ const LABELS: Record<QuestionStatus, string> = {
 
 export function StatusBadge({ status }: { status: QuestionStatus }) {
   const color =
-    status === 'SOLVED' ? colors.success : status === 'ATTEMPTED' ? colors.primary : colors.textMuted;
+    status === 'SOLVED' ? colors.success : status === 'ATTEMPTED' ? colors.warning : colors.textMuted;
   return <Text style={[styles.text, { color }]}>{LABELS[status]}</Text>;
 }
 

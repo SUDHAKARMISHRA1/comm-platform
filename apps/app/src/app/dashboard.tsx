@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   listRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: space.sm, borderBottomWidth: 1, borderColor: colors.border },
   rowTitle: { color: colors.text, fontWeight: '600', flex: 1 },
   preview: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: space.md, gap: 4, backgroundColor: colors.surfaceMuted },
-  collapse: { alignSelf: 'flex-start', backgroundColor: colors.text, borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm },
-  collapseText: { color: colors.surface, fontWeight: '700' },
+  collapse: { alignSelf: 'flex-start', backgroundColor: colors.primary, borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm },
+  collapseText: { color: colors.primaryText, fontWeight: '700' },
   tableScroll: { maxHeight: 240 },
 });

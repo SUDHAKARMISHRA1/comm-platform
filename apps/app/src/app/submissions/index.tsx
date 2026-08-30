@@ -6,6 +6,7 @@ import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { fetchSubmissions } from '@/coding/api/submissionApi';
 import { AppShell } from '@/components/app-shell';
+import { submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function SubmissionsListScreen() {
@@ -33,7 +34,20 @@ export default function SubmissionsListScreen() {
             <View style={styles.grow}>
               <Text style={styles.rowTitle}>{s.questionTitle}</Text>
               <Text style={styles.meta}>
-                {s.language} · {s.status.replace(/_/g, ' ')} · {s.executionTime}
+                {s.language} ·{' '}
+                <Text
+                  style={
+                    submissionTone(s.status) === 'ok'
+                      ? styles.ok
+                      : submissionTone(s.status) === 'pending'
+                        ? styles.pending
+                        : styles.fail
+                  }
+                >
+                  {s.status.replace(/_/g, ' ')}
+                </Text>
+                {' · '}
+                {s.executionTime}
               </Text>
             </View>
             <Text style={styles.meta}>{new Date(s.createdAt).toLocaleString()}</Text>
@@ -63,4 +77,7 @@ const styles = StyleSheet.create({
   grow: { flex: 1, gap: 4 },
   rowTitle: { color: colors.text, fontWeight: '700' },
   meta: { color: colors.textMuted, fontSize: type.small },
+  ok: { color: colors.success, fontWeight: '700' },
+  pending: { color: colors.warning, fontWeight: '700' },
+  fail: { color: colors.danger, fontWeight: '700' },
 });

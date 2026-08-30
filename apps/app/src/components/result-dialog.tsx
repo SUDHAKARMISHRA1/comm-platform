@@ -55,10 +55,10 @@ const styles = StyleSheet.create({
   btn: {
     marginTop: space.sm,
     alignSelf: 'flex-end',
-    backgroundColor: colors.text,
+    backgroundColor: colors.primary,
     borderRadius: radius.sm,
     paddingHorizontal: space.md,
     paddingVertical: space.sm,
   },
-  btnText: { color: colors.surface, fontWeight: '700' },
+  btnText: { color: colors.primaryText, fontWeight: '700' },
 });

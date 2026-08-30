@@ -97,14 +97,14 @@ html, body, #root {
   height: 100% !important;
   margin: 0;
   overflow: hidden !important;
-  background: #f8fafc;
+  background: #ffffff;
 }
 .cp-shell {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: #ffffff;
   align-self: stretch;
 }
 .cp-shell-main {
@@ -134,18 +134,18 @@ html, body, #root {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  header: { width: '100%', alignSelf: 'stretch', minHeight: 72, paddingHorizontal: space.lg, borderBottomWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm, overflow: 'visible', zIndex: 40 },
+  header: { width: '100%', alignSelf: 'stretch', minHeight: 72, paddingHorizontal: space.lg, borderBottomWidth: 1, borderColor: colors.navy, backgroundColor: colors.navy, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm, overflow: 'visible', zIndex: 40 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
-  brandMark: { width: 32, height: 32, borderRadius: radius.sm, backgroundColor: colors.text, alignItems: 'center', justifyContent: 'center' },
-  brandDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#67e8f9' },
-  brandName: { color: colors.text, fontSize: type.body, fontWeight: '700', flexShrink: 1 },
+  brandMark: { width: 32, height: 32, borderRadius: radius.sm, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  brandDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.navy },
+  brandName: { color: colors.primaryText, fontSize: type.body, fontWeight: '700', flexShrink: 1 },
   navigation: { flexDirection: 'row', alignItems: 'center', gap: space.xs, flexShrink: 0, overflow: 'visible', zIndex: 40 },
   navButton: { minHeight: 40, justifyContent: 'center', paddingHorizontal: space.sm },
-  navText: { color: colors.textMuted, fontSize: type.small, fontWeight: '600' },
-  primaryButton: { minHeight: 38, justifyContent: 'center', paddingHorizontal: space.sm + 4, borderRadius: radius.sm, backgroundColor: colors.text },
-  primaryButtonText: { color: colors.surface, fontSize: type.small, fontWeight: '700' },
+  navText: { color: colors.primaryText, fontSize: type.small, fontWeight: '600' },
+  primaryButton: { minHeight: 38, justifyContent: 'center', paddingHorizontal: space.sm + 4, borderRadius: radius.sm, backgroundColor: colors.navyMuted, borderWidth: 1, borderColor: colors.surface },
+  primaryButtonText: { color: colors.primaryText, fontSize: type.small, fontWeight: '700' },
   content: { flex: 1 },
   contentInner: { flexGrow: 1 },
-  footer: { width: '100%', alignSelf: 'stretch', borderTopWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: space.lg, paddingVertical: space.md, flexDirection: 'row', justifyContent: 'space-between', gap: space.md },
-  footerText: { color: colors.textMuted, fontSize: 12 },
+  footer: { width: '100%', alignSelf: 'stretch', borderTopWidth: 1, borderColor: colors.navy, backgroundColor: colors.navy, paddingHorizontal: space.lg, paddingVertical: space.md, flexDirection: 'row', justifyContent: 'space-between', gap: space.md },
+  footerText: { color: colors.primaryText, fontSize: 12, opacity: 0.85 },
 });

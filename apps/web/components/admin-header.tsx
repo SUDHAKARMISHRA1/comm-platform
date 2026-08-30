@@ -14,9 +14,9 @@ function go(href: string) {
 
 export function AdminHeader({ active }: Props) {
   return (
-    <header className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
+    <header className="flex items-center justify-between bg-[var(--color-navy)] px-6 py-4">
       <div className="flex items-center gap-4">
-        <p className="font-semibold">Comm Platform admin</p>
+        <p className="font-semibold text-white">Comm Platform admin</p>
         <form
           action="/admin"
           method="get"
@@ -28,7 +28,7 @@ export function AdminHeader({ active }: Props) {
         >
           <button
             type="submit"
-            className={`text-sm ${active === 'users' ? 'font-semibold text-[var(--color-text)]' : 'text-[var(--color-primary)]'}`}
+            className={`text-sm ${active === 'users' ? 'font-semibold text-white' : 'text-white/80'}`}
           >
             Users
           </button>
@@ -44,14 +44,14 @@ export function AdminHeader({ active }: Props) {
         >
           <button
             type="submit"
-            className={`text-sm ${active === 'practice' ? 'font-semibold text-[var(--color-text)]' : 'text-[var(--color-primary)]'}`}
+            className={`text-sm ${active === 'practice' ? 'font-semibold text-white' : 'text-white/80'}`}
           >
             Practice
           </button>
         </form>
       </div>
       <form action={adminLogout}>
-        <button className="text-sm text-[var(--color-primary)]" type="submit">
+        <button className="rounded-lg bg-[var(--color-navy-muted)] px-3 py-1.5 text-sm font-semibold text-white" type="submit">
           Sign out
         </button>
       </form>

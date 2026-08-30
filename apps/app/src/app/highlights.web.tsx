@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchDashboard } from '@/coding/api/questionApi';
 import { AppShell } from '@/components/app-shell';
 import { spaNavigate } from '@/lib/spa-nav';
+import { DIFFICULTY_FILL, submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
 
 const WEEK = [
@@ -116,7 +117,10 @@ export default function HighlightsScreen() {
                     <span>{row.percent}%</span>
                   </div>
                   <div className="hl-mix-track">
-                    <div className="hl-mix-fill" style={{ width: `${row.percent}%` }} />
+                    <div
+                      className="hl-mix-fill"
+                      style={{ width: `${row.percent}%`, background: DIFFICULTY_FILL[row.difficulty] }}
+                    />
                   </div>
                 </div>
               ))}
@@ -133,7 +137,7 @@ export default function HighlightsScreen() {
                   <li key={s.id}>
                     <a href={`/submissions/${s.id}`} onClick={(e) => spaNavigate(`/submissions/${s.id}`, e)}>
                       <strong>{s.questionTitle}</strong>
-                      <span className={s.status === 'ACCEPTED' ? 'ok' : 'warn'}>{s.status.replace(/_/g, ' ')}</span>
+                      <span className={submissionTone(s.status)}>{s.status.replace(/_/g, ' ')}</span>
                     </a>
                   </li>
                 ))}
@@ -175,13 +179,13 @@ function Kpi({ label, value, hint }: { label: string; value: string; hint: strin
 }
 
 const css = `
-.hl { background:#f8fafc; min-height:100%; width:100%; box-sizing:border-box; padding:2rem 1.25rem 3.5rem; color:#0f172a; }
+.hl { background:#ffffff; min-height:100%; width:100%; box-sizing:border-box; padding:2rem 1.25rem 3.5rem; color:#0b1f3a; }
 .hl-hero { max-width:80rem; margin:0 auto 1.75rem; display:flex; flex-wrap:wrap; gap:1.25rem; justify-content:space-between; align-items:flex-end; }
-.hl-kicker { margin:0; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#0f766e; }
+.hl-kicker { margin:0; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#0b1f3a; }
 .hl h1 { margin:.4rem 0 0; font-size:clamp(1.8rem,3vw,2.4rem); letter-spacing:-.03em; }
 .hl-lead { margin:.75rem 0 0; max-width:40rem; color:#475569; line-height:1.7; }
-.hl-cta { display:inline-flex; height:2.75rem; align-items:center; padding:0 1.1rem; border-radius:.7rem; background:#020617; color:#fff; text-decoration:none; font-weight:700; font-size:.875rem; }
-.hl-cta:hover { background:#1e293b; }
+.hl-cta { display:inline-flex; height:2.75rem; align-items:center; padding:0 1.1rem; border-radius:.7rem; background:#0b1f3a; color:#fff; text-decoration:none; font-weight:700; font-size:.875rem; }
+.hl-cta:hover { background:#1e4a7a; }
 .hl-kpis, .hl-grid, .hl-hero { max-width:80rem; width:100%; }
 .hl-kpis { margin:0 auto 1.25rem; display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); }
 .hl-grid { margin:0 auto 1.25rem; display:grid; gap:1rem; grid-template-columns:repeat(3,1fr); }
@@ -193,19 +197,20 @@ const css = `
 .hl-muted { margin:.35rem 0 0; color:#64748b; font-size:.85rem; }
 .hl-panel h2 { margin:.45rem 0 0; font-size:1.15rem; }
 .hl-copy { margin:.7rem 0 0; color:#334155; line-height:1.65; }
-.hl-chip { display:inline-block; margin-top:1rem; background:#ecfeff; color:#155e75; border:1px solid #a5f3fc; border-radius:999px; padding:.35rem .75rem; font-size:.8rem; font-weight:700; }
+.hl-chip { display:inline-block; margin-top:1rem; background:#e8eef6; color:#0b1f3a; border:1px solid #d5dde8; border-radius:999px; padding:.35rem .75rem; font-size:.8rem; font-weight:700; }
 .hl-bars { margin-top:1.1rem; display:flex; align-items:flex-end; gap:.55rem; height:8rem; }
 .hl-bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:.4rem; height:100%; }
 .hl-bar-track { flex:1; width:100%; display:flex; align-items:flex-end; background:#f1f5f9; border-radius:.5rem; overflow:hidden; }
-.hl-bar-fill { width:100%; background:linear-gradient(180deg,#22d3ee,#0f766e); border-radius:.5rem .5rem 0 0; }
+.hl-bar-fill { width:100%; background:linear-gradient(180deg,#4ade80,#15803d); border-radius:.5rem .5rem 0 0; }
 .hl-bar-col span { font-size:11px; color:#64748b; font-weight:600; }
 .hl-mix { margin-top:1rem; display:flex; flex-direction:column; gap:.85rem; }
 .hl-mix-row { display:flex; justify-content:space-between; font-size:.85rem; font-weight:600; }
 .hl-mix-track { height:8px; background:#f1f5f9; border-radius:99px; overflow:hidden; margin-top:.35rem; }
-.hl-mix-fill { height:100%; background:#0f766e; }
+.hl-mix-fill { height:100%; background:#16a34a; }
 .hl-list { list-style:none; margin:.9rem 0 0; padding:0; display:flex; flex-direction:column; gap:.35rem; }
-.hl-list a { display:flex; justify-content:space-between; gap:.75rem; text-decoration:none; color:#0f172a; padding:.55rem 0; border-bottom:1px solid #f1f5f9; font-size:.9rem; }
-.hl-list a:hover strong { color:#0f766e; }
-.ok { color:#047857; font-weight:700; font-size:.75rem; }
-.warn { color:#b45309; font-weight:700; font-size:.75rem; }
+.hl-list a { display:flex; justify-content:space-between; gap:.75rem; text-decoration:none; color:#0b1f3a; padding:.55rem 0; border-bottom:1px solid #f1f5f9; font-size:.9rem; }
+.hl-list a:hover strong { color:#1e4a7a; }
+.ok { color:#15803d; font-weight:700; font-size:.75rem; }
+.pending { color:#ca8a04; font-weight:700; font-size:.75rem; }
+.fail { color:#dc2626; font-weight:700; font-size:.75rem; }
 `;

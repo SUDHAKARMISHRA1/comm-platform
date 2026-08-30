@@ -4,6 +4,8 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } fr
 import { colors, radius, space, type } from '@comm-platform/ui';
 import type { ExecutionResult, ExecutionStatus, RunTestsResponse, SubmitCodeResponse } from '@comm-platform/coding';
 
+import { submissionTone } from '@/coding/statusColors';
+
 const STATUS_LABELS: Record<ExecutionStatus, string> = {
   QUEUED: 'Queued',
   RUNNING: 'Running',
@@ -104,7 +106,16 @@ export function ConsolePanel({
             <>
               {verdict ? (
                 <View style={styles.block}>
-                  <Text style={[styles.status, verdict.status === 'ACCEPTED' ? styles.ok : styles.bad]}>
+                  <Text
+                    style={[
+                      styles.status,
+                      submissionTone(verdict.status) === 'ok'
+                        ? styles.ok
+                        : submissionTone(verdict.status) === 'pending'
+                          ? styles.pending
+                          : styles.bad,
+                    ]}
+                  >
                     {STATUS_LABELS[verdict.status]}
                   </Text>
                   <Text style={styles.meta}>
@@ -127,7 +138,20 @@ export function ConsolePanel({
               ) : null}
               {runResult ? (
                 <View style={styles.block}>
-                  <Text style={styles.meta}>Custom run status: {STATUS_LABELS[runResult.status]}</Text>
+                  <Text style={styles.meta}>
+                    Custom run status:{' '}
+                    <Text
+                      style={
+                        submissionTone(runResult.status) === 'ok'
+                          ? styles.ok
+                          : submissionTone(runResult.status) === 'pending'
+                            ? styles.pending
+                            : styles.bad
+                      }
+                    >
+                      {STATUS_LABELS[runResult.status]}
+                    </Text>
+                  </Text>
                   <Text style={styles.meta}>Execution Time: {runResult.executionTime.toFixed(2)} sec</Text>
                   <Text style={styles.meta}>Memory: {Math.max(0, runResult.memory).toFixed(0)} KB</Text>
                 </View>
@@ -162,6 +186,7 @@ const styles = StyleSheet.create({
   status: { fontSize: type.body, fontWeight: '700' },
   meta: { fontSize: type.small, color: colors.textMuted },
   ok: { color: colors.success, fontSize: type.small },
+  pending: { color: colors.warning, fontSize: type.small },
   bad: { color: colors.danger, fontSize: type.small },
   error: { color: colors.danger },
   inputArea: { minHeight: 88, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: space.sm, backgroundColor: colors.surfaceMuted, color: colors.text, textAlignVertical: 'top' },

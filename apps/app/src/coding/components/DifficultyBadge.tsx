@@ -4,8 +4,8 @@ import { colors, radius, space, type } from '@comm-platform/ui';
 import type { Difficulty } from '@comm-platform/coding';
 
 const COLORS: Record<Difficulty, { bg: string; text: string }> = {
-  EASY: { bg: '#d1fae5', text: '#047857' },
-  MEDIUM: { bg: '#fef3c7', text: '#b45309' },
+  EASY: { bg: '#dcfce7', text: '#15803d' },
+  MEDIUM: { bg: '#fef9c3', text: '#a16207' },
   HARD: { bg: '#fee2e2', text: '#b91c1c' },
 };
 

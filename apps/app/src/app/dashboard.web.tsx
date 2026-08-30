@@ -7,6 +7,7 @@ import { inLastMonths } from '@/coding/activity';
 import { SubmissionCalendar } from '@/coding/components/SubmissionCalendar';
 import { AppShell } from '@/components/app-shell';
 import { spaNavigate } from '@/lib/spa-nav';
+import { DIFFICULTY_FILL, submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
 
 const HISTORY_MONTHS = 3;
@@ -49,7 +50,9 @@ export default function DashboardScreen() {
               {data.difficultyProgress.map((d) => (
                 <div key={d.difficulty} className="db-prog">
                   <div className="db-prog-row"><span>{d.difficulty}</span><span>{d.percent}%</span></div>
-                  <div className="db-track"><div style={{ width: `${d.percent}%` }} /></div>
+                  <div className="db-track">
+                    <div style={{ width: `${d.percent}%`, background: DIFFICULTY_FILL[d.difficulty] }} />
+                  </div>
                 </div>
               ))}
             </section>
@@ -102,7 +105,7 @@ export default function DashboardScreen() {
                   <p className="db-kicker">{s.language}</p>
                   <h3>{s.questionTitle}</h3>
                   <p>
-                    <span className={s.status === 'ACCEPTED' ? 'ok' : 'warn'}>{s.status.replace(/_/g, ' ')}</span>
+                    <span className={submissionTone(s.status)}>{s.status.replace(/_/g, ' ')}</span>
                     {' · '}
                     {s.executionTime}
                     {' · '}
@@ -136,7 +139,7 @@ export default function DashboardScreen() {
                         </a>
                       </td>
                       <td>{s.language}</td>
-                      <td className={s.status === 'ACCEPTED' ? 'ok' : 'warn'}>{s.status.replace(/_/g, ' ')}</td>
+                      <td className={submissionTone(s.status)}>{s.status.replace(/_/g, ' ')}</td>
                       <td>{s.executionTime}</td>
                       <td>{new Date(s.createdAt).toLocaleDateString()}</td>
                     </tr>
@@ -153,8 +156,8 @@ export default function DashboardScreen() {
 }
 
 const css = `
-.db { max-width:76rem; width:100%; box-sizing:border-box; margin:0 auto; padding:1.5rem 1.25rem 3rem; color:#0f172a; display:flex; flex-direction:column; gap:1rem; }
-.db-kicker { margin:0; font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#0f766e; }
+.db { max-width:76rem; width:100%; box-sizing:border-box; margin:0 auto; padding:1.5rem 1.25rem 3rem; color:#0b1f3a; display:flex; flex-direction:column; gap:1rem; }
+.db-kicker { margin:0; font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#0b1f3a; }
 .db h1 { margin:0; font-size:1.7rem; letter-spacing:-.02em; }
 .db h2 { margin:0 0 .75rem; font-size:1.05rem; }
 .db-muted { color:#64748b; font-size:.9rem; }
@@ -167,22 +170,23 @@ const css = `
 .db-prog { margin-bottom:.75rem; }
 .db-prog-row { display:flex; justify-content:space-between; font-size:.85rem; font-weight:600; }
 .db-track { height:8px; background:#f1f5f9; border-radius:99px; overflow:hidden; margin-top:.35rem; }
-.db-track div { height:100%; background:#0f766e; }
+.db-track div { height:100%; background:#16a34a; }
 .db-card ul { list-style:none; margin:0; padding:0; }
-.db-card li a { display:flex; justify-content:space-between; gap:.75rem; padding:.55rem 0; border-bottom:1px solid #f1f5f9; text-decoration:none; color:#0f172a; }
-.db-card li a:hover strong { color:#0f766e; }
+.db-card li a { display:flex; justify-content:space-between; gap:.75rem; padding:.55rem 0; border-bottom:1px solid #f1f5f9; text-decoration:none; color:#0b1f3a; }
+.db-card li a:hover strong { color:#1e4a7a; }
 .db-preview { display:grid; grid-template-columns:repeat(2,1fr); gap:.75rem; margin:.75rem 0; }
 @media (max-width:700px) { .db-preview, .db-kpis { grid-template-columns:1fr; } }
 .db-preview-card { display:block; text-decoration:none; color:inherit; border:1px solid #e2e8f0; border-radius:.85rem; padding:.9rem 1rem; background:#f8fafc; }
-.db-preview-card:hover { border-color:#99f6e4; background:#ecfeff; }
+.db-preview-card:hover { border-color:#1e4a7a; background:#e8eef6; }
 .db-preview-card h3 { margin:.35rem 0 .4rem; font-size:1.05rem; }
 .db-preview-card p { margin:0; color:#64748b; font-size:.85rem; }
-.db-collapse { margin-top:.35rem; border:1px solid #e2e8f0; background:#0f172a; color:#fff; border-radius:.65rem; height:2.4rem; padding:0 .9rem; font-weight:700; cursor:pointer; }
+.db-collapse { margin-top:.35rem; border:1px solid #0b1f3a; background:#0b1f3a; color:#fff; border-radius:.65rem; height:2.4rem; padding:0 .9rem; font-weight:700; cursor:pointer; }
 .db-table-wrap { margin-top:.85rem; max-height:18rem; overflow:auto; border:1px solid #e2e8f0; border-radius:.75rem; }
 .db-table-wrap table { width:100%; border-collapse:collapse; font-size:.85rem; }
 .db-table-wrap th, .db-table-wrap td { text-align:left; padding:.55rem .7rem; border-bottom:1px solid #f1f5f9; }
 .db-table-wrap th { background:#f8fafc; color:#64748b; position:sticky; top:0; }
-.db-table-wrap a { color:#0f766e; font-weight:700; text-decoration:none; }
-.ok { color:#047857; font-weight:700; }
-.warn { color:#b45309; font-weight:700; }
+.db-table-wrap a { color:#0b1f3a; font-weight:700; text-decoration:none; }
+.ok { color:#15803d; font-weight:700; }
+.pending { color:#ca8a04; font-weight:700; }
+.fail { color:#dc2626; font-weight:700; }
 `;

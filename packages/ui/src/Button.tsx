@@ -11,8 +11,8 @@ type ButtonProps = PressableProps & {
 
 export function Button({ label, variant = 'primary', disabled, style, ...props }: ButtonProps) {
   const backgroundColor =
-    variant === 'primary' ? colors.primary : variant === 'secondary' ? colors.surfaceMuted : 'transparent';
-  const color = variant === 'primary' ? colors.primaryText : colors.text;
+    variant === 'ghost' ? 'transparent' : colors.primary;
+  const color = variant === 'ghost' ? colors.primary : colors.primaryText;
 
   return (
     <Pressable
@@ -21,7 +21,7 @@ export function Button({ label, variant = 'primary', disabled, style, ...props }
       style={[
         {
           backgroundColor,
-          borderColor: variant === 'ghost' ? colors.border : backgroundColor,
+          borderColor: variant === 'ghost' ? colors.primary : colors.primary,
           borderWidth: 1,
           borderRadius: radius.md,
           paddingVertical: space.sm + 4,

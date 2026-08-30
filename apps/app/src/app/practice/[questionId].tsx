@@ -309,6 +309,6 @@ const styles = StyleSheet.create({
   btn: { flex: 1, paddingVertical: space.sm + 2, borderRadius: radius.md, alignItems: 'center' },
   btnPrimary: { backgroundColor: colors.primary },
   btnPrimaryText: { color: colors.primaryText, fontWeight: '700' },
-  btnSecondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  btnSecondaryText: { color: colors.text, fontWeight: '700' },
+  btnSecondary: { backgroundColor: colors.primary, borderWidth: 1, borderColor: colors.primary },
+  btnSecondaryText: { color: colors.primaryText, fontWeight: '700' },
 });

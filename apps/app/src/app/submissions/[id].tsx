@@ -6,6 +6,7 @@ import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
 import { fetchSubmission } from '@/coding/api/submissionApi';
+import { submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function SubmissionDetailScreen() {
@@ -26,7 +27,20 @@ export default function SubmissionDetailScreen() {
         {data ? (
           <View style={styles.card}>
             <Text style={styles.title}>{data.questionTitle}</Text>
-            <Text style={styles.meta}>Language: {data.language} · Status: {data.status}</Text>
+            <Text style={styles.meta}>
+              Language: {data.language} · Status:{' '}
+              <Text
+                style={
+                  submissionTone(data.status) === 'ok'
+                    ? styles.ok
+                    : submissionTone(data.status) === 'pending'
+                      ? styles.pending
+                      : styles.fail
+                }
+              >
+                {data.status.replace(/_/g, ' ')}
+              </Text>
+            </Text>
             <Text style={styles.meta}>Runtime: {data.executionTime} · Memory: {data.memory}</Text>
             <Text style={styles.meta}>{data.passedTestCases} / {data.totalTestCases} test cases passed</Text>
             <Text style={styles.meta}>{new Date(data.createdAt).toLocaleString()}</Text>
@@ -51,6 +65,9 @@ const styles = StyleSheet.create({
   card: { backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: space.lg, gap: space.sm },
   title: { fontSize: 22, fontWeight: '700', color: colors.text },
   meta: { fontSize: type.small, color: colors.textMuted },
+  ok: { color: colors.success, fontWeight: '700' },
+  pending: { color: colors.warning, fontWeight: '700' },
+  fail: { color: colors.danger, fontWeight: '700' },
   section: { fontWeight: '700', marginTop: space.md, color: colors.text },
   code: { backgroundColor: colors.surfaceMuted, borderRadius: radius.md, padding: space.md },
   codeText: { fontSize: type.small, color: colors.text, fontFamily: Platform.OS === 'web' ? 'monospace' : undefined },
