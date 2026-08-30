@@ -122,7 +122,7 @@ export default function HomeScreen() {
 }
 
 const homeCss = `
-.cp-home { background:#f8fafc; color:#0f172a; min-height:100%; }
+.cp-home { background:#f8fafc; color:#0f172a; min-height:100%; width:100%; box-sizing:border-box; }
 .cp-hero { position:relative; isolation:isolate; overflow:hidden; }
 .cp-hero-glow { position:absolute; inset:0 0 auto; height:34rem; z-index:-1; pointer-events:none;
   background: radial-gradient(circle at 75% 0%, rgba(165,243,252,.72), transparent 32%),

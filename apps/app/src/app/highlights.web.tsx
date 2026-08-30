@@ -170,14 +170,14 @@ function Kpi({ label, value, hint }: { label: string; value: string; hint: strin
 }
 
 const css = `
-.hl { background:#f8fafc; min-height:100%; padding:2rem 1.25rem 3.5rem; color:#0f172a; }
+.hl { background:#f8fafc; min-height:100%; width:100%; box-sizing:border-box; padding:2rem 1.25rem 3.5rem; color:#0f172a; }
 .hl-hero { max-width:80rem; margin:0 auto 1.75rem; display:flex; flex-wrap:wrap; gap:1.25rem; justify-content:space-between; align-items:flex-end; }
 .hl-kicker { margin:0; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#0f766e; }
 .hl h1 { margin:.4rem 0 0; font-size:clamp(1.8rem,3vw,2.4rem); letter-spacing:-.03em; }
 .hl-lead { margin:.75rem 0 0; max-width:40rem; color:#475569; line-height:1.7; }
 .hl-cta { display:inline-flex; height:2.75rem; align-items:center; padding:0 1.1rem; border-radius:.7rem; background:#020617; color:#fff; text-decoration:none; font-weight:700; font-size:.875rem; }
 .hl-cta:hover { background:#1e293b; }
-.hl-kpis, .hl-grid, .hl-hero { max-width:80rem; }
+.hl-kpis, .hl-grid, .hl-hero { max-width:80rem; width:100%; }
 .hl-kpis { margin:0 auto 1.25rem; display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); }
 .hl-grid { margin:0 auto 1.25rem; display:grid; gap:1rem; grid-template-columns:repeat(3,1fr); }
 @media (max-width:900px) { .hl-grid { grid-template-columns:1fr; } .hl-span-2 { grid-column:auto; } }

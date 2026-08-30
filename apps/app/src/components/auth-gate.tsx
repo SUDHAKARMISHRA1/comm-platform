@@ -44,7 +44,7 @@ export function AuthGate() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: colors.bg },
+        contentStyle: { backgroundColor: colors.bg, flex: 1, width: '100%' },
       }}
     />
   );

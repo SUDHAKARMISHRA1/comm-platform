@@ -18,7 +18,7 @@ export default function SubmissionDetailScreen() {
   return (
     <AppShell>
       <ScrollView contentContainerStyle={styles.page}>
-        <Link href="/submissions" asChild><Text style={styles.link}>← Back to Submissions</Text></Link>
+        <Link href="/dashboard" asChild><Text style={styles.link}>← Back to Dashboard</Text></Link>
         {isLoading ? <ActivityIndicator color={colors.primary} /> : null}
         {error ? <Text style={styles.error}>Submission not found.</Text> : null}
         {data ? (
