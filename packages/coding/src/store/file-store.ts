@@ -2,7 +2,7 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { CodingDataStore } from '../schema';
-import { createSeedStore } from './seed';
+import { createSeedStore, defaultCatalog } from './seed';
 
 const DEFAULT_DIR = path.join(process.cwd(), '../../data/coding');
 
@@ -16,12 +16,67 @@ function storeFile() {
 
 let cache: CodingDataStore | null = null;
 
+export function ensureCatalog(data: CodingDataStore): boolean {
+  const now = new Date().toISOString();
+  let changed = false;
+  const fallback = defaultCatalog(now);
+
+  if (!Array.isArray(data.skills) || data.skills.length === 0) {
+    data.skills = fallback.skills;
+    changed = true;
+  }
+  if (!Array.isArray(data.levels) || data.levels.length === 0) {
+    data.levels = fallback.levels;
+    changed = true;
+  }
+  if (!Array.isArray(data.topics) || data.topics.length === 0) {
+    data.topics = fallback.topics;
+    changed = true;
+  }
+  if (!Array.isArray(data.cmsPages)) {
+    data.cmsPages = [];
+    changed = true;
+  }
+  if (!Array.isArray(data.notifications)) {
+    data.notifications = [];
+    changed = true;
+  }
+  if (!data.settings) {
+    data.settings = {
+      siteName: 'Comm Platform',
+      supportEmail: 'support@example.com',
+      maintenanceMessage: '',
+    };
+    changed = true;
+  }
+
+  const defaultSkill = data.skills[0]!;
+  for (const q of data.questions) {
+    if (!q.skillId) {
+      q.skillId = defaultSkill.id;
+      changed = true;
+    }
+    if (!q.levelId) {
+      const level = data.levels.find((l) => l.band === q.difficulty) ?? data.levels[0]!;
+      q.levelId = level.id;
+      q.difficulty = level.band;
+      changed = true;
+    }
+  }
+  return changed;
+}
+
 export async function readStore(): Promise<CodingDataStore> {
   if (cache) return structuredClone(cache);
   const file = storeFile();
   try {
     const raw = await readFile(file, 'utf8');
-    cache = JSON.parse(raw) as CodingDataStore;
+    const parsed = JSON.parse(raw) as CodingDataStore;
+    if (ensureCatalog(parsed)) {
+      await writeStore(parsed);
+      return structuredClone(parsed);
+    }
+    cache = parsed;
     return structuredClone(cache);
   } catch {
     const seed = createSeedStore();

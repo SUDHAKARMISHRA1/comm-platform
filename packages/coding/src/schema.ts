@@ -34,6 +34,8 @@ export type QuestionRecord = {
   outputFormat: string;
   constraints: string;
   examples: QuestionExample[];
+  skillId: string;
+  levelId: string;
   topics: string[];
   supportedLanguages: LanguageKey[];
   codeTemplates: Partial<Record<LanguageKey, string>>;
@@ -41,6 +43,65 @@ export type QuestionRecord = {
   published: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export type SkillRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  languageKey: LanguageKey | null;
+  sequence: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type LevelRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  band: Difficulty;
+  sequence: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TopicRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  sequence: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CmsPageRecord = {
+  id: string;
+  title: string;
+  slug: string;
+  body: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NotificationChannel = 'email' | 'push';
+export type NotificationAudience = 'all' | 'active' | 'inactive';
+
+export type NotificationCampaignRecord = {
+  id: string;
+  channel: NotificationChannel;
+  title: string;
+  body: string;
+  audience: NotificationAudience;
+  status: 'draft' | 'published';
+  createdAt: string;
+  publishedAt: string | null;
+};
+
+export type AdminSettingsRecord = {
+  siteName: string;
+  supportEmail: string;
+  maintenanceMessage: string;
 };
 
 export type ProgressRecord = {
@@ -70,4 +131,10 @@ export type CodingDataStore = {
   questions: QuestionRecord[];
   progress: ProgressRecord[];
   submissions: SubmissionRecord[];
+  skills: SkillRecord[];
+  levels: LevelRecord[];
+  topics: TopicRecord[];
+  cmsPages: CmsPageRecord[];
+  notifications: NotificationCampaignRecord[];
+  settings: AdminSettingsRecord;
 };

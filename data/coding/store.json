@@ -8,9 +8,10 @@
       "topics": [
         "Array",
         "String",
-        "Math",
         "Searching",
-        "Dynamic Programming"
+        "Dynamic Programming",
+        "Math",
+        "HashMap"
       ],
       "languages": [
         "java",
@@ -19,8 +20,8 @@
       ],
       "sequence": 1,
       "published": true,
-      "createdAt": "2026-08-28T16:57:52.294Z",
-      "updatedAt": "2026-08-28T16:57:52.294Z"
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     }
   ],
   "questions": [
@@ -31,6 +32,8 @@
       "title": "Two Sum",
       "slug": "two-sum",
       "difficulty": "EASY",
+      "skillId": "skill-java",
+      "levelId": "level-easy",
       "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
       "inputFormat": "First line: n (array length)\nSecond line: n space-separated integers\nThird line: target",
       "outputFormat": "Two space-separated indices (0-based).",
@@ -77,8 +80,8 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-08-28T16:57:52.294Z",
-      "updatedAt": "2026-08-28T16:57:52.294Z"
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     },
     {
       "id": 2,
@@ -87,6 +90,8 @@
       "title": "Reverse String",
       "slug": "reverse-string",
       "difficulty": "EASY",
+      "skillId": "skill-java",
+      "levelId": "level-easy",
       "description": "Given a string `s`, reverse the string in-place and print the result.",
       "inputFormat": "A single line containing the string s.",
       "outputFormat": "The reversed string.",
@@ -120,8 +125,8 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-08-28T16:57:52.294Z",
-      "updatedAt": "2026-08-28T16:57:52.294Z"
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     },
     {
       "id": 3,
@@ -130,6 +135,8 @@
       "title": "Palindrome Number",
       "slug": "palindrome-number",
       "difficulty": "EASY",
+      "skillId": "skill-java",
+      "levelId": "level-easy",
       "description": "Given an integer `x`, return `true` if `x` is a palindrome, and `false` otherwise.",
       "inputFormat": "A single integer x.",
       "outputFormat": "Print `true` or `false`.",
@@ -174,8 +181,8 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-08-28T16:57:52.294Z",
-      "updatedAt": "2026-08-28T16:57:52.294Z"
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     },
     {
       "id": 4,
@@ -184,6 +191,8 @@
       "title": "Binary Search",
       "slug": "binary-search",
       "difficulty": "MEDIUM",
+      "skillId": "skill-java",
+      "levelId": "level-medium",
       "description": "Given a sorted array of integers and a target value, return the index if the target is found. If not, return -1.",
       "inputFormat": "First line: n\nSecond line: n sorted integers\nThird line: target",
       "outputFormat": "Index of target or -1.",
@@ -218,8 +227,8 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-08-28T16:57:52.294Z",
-      "updatedAt": "2026-08-28T16:57:52.294Z"
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     },
     {
       "id": 5,
@@ -228,6 +237,8 @@
       "title": "Maximum Subarray",
       "slug": "maximum-subarray",
       "difficulty": "MEDIUM",
+      "skillId": "skill-java",
+      "levelId": "level-medium",
       "description": "Given an integer array `nums`, find the contiguous subarray with the largest sum, and return its sum.",
       "inputFormat": "First line: n\nSecond line: n integers",
       "outputFormat": "Maximum subarray sum.",
@@ -262,68 +273,125 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-08-28T16:57:52.294Z",
-      "updatedAt": "2026-08-28T16:57:52.294Z"
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     }
   ],
-  "progress": [
+  "progress": [],
+  "submissions": [],
+  "skills": [
     {
-      "userId": "07c925d3-e2e6-48f9-ad85-eb40e288db79",
-      "questionId": 2,
-      "status": "SOLVED",
-      "updatedAt": "2026-08-30T07:16:14.114Z"
+      "id": "skill-java",
+      "name": "Java",
+      "slug": "java",
+      "languageKey": "java",
+      "sequence": 1,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     },
     {
-      "userId": "dcc66ea9-b724-452c-a407-923666d87151",
-      "questionId": 2,
-      "status": "SOLVED",
-      "updatedAt": "2026-08-30T07:36:00.726Z"
+      "id": "skill-c",
+      "name": "C",
+      "slug": "c",
+      "languageKey": "c",
+      "sequence": 2,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "id": "skill-cpp",
+      "name": "C++",
+      "slug": "cpp",
+      "languageKey": "cpp",
+      "sequence": 3,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     }
   ],
-  "submissions": [
+  "levels": [
     {
-      "id": "sub-1788075360726",
-      "userId": "dcc66ea9-b724-452c-a407-923666d87151",
-      "questionId": 2,
-      "language": "java",
-      "sourceCode": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n          Scanner sc = new Scanner(System.in);\n        String s = sc.hasNextLine() ? sc.nextLine() : \"\";\n        System.out.println(new StringBuilder(s).reverse());\n    }\n}",
-      "status": "ACCEPTED",
-      "passedTestCases": 1,
-      "totalTestCases": 1,
-      "executionTime": "2.21s",
-      "memory": "12 MB",
-      "testCaseResults": [
-        {
-          "index": 1,
-          "passed": true,
-          "hidden": false,
-          "stdout": "olleh\r\n",
-          "stderr": ""
-        }
-      ],
-      "createdAt": "2026-08-30T07:36:00.726Z"
+      "id": "level-easy",
+      "name": "Easy",
+      "slug": "easy",
+      "band": "EASY",
+      "sequence": 1,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     },
     {
-      "id": "sub-1788074174114",
-      "userId": "07c925d3-e2e6-48f9-ad85-eb40e288db79",
-      "questionId": 2,
-      "language": "java",
-      "sourceCode": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String s = sc.hasNextLine() ? sc.nextLine() : \"\";\n        System.out.println(new StringBuilder(s).reverse());\n    }\n}",
-      "status": "ACCEPTED",
-      "passedTestCases": 1,
-      "totalTestCases": 1,
-      "executionTime": "2.23s",
-      "memory": "12 MB",
-      "testCaseResults": [
-        {
-          "index": 1,
-          "passed": true,
-          "hidden": false,
-          "stdout": "olleh\r\n",
-          "stderr": ""
-        }
-      ],
-      "createdAt": "2026-08-30T07:16:14.114Z"
+      "id": "level-medium",
+      "name": "Medium",
+      "slug": "medium",
+      "band": "MEDIUM",
+      "sequence": 2,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "id": "level-hard",
+      "name": "Hard",
+      "slug": "hard",
+      "band": "HARD",
+      "sequence": 3,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
     }
-  ]
+  ],
+  "topics": [
+    {
+      "id": "topic-array",
+      "name": "Array",
+      "slug": "array",
+      "sequence": 1,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "id": "topic-string",
+      "name": "String",
+      "slug": "string",
+      "sequence": 2,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "id": "topic-searching",
+      "name": "Searching",
+      "slug": "searching",
+      "sequence": 3,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "id": "topic-dynamic-programming",
+      "name": "Dynamic Programming",
+      "slug": "dynamic-programming",
+      "sequence": 4,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "id": "topic-math",
+      "name": "Math",
+      "slug": "math",
+      "sequence": 5,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "id": "topic-hashmap",
+      "name": "HashMap",
+      "slug": "hashmap",
+      "sequence": 6,
+      "createdAt": "2026-08-30T17:06:37.791Z",
+      "updatedAt": "2026-08-30T17:06:37.791Z"
+    }
+  ],
+  "cmsPages": [],
+  "notifications": [],
+  "settings": {
+    "siteName": "Comm Platform",
+    "supportEmail": "support@example.com",
+    "maintenanceMessage": ""
+  }
 }

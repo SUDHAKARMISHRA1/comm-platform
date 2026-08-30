@@ -313,6 +313,19 @@ export async function listSubmissionRecords(userId: string): Promise<SubmissionR
   return (rows ?? []).map(submissionFromAudit);
 }
 
+export async function listAllSubmissionRecords(): Promise<SubmissionRecord[]> {
+  if (await useDedicatedTables()) {
+    const rows = await rest<SubmissionRow[]>(
+      'code_submissions?select=id,user_id,question_id,language,source_code,status,passed_test_cases,total_test_cases,execution_time,memory,test_case_results,created_at&order=created_at.desc',
+    );
+    return (rows ?? []).map(toSubmission);
+  }
+  const rows = await rest<AuditRow[]>(
+    `audit_logs?action=eq.${encodeURIComponent(ACTION_SUBMISSION)}&select=id,actor_id,action,metadata,created_at&order=created_at.desc`,
+  );
+  return (rows ?? []).map(submissionFromAudit);
+}
+
 export async function getSubmissionRecord(userId: string, id: string): Promise<SubmissionRecord | null> {
   if (await useDedicatedTables()) {
     const rows = await rest<SubmissionRow[]>(

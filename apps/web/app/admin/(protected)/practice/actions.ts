@@ -85,6 +85,8 @@ export async function upsertQuestion(formData: FormData) {
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean),
+    skillId: String(formData.get('skillId') ?? ''),
+    levelId: String(formData.get('levelId') ?? ''),
     supportedLanguages: String(formData.get('supportedLanguages') ?? 'java,c,cpp')
       .split(',')
       .map((l) => l.trim() as LanguageKey),

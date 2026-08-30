@@ -1,4 +1,4 @@
-import type { QuestionDetail, QuestionSummary, SubmissionDetail, SubmissionSummary } from '../types';
+import type { CatalogPayload, QuestionDetail, QuestionSummary, SubmissionDetail, SubmissionSummary } from '../types';
 
 export const MOCK_QUESTIONS: QuestionDetail[] = [
   {
@@ -143,6 +143,7 @@ export function toSummary(q: QuestionDetail): QuestionSummary {
     title: q.title,
     slug: q.slug,
     difficulty: q.difficulty,
+    skillId: q.skillId ?? 'skill-java',
     topics: q.topics,
     status: q.status,
   };
@@ -153,6 +154,8 @@ export function listMockQuestions(filters: {
   difficulty?: string;
   topic?: string;
   status?: string;
+  skill?: string;
+  level?: string;
   page?: number;
   pageSize?: number;
 }): { questions: QuestionSummary[]; pagination: { page: number; pageSize: number; total: number } } {
@@ -171,6 +174,13 @@ export function listMockQuestions(filters: {
   }
   if (filters.difficulty) {
     items = items.filter((q) => q.difficulty === filters.difficulty);
+  }
+  if (filters.skill) {
+    const skillTerm = filters.skill.toLowerCase();
+    items = items.filter((q) => q.skillId === filters.skill || q.skillName?.toLowerCase() === skillTerm);
+  }
+  if (filters.level) {
+    items = items.filter((q) => q.levelId === filters.level || q.difficulty === filters.level);
   }
   if (filters.topic) {
     items = items.filter((q) => q.topics.some((t) => t.toLowerCase() === filters.topic!.toLowerCase()));
@@ -229,5 +239,28 @@ export function getMockDashboard() {
     recentPractice: summaries.slice(0, 4).map((q) => ({ questionId: q.id, title: q.title, status: q.status })),
     recommended: summaries.filter((q) => q.status !== 'SOLVED').slice(0, 3),
     recentSubmissions: listMockSubmissions().slice(0, 5),
+  };
+}
+
+export function getMockCatalog(): CatalogPayload {
+  return {
+    skills: [
+      { id: 'skill-java', name: 'Java', slug: 'java', languageKey: 'java' },
+      { id: 'skill-c', name: 'C', slug: 'c', languageKey: 'c' },
+      { id: 'skill-cpp', name: 'C++', slug: 'cpp', languageKey: 'cpp' },
+    ],
+    levels: [
+      { id: 'level-easy', name: 'Easy', slug: 'easy', band: 'EASY' },
+      { id: 'level-medium', name: 'Medium', slug: 'medium', band: 'MEDIUM' },
+      { id: 'level-hard', name: 'Hard', slug: 'hard', band: 'HARD' },
+    ],
+    topics: ['Array', 'String', 'Searching', 'Dynamic Programming', 'Math', 'HashMap'].map((name) => ({
+      id: `topic-${name.toLowerCase().replace(/\s+/g, '-')}`,
+      name,
+      slug: name.toLowerCase().replace(/\s+/g, '-'),
+    })),
+    pages: [],
+    notifications: [],
+    settings: { siteName: 'Comm Platform', supportEmail: 'support@example.com', maintenanceMessage: '' },
   };
 }

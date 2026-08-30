@@ -1,8 +1,10 @@
 import {
+  getMockCatalog,
   getMockDashboard,
   getMockQuestion,
   getAdjacentQuestionIds,
   listMockQuestions,
+  type CatalogPayload,
   type DashboardStats,
   type LanguageKey,
   type QuestionDetail,
@@ -23,6 +25,8 @@ export async function fetchQuestions(params: Record<string, string | number | un
       difficulty: params.difficulty as string | undefined,
       topic: params.topic as string | undefined,
       status: params.status as string | undefined,
+      skill: params.skill as string | undefined,
+      level: params.level as string | undefined,
       page: Number(params.page ?? 1),
       pageSize: Number(params.pageSize ?? 20),
     });
@@ -41,6 +45,11 @@ export async function fetchQuestion(id: number): Promise<QuestionDetailResponse>
     return { ...question, navigation: getAdjacentQuestionIds(id) };
   }
   return apiFetch(`/questions/${id}`);
+}
+
+export async function fetchCatalog(): Promise<CatalogPayload> {
+  if (USE_MOCK_API) return getMockCatalog();
+  return apiFetch('/catalog');
 }
 
 export async function fetchDashboard(): Promise<DashboardStats> {

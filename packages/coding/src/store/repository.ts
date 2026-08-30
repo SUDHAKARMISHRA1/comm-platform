@@ -26,6 +26,7 @@ import {
   isSupabasePersistenceEnabled,
   listProgressForUser,
   listSubmissionRecords,
+  listAllSubmissionRecords,
   upsertProgress,
 } from './supabase-user-data';
 
@@ -47,23 +48,31 @@ async function loadProgressMap(userId: string) {
   return map;
 }
 
-function toSummary(q: QuestionRecord, status: QuestionStatus): QuestionSummary {
+function toSummary(q: QuestionRecord, status: QuestionStatus, skillName?: string, levelName?: string): QuestionSummary {
   return {
     id: q.id,
     title: q.title,
     slug: q.slug,
     difficulty: q.difficulty,
+    skillId: q.skillId,
+    skillName,
+    levelId: q.levelId,
+    levelName,
     topics: q.topics,
     status,
   };
 }
 
-function toDetail(q: QuestionRecord, status: QuestionStatus): QuestionDetail {
+function toDetail(q: QuestionRecord, status: QuestionStatus, skillName?: string, levelName?: string): QuestionDetail {
   return {
     id: q.id,
     title: q.title,
     slug: q.slug,
     difficulty: q.difficulty,
+    skillId: q.skillId,
+    skillName,
+    levelId: q.levelId,
+    levelName,
     description: q.description,
     inputFormat: q.inputFormat,
     outputFormat: q.outputFormat,
@@ -141,16 +150,25 @@ export async function saveQuestion(
   input: Omit<QuestionRecord, 'id' | 'createdAt' | 'updatedAt'> & { id?: number },
 ) {
   return mutateStore((data) => {
+    if (!data.skills.length) throw new Error('Create at least one skill before adding a problem.');
+    if (!data.levels.length) throw new Error('Create at least one level before adding a problem.');
+    if (!input.skillId) throw new Error('Every problem must be bound to one skill.');
+    if (!input.levelId) throw new Error('Every problem must have a level.');
+    const skill = data.skills.find((s) => s.id === input.skillId);
+    const level = data.levels.find((l) => l.id === input.levelId);
+    if (!skill) throw new Error('Selected skill was not found.');
+    if (!level) throw new Error('Selected level was not found.');
     const now = new Date().toISOString();
+    const payload = { ...input, difficulty: level.band };
     if (input.id) {
       const idx = data.questions.findIndex((q) => q.id === input.id);
       if (idx === -1) throw new Error('Question not found');
-      data.questions[idx] = { ...data.questions[idx]!, ...input, id: input.id, updatedAt: now };
+      data.questions[idx] = { ...data.questions[idx]!, ...payload, id: input.id, updatedAt: now };
       return data.questions[idx]!;
     }
     const nextId = data.questions.reduce((max, q) => Math.max(max, q.id), 0) + 1;
     const row: QuestionRecord = {
-      ...input,
+      ...payload,
       id: nextId,
       slug: input.slug || slugify(input.title),
       createdAt: now,
@@ -181,7 +199,16 @@ export async function reorderQuestions(practiceSetId: string, ids: number[]) {
 
 export async function listQuestionsForUser(
   userId: string,
-  filters: { q?: string; difficulty?: string; topic?: string; status?: string; page?: number; pageSize?: number },
+  filters: {
+    q?: string;
+    difficulty?: string;
+    topic?: string;
+    status?: string;
+    skill?: string;
+    level?: string;
+    page?: number;
+    pageSize?: number;
+  },
 ) {
   const data = await readStore();
   const pmap = await loadProgressMap(userId);
@@ -197,6 +224,8 @@ export async function listQuestionsForUser(
     );
   }
   if (filters.difficulty) items = items.filter((q) => q.difficulty === filters.difficulty);
+  if (filters.skill) items = items.filter((q) => q.skillId === filters.skill || q.skillId === data.skills.find((s) => s.slug === filters.skill)?.id);
+  if (filters.level) items = items.filter((q) => q.levelId === filters.level || q.difficulty === filters.level);
   if (filters.topic) items = items.filter((q) => q.topics.some((t) => t.toLowerCase() === filters.topic!.toLowerCase()));
   if (filters.status && filters.status !== 'ALL') {
     items = items.filter((q) => (pmap.get(q.id) ?? 'NOT_ATTEMPTED') === filters.status);
@@ -208,7 +237,14 @@ export async function listQuestionsForUser(
   const slice = items.slice((page - 1) * pageSize, page * pageSize);
 
   return {
-    questions: slice.map((q) => toSummary(q, pmap.get(q.id) ?? 'NOT_ATTEMPTED')),
+    questions: slice.map((q) =>
+      toSummary(
+        q,
+        pmap.get(q.id) ?? 'NOT_ATTEMPTED',
+        data.skills.find((s) => s.id === q.skillId)?.name,
+        data.levels.find((l) => l.id === q.levelId)?.name,
+      ),
+    ),
     pagination: { page, pageSize, total },
   };
 }
@@ -221,7 +257,12 @@ export async function getQuestionForUser(userId: string, id: number) {
   const ids = data.questions.filter((x) => x.published).sort((a, b) => a.sequence - b.sequence).map((x) => x.id);
   const idx = ids.indexOf(id);
   return {
-    ...toDetail(q, pmap.get(id) ?? 'NOT_ATTEMPTED'),
+    ...toDetail(
+      q,
+      pmap.get(id) ?? 'NOT_ATTEMPTED',
+      data.skills.find((s) => s.id === q.skillId)?.name,
+      data.levels.find((l) => l.id === q.levelId)?.name,
+    ),
     navigation: { prev: idx > 0 ? (ids[idx - 1] ?? null) : null, next: idx < ids.length - 1 ? (ids[idx + 1] ?? null) : null },
     codeTemplates: q.codeTemplates,
   };
@@ -231,7 +272,14 @@ export async function getDashboardForUser(userId: string): Promise<DashboardStat
   const data = await readStore();
   const published = data.questions.filter((q) => q.published);
   const pmap = await loadProgressMap(userId);
-  const summaries = published.map((q) => toSummary(q, pmap.get(q.id) ?? 'NOT_ATTEMPTED'));
+  const summaries = published.map((q) =>
+    toSummary(
+      q,
+      pmap.get(q.id) ?? 'NOT_ATTEMPTED',
+      data.skills.find((s) => s.id === q.skillId)?.name,
+      data.levels.find((l) => l.id === q.levelId)?.name,
+    ),
+  );
   const solved = summaries.filter((q) => q.status === 'SOLVED').length;
   const attempted = summaries.filter((q) => q.status === 'ATTEMPTED').length;
 
@@ -290,6 +338,29 @@ export async function listSubmissionsForUser(userId: string) {
         status: s.status,
         executionTime: s.executionTime,
         memory: s.memory,
+        createdAt: s.createdAt,
+      };
+    });
+}
+
+export async function listAdminSubmissions() {
+  const data = await readStore();
+  const stored = isSupabasePersistenceEnabled() ? await listAllSubmissionRecords() : data.submissions;
+  return stored
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((s) => {
+      const q = data.questions.find((x) => x.id === s.questionId);
+      const score = s.totalTestCases ? Math.round((s.passedTestCases / s.totalTestCases) * 100) : 0;
+      return {
+        id: s.id,
+        userId: s.userId,
+        questionId: s.questionId,
+        questionTitle: q?.title ?? `Question ${s.questionId}`,
+        language: s.language,
+        status: s.status,
+        passedTestCases: s.passedTestCases,
+        totalTestCases: s.totalTestCases,
+        score,
         createdAt: s.createdAt,
       };
     });

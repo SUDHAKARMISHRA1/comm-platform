@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
     difficulty: searchParams.get('difficulty') ?? undefined,
     topic: searchParams.get('topic') ?? undefined,
     status: searchParams.get('status') ?? undefined,
+    skill: searchParams.get('skill') ?? undefined,
+    level: searchParams.get('level') ?? undefined,
     page: Number(searchParams.get('page') ?? '1'),
     pageSize: Number(searchParams.get('pageSize') ?? '20'),
   });

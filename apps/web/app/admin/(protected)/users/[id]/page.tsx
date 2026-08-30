@@ -17,7 +17,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
-      <a href="/admin" className="text-sm text-[var(--color-primary)]">
+      <a href="/admin/users" className="text-sm text-[var(--color-primary)]">
         Back to users
       </a>
       <h1 className="mt-4 text-3xl font-semibold">{user.displayName ?? user.username}</h1>

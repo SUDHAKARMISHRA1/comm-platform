@@ -18,6 +18,10 @@ export type QuestionSummary = {
   title: string;
   slug: string;
   difficulty: Difficulty;
+  skillId?: string;
+  skillName?: string;
+  levelId?: string;
+  levelName?: string;
   topics: string[];
   status: QuestionStatus;
 };
@@ -33,6 +37,10 @@ export type QuestionDetail = {
   title: string;
   slug: string;
   difficulty: Difficulty;
+  skillId?: string;
+  skillName?: string;
+  levelId?: string;
+  levelName?: string;
   description: string;
   inputFormat: string;
   outputFormat: string;
@@ -141,3 +149,20 @@ export type SubmissionPollResponse = {
   status: 'QUEUED' | 'RUNNING' | 'COMPLETED';
   result?: ExecutionResult;
 };
+
+export type CatalogPayload = {
+  skills: { id: string; name: string; slug: string; languageKey: LanguageKey | null }[];
+  levels: { id: string; name: string; slug: string; band: Difficulty }[];
+  topics: { id: string; name: string; slug: string }[];
+  pages: { id: string; title: string; slug: string; body: string }[];
+  notifications: {
+    id: string;
+    channel: 'email' | 'push';
+    title: string;
+    body: string;
+    audience: 'all' | 'active' | 'inactive';
+    publishedAt: string | null;
+  }[];
+  settings: { siteName: string; supportEmail: string; maintenanceMessage: string };
+};
+
