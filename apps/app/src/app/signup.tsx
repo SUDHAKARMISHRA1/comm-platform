@@ -27,7 +27,7 @@ export default function SignUpScreen() {
     if (!isSupabaseConfigured()) {
       if (isDemoAuthEnabled()) {
         signInDemo(values.email);
-        router.replace('/home');
+        router.replace('/highlights');
         return;
       }
       router.replace('/setup');
@@ -46,7 +46,7 @@ export default function SignUpScreen() {
       setSuccess(result.message);
       return;
     }
-    router.replace('/home');
+    router.replace('/highlights');
   });
 
   return (

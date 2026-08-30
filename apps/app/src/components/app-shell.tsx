@@ -19,22 +19,22 @@ export function AppShell({ children }: { children: ReactNode }) {
     } else {
       await getSupabase().auth.signOut();
     }
-    router.replace('/login');
+    router.replace('/home');
   }
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="link" onPress={() => router.replace('/home')} style={styles.brand}>
+        <Pressable accessibilityRole="link" onPress={() => router.replace(session ? '/highlights' : '/home')} style={styles.brand}>
           <View style={styles.brandMark}><View style={styles.brandDot} /></View>
           <Text style={styles.brandName}>Comm Platform</Text>
         </Pressable>
         <View style={styles.navigation}>
-          <Pressable accessibilityRole="link" onPress={() => router.replace('/home')} style={styles.navButton}>
-            <Text style={styles.navText}>Home</Text>
-          </Pressable>
           {session ? (
             <>
+              <Pressable accessibilityRole="link" onPress={() => router.replace('/highlights')} style={styles.navButton}>
+                <Text style={styles.navText}>Highlights</Text>
+              </Pressable>
               <Pressable accessibilityRole="link" onPress={() => router.push('/dashboard')} style={styles.navButton}>
                 <Text style={styles.navText}>Dashboard</Text>
               </Pressable>
@@ -53,6 +53,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </>
           ) : (
             <>
+              <Pressable accessibilityRole="link" onPress={() => router.replace('/home')} style={styles.navButton}>
+                <Text style={styles.navText}>Home</Text>
+              </Pressable>
               <Pressable accessibilityRole="link" onPress={() => router.push('/login')} style={styles.navButton}>
                 <Text style={styles.navText}>Sign in</Text>
               </Pressable>

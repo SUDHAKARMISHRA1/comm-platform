@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 export default function ForbiddenPage() {
   return (
     <main className="mx-auto flex min-h-full max-w-lg flex-col justify-center px-6 py-24">
@@ -9,9 +7,9 @@ export default function ForbiddenPage() {
         You are signed in, but this account is not in <code>user_roles</code> as an admin. User data was
         not loaded.
       </p>
-      <Link className="mt-8 text-[var(--color-primary)]" href="/">
-        Back to the public site
-      </Link>
+      <a className="mt-8 text-[var(--color-primary)]" href={process.env.NEXT_PUBLIC_PRODUCT_APP_URL ?? 'http://localhost:8081'}>
+        Back to Comm Platform
+      </a>
     </main>
   );
 }

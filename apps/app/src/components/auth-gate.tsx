@@ -28,12 +28,16 @@ export function AuthGate() {
     return <Redirect href="/setup" />;
   }
 
+  if (authReady && !session && String(first) === 'highlights') {
+    return <Redirect href="/home" />;
+  }
+
   if (authReady && !session && !onPublicScreen && first !== 'setup') {
     return <Redirect href="/login" />;
   }
 
-  if (authReady && session && AUTH_SEGMENTS.has(String(first))) {
-    return <Redirect href="/home" />;
+  if (authReady && session && (AUTH_SEGMENTS.has(String(first)) || String(first) === 'home')) {
+    return <Redirect href="/highlights" />;
   }
 
   return (

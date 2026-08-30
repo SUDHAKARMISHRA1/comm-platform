@@ -33,8 +33,8 @@ export default function ResetPasswordScreen() {
       return;
     }
     setTone('success');
-    setMessage('Password updated. Redirecting home…');
-    router.replace('/home');
+    setMessage('Password updated. Redirecting…');
+    router.replace('/highlights');
   });
 
   return (

@@ -20,5 +20,5 @@ export default function IndexScreen() {
     return <Redirect href="/setup" />;
   }
 
-  return <Redirect href={session ? '/home' : '/login'} />;
+  return <Redirect href={session ? '/highlights' : '/home'} />;
 }

@@ -20,6 +20,10 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const origin = request.headers.get('origin');
 
+  if (pathname === '/' || pathname === '') {
+    return NextResponse.redirect(new URL('/admin/login', request.url));
+  }
+
   if (pathname.startsWith('/api/')) {
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, { status: 204, headers: corsHeaders(origin) });
@@ -37,5 +41,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin', '/admin/:path*', '/api/:path*'],
+  matcher: ['/', '/admin', '/admin/:path*', '/api/:path*'],
 };
