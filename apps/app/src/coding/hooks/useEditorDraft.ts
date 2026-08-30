@@ -13,30 +13,30 @@ function storageKey(questionId: number, language: LanguageKey) {
 
 export function useEditorDraft(questionId: number, language: LanguageKey, defaultCode: string) {
   const [code, setCode] = useState(defaultCode);
-  const [restored, setRestored] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
       setCode(defaultCode);
+      setReady(true);
       return;
     }
     const saved = getWebStorageItem(storageKey(questionId, language));
     setCode(saved ?? defaultCode);
-    setRestored(Boolean(saved));
+    setReady(true);
   }, [questionId, language, defaultCode]);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
+    if (Platform.OS !== 'web' || !ready) return;
     setWebStorageItem(storageKey(questionId, language), code);
-  }, [code, questionId, language]);
+  }, [code, questionId, language, ready]);
 
   function resetDraft() {
     setCode(defaultCode);
     if (Platform.OS === 'web') {
       removeWebStorageItem(storageKey(questionId, language));
     }
-    setRestored(false);
   }
 
-  return { code, setCode, resetDraft, restored };
+  return { code, setCode, resetDraft };
 }

@@ -89,16 +89,15 @@ export type Judge0Status = {
 
 export function mapJudge0Status(data: Judge0Status): ExecutionResult {
   const desc = data.status?.description ?? 'Internal Error';
-  const statusMap: Record<string, ExecutionStatus> = {
-    Accepted: 'ACCEPTED',
-    'Wrong Answer': 'WRONG_ANSWER',
-    'Compilation Error': 'COMPILATION_ERROR',
-    'Runtime Error (NZEC)': 'RUNTIME_ERROR',
-    'Time Limit Exceeded': 'TIME_LIMIT_EXCEEDED',
-    'Memory Limit Exceeded': 'MEMORY_LIMIT_EXCEEDED',
-  };
+  let status: ExecutionStatus = 'INTERNAL_ERROR';
+  if (desc === 'Accepted') status = 'ACCEPTED';
+  else if (desc === 'Wrong Answer') status = 'WRONG_ANSWER';
+  else if (desc.includes('Compilation')) status = 'COMPILATION_ERROR';
+  else if (desc.includes('Time Limit')) status = 'TIME_LIMIT_EXCEEDED';
+  else if (desc.includes('Memory Limit')) status = 'MEMORY_LIMIT_EXCEEDED';
+  else if (desc.includes('Runtime')) status = 'RUNTIME_ERROR';
   return {
-    status: statusMap[desc] ?? 'INTERNAL_ERROR',
+    status,
     stdout: data.stdout ?? '',
     stderr: data.stderr ?? '',
     compileOutput: data.compile_output ?? '',
@@ -157,4 +156,92 @@ export async function submitToJudge0(
 
 export function validateLanguage(lang: string): lang is LanguageKey {
   return lang === 'java' || lang === 'c' || lang === 'cpp';
+}
+
+const PISTON_LANGUAGES: Record<LanguageKey, { language: string; file: string }> = {
+  java: { language: 'java', file: 'Main.java' },
+  c: { language: 'c', file: 'main.c' },
+  cpp: { language: 'c++', file: 'main.cpp' },
+};
+
+type PistonResponse = {
+  compile?: { stdout?: string; stderr?: string; output?: string; code?: number; signal?: string | null };
+  run?: { stdout?: string; stderr?: string; output?: string; code?: number; signal?: string | null };
+  message?: string;
+};
+
+export function mapPistonResult(data: PistonResponse): ExecutionResult {
+  const compile = data.compile;
+  const run = data.run;
+  if (compile && compile.code !== 0 && compile.code != null) {
+    return {
+      status: 'COMPILATION_ERROR',
+      stdout: '',
+      stderr: compile.stderr ?? '',
+      compileOutput: (compile.stderr || compile.stdout || compile.output || '').trim(),
+      executionTime: 0,
+      memory: 0,
+    };
+  }
+  const signal = run?.signal ?? '';
+  if (signal === 'SIGKILL' || signal === 'SIGXCPU') {
+    return {
+      status: 'TIME_LIMIT_EXCEEDED',
+      stdout: run?.stdout ?? '',
+      stderr: run?.stderr ?? 'Time limit exceeded',
+      compileOutput: '',
+      executionTime: 0,
+      memory: 0,
+    };
+  }
+  if (run && run.code !== 0 && run.code != null) {
+    return {
+      status: 'RUNTIME_ERROR',
+      stdout: run.stdout ?? '',
+      stderr: (run.stderr || run.output || 'Runtime error').trim(),
+      compileOutput: '',
+      executionTime: 0,
+      memory: 0,
+    };
+  }
+  return {
+    status: 'ACCEPTED',
+    stdout: run?.stdout ?? '',
+    stderr: run?.stderr ?? '',
+    compileOutput: '',
+    executionTime: 0.1,
+    memory: 12000,
+  };
+}
+
+export async function executeWithPiston(
+  language: LanguageKey,
+  sourceCode: string,
+  stdin: string,
+  baseUrl: string,
+): Promise<ExecutionResult> {
+  const spec = PISTON_LANGUAGES[language];
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20_000);
+  try {
+    const res = await fetch(`${baseUrl.replace(/\/$/, '')}/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        language: spec.language,
+        version: '*',
+        files: [{ name: spec.file, content: sourceCode }],
+        stdin,
+        compile_timeout: 10_000,
+        run_timeout: 5_000,
+      }),
+    });
+    if (!res.ok) throw new Error(`Piston HTTP ${res.status}`);
+    const data = (await res.json()) as PistonResponse;
+    if (data.message && !data.run && !data.compile) throw new Error(data.message);
+    return mapPistonResult(data);
+  } finally {
+    clearTimeout(timer);
+  }
 }

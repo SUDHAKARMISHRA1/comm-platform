@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
-import type { ExecutionResult, ExecutionStatus } from '@comm-platform/coding';
+import type { ExecutionResult, ExecutionStatus, RunTestsResponse, SubmitCodeResponse } from '@comm-platform/coding';
 
 const STATUS_LABELS: Record<ExecutionStatus, string> = {
   QUEUED: 'Queued',
@@ -20,19 +20,23 @@ type Tab = 'result' | 'output' | 'error' | 'input';
 
 type Props = {
   runResult?: ExecutionResult | null;
-  submitResult?: {
-    status: ExecutionStatus;
-    passedTestCases: number;
-    totalTestCases: number;
-    executionTime: string;
-    memory: string;
-    testCaseResults?: { index: number; passed: boolean; hidden: boolean }[];
-  } | null;
+  submitResult?: SubmitCodeResponse | null;
+  testResult?: RunTestsResponse | null;
   customInput: string;
+  onCustomInputChange: (value: string) => void;
+  onClear: () => void;
   loading?: boolean;
 };
 
-export function ConsolePanel({ runResult, submitResult, customInput, loading }: Props) {
+export function ConsolePanel({
+  runResult,
+  submitResult,
+  testResult,
+  customInput,
+  onCustomInputChange,
+  onClear,
+  loading,
+}: Props) {
   const [tab, setTab] = useState<Tab>('result');
   const [collapsed, setCollapsed] = useState(false);
 
@@ -42,6 +46,10 @@ export function ConsolePanel({ runResult, submitResult, customInput, loading }: 
     { key: 'error', label: 'Error' },
     { key: 'input', label: 'Input' },
   ];
+
+  const stdout = runResult?.stdout || testResult?.stdout || '';
+  const stderr = runResult?.compileOutput || runResult?.stderr || testResult?.compileOutput || testResult?.stderr || '';
+  const verdict = submitResult ?? testResult;
 
   return (
     <View style={styles.wrap}>
@@ -53,50 +61,79 @@ export function ConsolePanel({ runResult, submitResult, customInput, loading }: 
             </Pressable>
           ))}
         </View>
-        <Pressable onPress={() => setCollapsed((c) => !c)}>
-          <Text style={styles.collapse}>{collapsed ? 'Expand' : 'Collapse'}</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable onPress={onClear} accessibilityRole="button">
+            <Text style={styles.collapse}>Clear</Text>
+          </Pressable>
+          <Pressable onPress={() => setCollapsed((c) => !c)}>
+            <Text style={styles.collapse}>{collapsed ? 'Expand' : 'Collapse'}</Text>
+          </Pressable>
+        </View>
       </View>
       {!collapsed ? (
         <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
           {loading ? <Text style={styles.muted}>⟳ Running code...</Text> : null}
-          {tab === 'input' ? <Text style={styles.mono}>{customInput || 'No custom input'}</Text> : null}
-          {tab === 'output' && runResult ? (
-            <Text style={styles.mono}>{runResult.stdout || '—'}</Text>
+          {tab === 'input' ? (
+            <TextInput
+              multiline
+              value={customInput}
+              onChangeText={onCustomInputChange}
+              placeholder="Enter custom input for Run Code"
+              placeholderTextColor={colors.textMuted}
+              style={styles.inputArea}
+              textAlignVertical="top"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
           ) : null}
-          {tab === 'error' && runResult ? (
-            <Text style={[styles.mono, styles.error]}>
-              {runResult.compileOutput || runResult.stderr || '—'}
+          {tab === 'output' ? (
+            <Text style={styles.mono}>
+              {loading
+                ? ''
+                : stdout ||
+                  submitResult?.testCaseResults?.find((tc) => !tc.hidden && tc.stdout)?.stdout ||
+                  'No output yet.'}
+            </Text>
+          ) : null}
+          {tab === 'error' ? (
+            <Text style={[styles.mono, stderr ? styles.error : undefined]}>
+              {loading ? '' : stderr || 'No errors.'}
             </Text>
           ) : null}
           {tab === 'result' ? (
             <>
-              {submitResult ? (
+              {verdict ? (
                 <View style={styles.block}>
-                  <Text style={[styles.status, submitResult.status === 'ACCEPTED' ? styles.ok : styles.bad]}>
-                    {STATUS_LABELS[submitResult.status]}
+                  <Text style={[styles.status, verdict.status === 'ACCEPTED' ? styles.ok : styles.bad]}>
+                    {STATUS_LABELS[verdict.status]}
                   </Text>
                   <Text style={styles.meta}>
-                    {submitResult.passedTestCases} / {submitResult.totalTestCases} Test Cases Passed
+                    {verdict.passedTestCases} / {verdict.totalTestCases} Test Cases Passed
                   </Text>
-                  <Text style={styles.meta}>Runtime: {submitResult.executionTime} · Memory: {submitResult.memory}</Text>
-                  {submitResult.testCaseResults?.map((tc) => (
-                    <Text key={tc.index} style={tc.passed ? styles.ok : styles.bad}>
-                      {tc.passed ? '✓' : '✕'} Test Case {tc.index}
-                      {!tc.passed && tc.hidden ? ' — Expected output does not match.' : ''}
-                    </Text>
+                  <Text style={styles.meta}>Runtime: {verdict.executionTime} · Memory: {verdict.memory}</Text>
+                  {verdict.testCaseResults?.map((tc) => (
+                    <View key={tc.index} style={styles.case}>
+                      <Text style={tc.passed ? styles.ok : styles.bad}>
+                        {tc.passed ? '✓' : '✕'} Test Case {tc.index}
+                        {tc.hidden ? ' (hidden)' : ''}
+                        {!tc.passed && !tc.hidden ? ' — output does not match expected.' : ''}
+                      </Text>
+                      {!tc.hidden && tc.stdout != null && tc.stdout !== '' ? (
+                        <Text style={styles.mono}>Your output: {tc.stdout}</Text>
+                      ) : null}
+                    </View>
                   ))}
                 </View>
               ) : null}
               {runResult ? (
                 <View style={styles.block}>
-                  <Text style={styles.meta}>Status: {STATUS_LABELS[runResult.status]}</Text>
+                  <Text style={styles.meta}>Custom run status: {STATUS_LABELS[runResult.status]}</Text>
                   <Text style={styles.meta}>Execution Time: {runResult.executionTime.toFixed(2)} sec</Text>
-                  <Text style={styles.meta}>Memory: {(runResult.memory / 1024).toFixed(0)} KB</Text>
+                  <Text style={styles.meta}>Memory: {Math.max(0, runResult.memory).toFixed(0)} KB</Text>
                 </View>
               ) : null}
-              {!runResult && !submitResult && !loading ? (
-                <Text style={styles.muted}>Run or submit code to see results.</Text>
+              {!runResult && !verdict && !loading ? (
+                <Text style={styles.muted}>Run code, run tests, or submit to see results.</Text>
               ) : null}
             </>
           ) : null}
@@ -109,20 +146,23 @@ export function ConsolePanel({ runResult, submitResult, customInput, loading }: 
 const styles = StyleSheet.create({
   wrap: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface, minHeight: 120 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: colors.border, paddingHorizontal: space.sm },
-  tabs: { flexDirection: 'row', flexWrap: 'wrap' },
+  tabs: { flexDirection: 'row', flexWrap: 'wrap', flex: 1 },
   tab: { paddingHorizontal: space.sm, paddingVertical: space.sm },
   tabActive: { borderBottomWidth: 2, borderColor: colors.primary },
   tabText: { fontSize: type.small, color: colors.textMuted },
   tabTextActive: { color: colors.primary, fontWeight: '700' },
+  headerActions: { flexDirection: 'row', alignItems: 'center' },
   collapse: { fontSize: type.small, color: colors.primary, fontWeight: '600', padding: space.sm },
-  body: { maxHeight: 220 },
+  body: { maxHeight: 260 },
   bodyContent: { padding: space.md, gap: space.sm },
   mono: { fontFamily: Platform.OS === 'web' ? 'monospace' : undefined, fontSize: type.small, color: colors.text },
   muted: { color: colors.textMuted, fontSize: type.small },
   block: { gap: space.xs },
+  case: { gap: 2 },
   status: { fontSize: type.body, fontWeight: '700' },
   meta: { fontSize: type.small, color: colors.textMuted },
   ok: { color: colors.success, fontSize: type.small },
   bad: { color: colors.danger, fontSize: type.small },
   error: { color: colors.danger },
+  inputArea: { minHeight: 88, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: space.sm, backgroundColor: colors.surfaceMuted, color: colors.text, textAlignVertical: 'top' },
 });

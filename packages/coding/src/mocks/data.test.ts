@@ -49,3 +49,59 @@ describe('mock execution', () => {
     expect(result.totalTestCases).toBeGreaterThan(0);
   });
 });
+
+describe('piston mapping', () => {
+  it('maps compile errors', async () => {
+    const { mapPistonResult } = await import('../execution');
+    const result = mapPistonResult({
+      compile: { code: 1, stderr: 'error: expected ;' },
+    });
+    expect(result.status).toBe('COMPILATION_ERROR');
+    expect(result.compileOutput).toContain('expected');
+  });
+
+  it('maps successful run', async () => {
+    const { mapPistonResult } = await import('../execution');
+    const result = mapPistonResult({
+      compile: { code: 0, stdout: '' },
+      run: { code: 0, stdout: '15\n', stderr: '' },
+    });
+    expect(result.status).toBe('ACCEPTED');
+    expect(result.stdout).toContain('15');
+  });
+});
+
+describe('local java execution', () => {
+  it('compiles and runs java', async () => {
+    const { executeLocally } = await import('../local-execute');
+    const result = await executeLocally(
+      'java',
+      'public class Main { public static void main(String[] args) { System.out.println(15); } }',
+      '',
+    );
+    expect(result.status).toBe('ACCEPTED');
+    expect(result.stdout.trim()).toBe('15');
+  });
+
+  it('reports compile errors', async () => {
+    const { executeLocally } = await import('../local-execute');
+    const result = await executeLocally('java', 'public class Main {', '');
+    expect(result.status).toBe('COMPILATION_ERROR');
+    expect(result.compileOutput.length).toBeGreaterThan(0);
+  });
+
+  it('uses custom stdin', async () => {
+    const { executeLocally } = await import('../local-execute');
+    const src = `import java.util.*;
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.hasNextLine() ? sc.nextLine() : "";
+        System.out.println(new StringBuilder(s).reverse());
+    }
+}`;
+    const result = await executeLocally('java', src, 'hello');
+    expect(result.status).toBe('ACCEPTED');
+    expect(result.stdout.trim()).toBe('olleh');
+  }, 15_000);
+});

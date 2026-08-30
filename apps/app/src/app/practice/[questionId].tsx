@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -13,12 +13,12 @@ import {
   View,
 } from 'react-native';
 
-import type { SubmitCodeResponse, ExecutionResult, LanguageKey } from '@comm-platform/coding';
+import type { SubmitCodeResponse, ExecutionResult, LanguageKey, RunTestsResponse } from '@comm-platform/coding';
 import { LANGUAGES } from '@comm-platform/coding';
 import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
-import { runCode, submitCode } from '@/coding/api/executionApi';
+import { runCode, runTests, submitCode } from '@/coding/api/executionApi';
 import { fetchQuestion } from '@/coding/api/questionApi';
 import { CodeEditor } from '@/coding/components/CodeEditor';
 import { ConsolePanel } from '@/coding/components/ConsolePanel';
@@ -29,6 +29,7 @@ import { ApiError } from '@/coding/api/client';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function QuestionDetailScreen() {
+  const queryClient = useQueryClient();
   const { session, loading: authLoading } = useAuth();
   const { questionId } = useLocalSearchParams<{ questionId: string }>();
   const id = Number(questionId);
@@ -46,28 +47,82 @@ export default function QuestionDetailScreen() {
     question?.codeTemplates?.[language] ?? LANGUAGES[language].template;
   const { code, setCode, resetDraft } = useEditorDraft(id, language, template);
   const [customInput, setCustomInput] = useState('');
+  const [useCustomInput, setUseCustomInput] = useState(true);
   const [runResult, setRunResult] = useState<ExecutionResult | null>(null);
+  const [testResult, setTestResult] = useState<RunTestsResponse | null>(null);
   const [submitResult, setSubmitResult] = useState<SubmitCodeResponse | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     setRunResult(null);
+    setTestResult(null);
     setSubmitResult(null);
   }, [language, id]);
 
+  function invalidateProgress() {
+    void queryClient.invalidateQueries({ queryKey: ['question', id] });
+    void queryClient.invalidateQueries({ queryKey: ['questions'] });
+    void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    void queryClient.invalidateQueries({ queryKey: ['submissions'] });
+  }
+
+  function clearConsole() {
+    setRunResult(null);
+    setTestResult(null);
+    setSubmitResult(null);
+    setApiError(null);
+    setCustomInput('');
+  }
+
   const runMutation = useMutation({
-    mutationFn: () => runCode({ language, sourceCode: code, stdin: customInput }),
-    onMutate: () => { setApiError(null); setSubmitResult(null); },
-    onSuccess: setRunResult,
+    mutationFn: () =>
+      runCode({
+        language,
+        sourceCode: code,
+        stdin: useCustomInput ? customInput : question?.examples[0]?.input ?? '',
+        questionId: id,
+      }),
+    onMutate: () => {
+      setApiError(null);
+      setSubmitResult(null);
+      setTestResult(null);
+    },
+    onSuccess: (result) => {
+      setRunResult(result);
+      invalidateProgress();
+    },
     onError: (e) => setApiError(e instanceof ApiError ? e.message : 'Run failed'),
+  });
+
+  const testsMutation = useMutation({
+    mutationFn: () => runTests({ questionId: id, language, sourceCode: code }),
+    onMutate: () => {
+      setApiError(null);
+      setRunResult(null);
+      setSubmitResult(null);
+    },
+    onSuccess: (result) => {
+      setTestResult(result);
+      invalidateProgress();
+    },
+    onError: (e) => setApiError(e instanceof ApiError ? e.message : 'Test run failed'),
   });
 
   const submitMutation = useMutation({
     mutationFn: () => submitCode({ questionId: id, language, sourceCode: code }),
-    onMutate: () => { setApiError(null); setRunResult(null); },
-    onSuccess: setSubmitResult,
+    onMutate: () => {
+      setApiError(null);
+      setRunResult(null);
+      setTestResult(null);
+    },
+    onSuccess: (result) => {
+      setSubmitResult(result);
+      invalidateProgress();
+    },
     onError: (e) => setApiError(e instanceof ApiError ? e.message : 'Submit failed'),
   });
+
+  const pending = runMutation.isPending || testsMutation.isPending || submitMutation.isPending;
 
   if (!Number.isFinite(id)) {
     return (
@@ -131,40 +186,49 @@ export default function QuestionDetailScreen() {
         <Pressable onPress={resetDraft} style={styles.resetBtn}><Text style={styles.resetText}>Reset</Text></Pressable>
       </View>
       <CodeEditor language={language} value={code} onChange={setCode} onRun={() => runMutation.mutate()} />
-      <View style={styles.customInput}>
-        <Text style={styles.section}>Custom Input</Text>
-        <TextInput
-          multiline
-          value={customInput}
-          onChangeText={setCustomInput}
-          placeholder="Enter custom input for Run Code"
-          placeholderTextColor={colors.textMuted}
-          style={styles.inputArea}
-        />
-        <Pressable onPress={() => setCustomInput('')}><Text style={styles.link}>Clear</Text></Pressable>
-      </View>
+      <Pressable
+        onPress={() => setUseCustomInput((v) => !v)}
+        style={styles.customToggle}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: useCustomInput }}
+      >
+        <Text style={styles.customToggleText}>{useCustomInput ? '☑' : '☐'} Use custom input with Run Code</Text>
+      </Pressable>
+      {useCustomInput ? (
+        <View style={styles.customInput}>
+          <TextInput
+            multiline
+            value={customInput}
+            onChangeText={setCustomInput}
+            placeholder="Enter custom input for Run Code"
+            placeholderTextColor={colors.textMuted}
+            style={styles.inputArea}
+            autoCapitalize="none"
+            autoCorrect={false}
+            textAlignVertical="top"
+          />
+        </View>
+      ) : null}
       <View style={styles.actions}>
-        <Pressable
-          disabled={runMutation.isPending || submitMutation.isPending}
-          onPress={() => runMutation.mutate()}
-          style={[styles.btn, styles.btnSecondary]}
-        >
+        <Pressable disabled={pending} onPress={() => runMutation.mutate()} style={[styles.btn, styles.btnSecondary]}>
           <Text style={styles.btnSecondaryText}>{runMutation.isPending ? 'Running...' : 'Run Code'}</Text>
         </Pressable>
-        <Pressable
-          disabled={runMutation.isPending || submitMutation.isPending}
-          onPress={() => submitMutation.mutate()}
-          style={[styles.btn, styles.btnPrimary]}
-        >
+        <Pressable disabled={pending} onPress={() => testsMutation.mutate()} style={[styles.btn, styles.btnSecondary]}>
+          <Text style={styles.btnSecondaryText}>{testsMutation.isPending ? 'Testing...' : 'Run Tests'}</Text>
+        </Pressable>
+        <Pressable disabled={pending} onPress={() => submitMutation.mutate()} style={[styles.btn, styles.btnPrimary]}>
           <Text style={styles.btnPrimaryText}>{submitMutation.isPending ? 'Submitting...' : 'Submit Code'}</Text>
         </Pressable>
       </View>
       {apiError ? <Text style={styles.error}>{apiError}</Text> : null}
       <ConsolePanel
         runResult={runResult}
+        testResult={testResult}
         submitResult={submitResult}
         customInput={customInput}
-        loading={runMutation.isPending || submitMutation.isPending}
+        onCustomInputChange={setCustomInput}
+        onClear={clearConsole}
+        loading={pending}
       />
     </View>
   );
@@ -223,6 +287,8 @@ const styles = StyleSheet.create({
   resetBtn: { marginLeft: 'auto' as never },
   resetText: { fontSize: type.small, color: colors.primary, fontWeight: '600' },
   customInput: { gap: space.xs },
+  customToggle: { paddingVertical: space.xs },
+  customToggleText: { fontSize: type.small, color: colors.text, fontWeight: '600' },
   inputArea: { minHeight: 72, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: space.sm, backgroundColor: colors.surface, color: colors.text, textAlignVertical: 'top' },
   actions: { flexDirection: 'row', gap: space.sm },
   btn: { flex: 1, paddingVertical: space.sm + 2, borderRadius: radius.md, alignItems: 'center' },

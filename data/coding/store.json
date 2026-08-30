@@ -266,6 +266,64 @@
       "updatedAt": "2026-08-28T16:57:52.294Z"
     }
   ],
-  "progress": [],
-  "submissions": []
+  "progress": [
+    {
+      "userId": "07c925d3-e2e6-48f9-ad85-eb40e288db79",
+      "questionId": 2,
+      "status": "SOLVED",
+      "updatedAt": "2026-08-30T07:16:14.114Z"
+    },
+    {
+      "userId": "dcc66ea9-b724-452c-a407-923666d87151",
+      "questionId": 2,
+      "status": "SOLVED",
+      "updatedAt": "2026-08-30T07:36:00.726Z"
+    }
+  ],
+  "submissions": [
+    {
+      "id": "sub-1788075360726",
+      "userId": "dcc66ea9-b724-452c-a407-923666d87151",
+      "questionId": 2,
+      "language": "java",
+      "sourceCode": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n          Scanner sc = new Scanner(System.in);\n        String s = sc.hasNextLine() ? sc.nextLine() : \"\";\n        System.out.println(new StringBuilder(s).reverse());\n    }\n}",
+      "status": "ACCEPTED",
+      "passedTestCases": 1,
+      "totalTestCases": 1,
+      "executionTime": "2.21s",
+      "memory": "12 MB",
+      "testCaseResults": [
+        {
+          "index": 1,
+          "passed": true,
+          "hidden": false,
+          "stdout": "olleh\r\n",
+          "stderr": ""
+        }
+      ],
+      "createdAt": "2026-08-30T07:36:00.726Z"
+    },
+    {
+      "id": "sub-1788074174114",
+      "userId": "07c925d3-e2e6-48f9-ad85-eb40e288db79",
+      "questionId": 2,
+      "language": "java",
+      "sourceCode": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String s = sc.hasNextLine() ? sc.nextLine() : \"\";\n        System.out.println(new StringBuilder(s).reverse());\n    }\n}",
+      "status": "ACCEPTED",
+      "passedTestCases": 1,
+      "totalTestCases": 1,
+      "executionTime": "2.23s",
+      "memory": "12 MB",
+      "testCaseResults": [
+        {
+          "index": 1,
+          "passed": true,
+          "hidden": false,
+          "stdout": "olleh\r\n",
+          "stderr": ""
+        }
+      ],
+      "createdAt": "2026-08-30T07:16:14.114Z"
+    }
+  ]
 }

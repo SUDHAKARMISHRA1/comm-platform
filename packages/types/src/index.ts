@@ -118,6 +118,59 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_question_progress: {
+        Row: {
+          user_id: string;
+          question_id: number;
+          status: 'ATTEMPTED' | 'SOLVED';
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          question_id: number;
+          status: 'ATTEMPTED' | 'SOLVED';
+          updated_at?: string;
+        };
+        Update: {
+          status?: 'ATTEMPTED' | 'SOLVED';
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      code_submissions: {
+        Row: {
+          id: string;
+          user_id: string;
+          question_id: number;
+          language: string;
+          source_code: string;
+          status: string;
+          passed_test_cases: number;
+          total_test_cases: number;
+          execution_time: string;
+          memory: string;
+          test_case_results: unknown;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          user_id: string;
+          question_id: number;
+          language: string;
+          source_code: string;
+          status: string;
+          passed_test_cases?: number;
+          total_test_cases?: number;
+          execution_time?: string;
+          memory?: string;
+          test_case_results?: unknown;
+          created_at?: string;
+        };
+        Update: {
+          status?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       admin_user_overview: {

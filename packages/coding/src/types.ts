@@ -106,6 +106,14 @@ export type SubmitCodeRequest = {
   sourceCode: string;
 };
 
+export type TestCaseResult = {
+  index: number;
+  passed: boolean;
+  hidden: boolean;
+  stdout?: string;
+  stderr?: string;
+};
+
 export type SubmitCodeResponse = {
   submissionId: string;
   status: ExecutionStatus;
@@ -113,7 +121,19 @@ export type SubmitCodeResponse = {
   totalTestCases: number;
   executionTime: string;
   memory: string;
-  testCaseResults: { index: number; passed: boolean; hidden: boolean }[];
+  testCaseResults: TestCaseResult[];
+};
+
+export type RunTestsResponse = {
+  status: ExecutionStatus;
+  passedTestCases: number;
+  totalTestCases: number;
+  executionTime: string;
+  memory: string;
+  stdout: string;
+  stderr: string;
+  compileOutput: string;
+  testCaseResults: TestCaseResult[];
 };
 
 export type SubmissionPollResponse = {

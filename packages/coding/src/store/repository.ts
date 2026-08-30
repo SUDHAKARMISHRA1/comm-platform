@@ -6,17 +6,28 @@ import type {
   QuestionDetail,
   QuestionStatus,
   QuestionSummary,
+  RunTestsResponse,
   SubmitCodeResponse,
 } from '../types';
 import {
   compareOutput,
+  executeWithPiston,
   mockRunCode,
   submitToJudge0,
   validateLanguage,
 } from '../execution';
+import { executeLocally } from '../local-execute';
 import { getJudge0LanguageId } from '../languages';
 import type { PracticeSetRecord, QuestionRecord, SubmissionRecord } from '../schema';
 import { mutateStore, readStore } from './file-store';
+import {
+  getSubmissionRecord,
+  insertSubmission,
+  isSupabasePersistenceEnabled,
+  listProgressForUser,
+  listSubmissionRecords,
+  upsertProgress,
+} from './supabase-user-data';
 
 function slugify(text: string) {
   return text
@@ -25,9 +36,12 @@ function slugify(text: string) {
     .replace(/^-|-$/g, '');
 }
 
-function progressMap(userId: string, data: Awaited<ReturnType<typeof readStore>>) {
+async function loadProgressMap(userId: string) {
   const map = new Map<number, QuestionStatus>();
-  for (const p of data.progress.filter((r) => r.userId === userId)) {
+  const rows = isSupabasePersistenceEnabled()
+    ? await listProgressForUser(userId)
+    : (await readStore()).progress.filter((r) => r.userId === userId);
+  for (const p of rows) {
     map.set(p.questionId, p.status);
   }
   return map;
@@ -170,7 +184,7 @@ export async function listQuestionsForUser(
   filters: { q?: string; difficulty?: string; topic?: string; status?: string; page?: number; pageSize?: number },
 ) {
   const data = await readStore();
-  const pmap = progressMap(userId, data);
+  const pmap = await loadProgressMap(userId);
   let items = data.questions.filter((q) => q.published);
 
   if (filters.q) {
@@ -203,7 +217,7 @@ export async function getQuestionForUser(userId: string, id: number) {
   const data = await readStore();
   const q = data.questions.find((item) => item.id === id && item.published);
   if (!q) return null;
-  const pmap = progressMap(userId, data);
+  const pmap = await loadProgressMap(userId);
   const ids = data.questions.filter((x) => x.published).sort((a, b) => a.sequence - b.sequence).map((x) => x.id);
   const idx = ids.indexOf(id);
   return {
@@ -216,7 +230,7 @@ export async function getQuestionForUser(userId: string, id: number) {
 export async function getDashboardForUser(userId: string): Promise<DashboardStats> {
   const data = await readStore();
   const published = data.questions.filter((q) => q.published);
-  const pmap = progressMap(userId, data);
+  const pmap = await loadProgressMap(userId);
   const summaries = published.map((q) => toSummary(q, pmap.get(q.id) ?? 'NOT_ATTEMPTED'));
   const solved = summaries.filter((q) => q.status === 'SOLVED').length;
   const attempted = summaries.filter((q) => q.status === 'ATTEMPTED').length;
@@ -227,8 +241,10 @@ export async function getDashboardForUser(userId: string): Promise<DashboardStat
     return { difficulty: d, solved: done, total: all.length, percent: all.length ? Math.round((done / all.length) * 100) : 0 };
   };
 
-  const subs = data.submissions
-    .filter((s) => s.userId === userId)
+  const stored = isSupabasePersistenceEnabled()
+    ? await listSubmissionRecords(userId)
+    : data.submissions.filter((s) => s.userId === userId);
+  const subs = stored
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 5)
     .map((s) => {
@@ -259,8 +275,10 @@ export async function getDashboardForUser(userId: string): Promise<DashboardStat
 
 export async function listSubmissionsForUser(userId: string) {
   const data = await readStore();
-  return data.submissions
-    .filter((s) => s.userId === userId)
+  const stored = isSupabasePersistenceEnabled()
+    ? await listSubmissionRecords(userId)
+    : data.submissions.filter((s) => s.userId === userId);
+  return stored
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((s) => {
       const q = data.questions.find((x) => x.id === s.questionId);
@@ -279,7 +297,9 @@ export async function listSubmissionsForUser(userId: string) {
 
 export async function getSubmissionForUser(userId: string, id: string) {
   const data = await readStore();
-  const s = data.submissions.find((x) => x.id === id && x.userId === userId);
+  const s = isSupabasePersistenceEnabled()
+    ? await getSubmissionRecord(userId, id)
+    : data.submissions.find((x) => x.id === id && x.userId === userId) ?? null;
   if (!s) return null;
   const q = data.questions.find((x) => x.id === s.questionId);
   return {
@@ -297,12 +317,130 @@ async function executeCode(language: LanguageKey, sourceCode: string, stdin: str
   if (judge0Url) {
     return submitToJudge0(judge0Url, getJudge0LanguageId(language), sourceCode, stdin, process.env.JUDGE0_API_KEY);
   }
-  return mockRunCode(sourceCode, stdin);
+  try {
+    return await executeLocally(language, sourceCode, stdin);
+  } catch (err) {
+    const pistonUrl = process.env.PISTON_BASE_URL;
+    if (pistonUrl) {
+      return executeWithPiston(language, sourceCode, stdin, pistonUrl);
+    }
+    const message = err instanceof Error ? err.message : 'Compiler unavailable';
+    if (language !== 'java') {
+      return {
+        status: 'INTERNAL_ERROR',
+        stdout: '',
+        stderr: `${message}. Install gcc/g++, or configure JUDGE0_BASE_URL.`,
+        compileOutput: '',
+        executionTime: 0,
+        memory: 0,
+      };
+    }
+    return mockRunCode(sourceCode, stdin);
+  }
 }
 
-export async function runUserCode(language: string, sourceCode: string, stdin: string): Promise<ExecutionResult> {
+async function markAttempted(userId: string, questionId: number) {
+  const now = new Date().toISOString();
+  if (isSupabasePersistenceEnabled()) {
+    await upsertProgress({ userId, questionId, status: 'ATTEMPTED', updatedAt: now });
+    return;
+  }
+  await mutateStore((data) => {
+    const prog = data.progress.find((p) => p.userId === userId && p.questionId === questionId);
+    if (prog) {
+      if (prog.status !== 'SOLVED') prog.status = 'ATTEMPTED';
+      prog.updatedAt = now;
+    } else {
+      data.progress.push({ userId, questionId, status: 'ATTEMPTED', updatedAt: now });
+    }
+    return true;
+  });
+}
+
+export async function runUserCode(
+  language: string,
+  sourceCode: string,
+  stdin: string,
+  userId?: string,
+  questionId?: number,
+): Promise<ExecutionResult> {
   if (!validateLanguage(language)) throw new Error('Invalid language');
-  return executeCode(language, sourceCode, stdin);
+  const result = await executeCode(language, sourceCode, stdin);
+  if (userId && questionId) await markAttempted(userId, questionId);
+  return result;
+}
+
+export async function runSampleTests(
+  userId: string,
+  questionId: number,
+  language: string,
+  sourceCode: string,
+): Promise<RunTestsResponse> {
+  if (!validateLanguage(language)) throw new Error('Invalid language');
+  const q = await getQuestionRecord(questionId);
+  if (!q?.published) throw new Error('Question not found');
+
+  const tests = [...q.testCases].filter((t) => !t.hidden).sort((a, b) => a.sequence - b.sequence);
+  const sample = tests.length
+    ? tests
+    : q.examples.map((ex, i) => ({
+        input: ex.input,
+        expectedOutput: ex.output,
+        hidden: false,
+        sequence: i + 1,
+        id: `ex-${i}`,
+      }));
+
+  const results: RunTestsResponse['testCaseResults'] = [];
+  let passed = 0;
+  let totalTime = 0;
+  let maxMemory = 0;
+  let lastStdout = '';
+  let lastStderr = '';
+  let lastCompile = '';
+  let fatalStatus: ExecutionResult['status'] | null = null;
+
+  for (let i = 0; i < sample.length; i++) {
+    const test = sample[i]!;
+    const result = await executeCode(language, sourceCode, test.input);
+    totalTime += result.executionTime;
+    maxMemory = Math.max(maxMemory, result.memory);
+    lastStdout = result.stdout;
+    lastStderr = result.stderr;
+    lastCompile = result.compileOutput;
+    if (result.status === 'COMPILATION_ERROR' || result.status === 'INTERNAL_ERROR') {
+      fatalStatus = result.status;
+      results.push({
+        index: i + 1,
+        passed: false,
+        hidden: false,
+        stdout: result.stdout,
+        stderr: result.stderr || result.compileOutput,
+      });
+      break;
+    }
+    const ok = result.status === 'ACCEPTED' && compareOutput(result.stdout, test.expectedOutput);
+    if (ok) passed++;
+    results.push({ index: i + 1, passed: ok, hidden: false, stdout: result.stdout, stderr: result.stderr });
+  }
+
+  await markAttempted(userId, questionId);
+
+  const status =
+    fatalStatus ??
+    (sample.length === 0 ? 'INTERNAL_ERROR' : passed === sample.length ? 'ACCEPTED' : 'WRONG_ANSWER');
+
+  return {
+    status,
+    passedTestCases: passed,
+    totalTestCases: sample.length,
+    executionTime: `${totalTime.toFixed(2)}s`,
+    memory: `${Math.max(1, Math.round(maxMemory / 1024))} MB`,
+    stdout: lastStdout,
+    stderr: lastStderr,
+    compileOutput: lastCompile,
+    testCaseResults: results,
+  };
 }
 
 export async function submitUserCode(
@@ -316,22 +454,36 @@ export async function submitUserCode(
   if (!q?.published) throw new Error('Question not found');
 
   const tests = [...q.testCases].sort((a, b) => a.sequence - b.sequence);
-  const results: { index: number; passed: boolean; hidden: boolean }[] = [];
+  const results: { index: number; passed: boolean; hidden: boolean; stdout?: string; stderr?: string }[] = [];
   let passed = 0;
   let totalTime = 0;
   let maxMemory = 0;
+  let fatalStatus: ExecutionResult['status'] | null = null;
 
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i]!;
     const result = await executeCode(language, sourceCode, test.input);
     totalTime += result.executionTime;
     maxMemory = Math.max(maxMemory, result.memory);
+    if (result.status === 'COMPILATION_ERROR' || result.status === 'INTERNAL_ERROR') {
+      fatalStatus = result.status;
+      results.push({
+        index: i + 1,
+        passed: false,
+        hidden: test.hidden,
+        stdout: result.stdout,
+        stderr: result.stderr || result.compileOutput,
+      });
+      break;
+    }
     const ok = result.status === 'ACCEPTED' && compareOutput(result.stdout, test.expectedOutput);
     if (ok) passed++;
-    results.push({ index: i + 1, passed: ok, hidden: test.hidden });
+    results.push({ index: i + 1, passed: ok, hidden: test.hidden, stdout: test.hidden ? undefined : result.stdout, stderr: result.stderr });
   }
 
-  const status = passed === tests.length && tests.length > 0 ? 'ACCEPTED' : tests.length ? 'WRONG_ANSWER' : 'INTERNAL_ERROR';
+  const status =
+    fatalStatus ??
+    (passed === tests.length && tests.length > 0 ? 'ACCEPTED' : tests.length ? 'WRONG_ANSWER' : 'INTERNAL_ERROR');
   const submissionId = `sub-${Date.now()}`;
 
   const record: SubmissionRecord = {
@@ -344,23 +496,33 @@ export async function submitUserCode(
     passedTestCases: passed,
     totalTestCases: tests.length,
     executionTime: `${totalTime.toFixed(2)}s`,
-    memory: `${Math.round(maxMemory / 1024)} MB`,
+    memory: `${Math.max(0, Math.round(maxMemory / 1024))} MB`,
     testCaseResults: results,
     createdAt: new Date().toISOString(),
   };
 
-  await mutateStore((data) => {
-    data.submissions.unshift(record);
-    const prog = data.progress.find((p) => p.userId === userId && p.questionId === questionId);
-    const nextStatus = status === 'ACCEPTED' ? 'SOLVED' : 'ATTEMPTED';
-    if (prog) {
-      if (prog.status !== 'SOLVED') prog.status = nextStatus;
-      prog.updatedAt = record.createdAt;
-    } else {
-      data.progress.push({ userId, questionId, status: nextStatus, updatedAt: record.createdAt });
-    }
-    return record;
-  });
+  if (isSupabasePersistenceEnabled()) {
+    await insertSubmission(record);
+    await upsertProgress({
+      userId,
+      questionId,
+      status: status === 'ACCEPTED' ? 'SOLVED' : 'ATTEMPTED',
+      updatedAt: record.createdAt,
+    });
+  } else {
+    await mutateStore((data) => {
+      data.submissions.unshift(record);
+      const prog = data.progress.find((p) => p.userId === userId && p.questionId === questionId);
+      const nextStatus = status === 'ACCEPTED' ? 'SOLVED' : 'ATTEMPTED';
+      if (prog) {
+        if (prog.status !== 'SOLVED') prog.status = nextStatus;
+        prog.updatedAt = record.createdAt;
+      } else {
+        data.progress.push({ userId, questionId, status: nextStatus, updatedAt: record.createdAt });
+      }
+      return record;
+    });
+  }
 
   return {
     submissionId,

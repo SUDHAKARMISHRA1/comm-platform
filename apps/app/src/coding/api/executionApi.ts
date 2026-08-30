@@ -1,10 +1,37 @@
-import { mockRunCode, type ExecutionResult, type LanguageKey, type RunCodeRequest, type SubmitCodeResponse } from '@comm-platform/coding';
+import {
+  mockRunCode,
+  mockSubmitCode,
+  type ExecutionResult,
+  type LanguageKey,
+  type RunCodeRequest,
+  type RunTestsResponse,
+  type SubmitCodeResponse,
+} from '@comm-platform/coding';
 
 import { USE_MOCK_API, apiFetch } from './client';
 
-export async function runCode(payload: RunCodeRequest): Promise<ExecutionResult> {
+export async function runCode(
+  payload: RunCodeRequest & { questionId?: number },
+): Promise<ExecutionResult> {
   if (USE_MOCK_API) return mockRunCode(payload.sourceCode, payload.stdin);
   return apiFetch('/code/run', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function runTests(payload: {
+  questionId: number;
+  language: LanguageKey;
+  sourceCode: string;
+}): Promise<RunTestsResponse> {
+  if (USE_MOCK_API) {
+    const result = mockSubmitCode(payload.questionId, payload.sourceCode);
+    return {
+      ...result,
+      stdout: '',
+      stderr: '',
+      compileOutput: '',
+    };
+  }
+  return apiFetch('/code/tests', { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export async function submitCode(payload: {
@@ -13,7 +40,6 @@ export async function submitCode(payload: {
   sourceCode: string;
 }): Promise<SubmitCodeResponse> {
   if (USE_MOCK_API) {
-    const { mockSubmitCode } = await import('@comm-platform/coding');
     const result = mockSubmitCode(payload.questionId, payload.sourceCode);
     return { submissionId: `sub-${Date.now()}`, ...result };
   }
