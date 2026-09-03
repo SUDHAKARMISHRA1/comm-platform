@@ -1,6 +1,7 @@
 import { LANGUAGES } from '../languages';
 import type {
   CodingDataStore,
+  FeedPostRecord,
   LevelRecord,
   PracticeSetRecord,
   QuestionRecord,
@@ -37,6 +38,85 @@ export function defaultCatalog(now = new Date().toISOString()) {
     updatedAt: now,
   }));
   return { skills, levels, topics };
+}
+
+export function defaultFeedPosts(now = new Date().toISOString()): FeedPostRecord[] {
+  const day = 24 * 60 * 60 * 1000;
+  const at = (daysAgo: number) => new Date(Date.now() - daysAgo * day).toISOString();
+  return [
+    {
+      id: 'feed-welcome-article',
+      kind: 'article',
+      title: 'How we coach for intern and new-grad loops',
+      body: 'Most candidates freeze on the first clarifying question. We started publishing the same prompts our mentors use in mock loops: constraints first, then brute force, then the cut that actually ships.\n\nThis week we are highlighting array + hashmap patterns that showed up in recent intern interviews. Work them in Java if that is your interview language. Comment with the company loop you are preparing for and we will queue a follow-up post.',
+      mediaUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80',
+      linkUrl: '',
+      authorName: 'Comm Platform',
+      published: true,
+      createdAt: at(1),
+      updatedAt: now,
+    },
+    {
+      id: 'feed-office-hours-post',
+      kind: 'post',
+      title: 'Office hours Thursday',
+      body: 'Drop a question you missed in a recent screen. We will pick three and walk the solution live — no slides, just a shared editor.\n\nBring the prompt, the language you used, and where you got stuck. That last part is the useful one.',
+      mediaUrl: '',
+      linkUrl: '',
+      authorName: 'Comm Platform',
+      published: true,
+      createdAt: at(3),
+      updatedAt: now,
+    },
+    {
+      id: 'feed-binary-search-video',
+      kind: 'video',
+      title: 'Binary search: the interview version',
+      body: 'A 12-minute walkthrough of the template we want you to write from memory: bounds, invariant, and the off-by-one that costs offers. Watch once, then implement Binary Search in Practice without looking back.',
+      mediaUrl: 'https://www.youtube.com/watch?v=KeL6fCOFMkY',
+      linkUrl: 'https://www.youtube.com/watch?v=KeL6fCOFMkY',
+      authorName: 'Comm Platform',
+      published: true,
+      createdAt: at(5),
+      updatedAt: now,
+    },
+    {
+      id: 'feed-complexity-link',
+      kind: 'link',
+      title: 'A practical cheat sheet for time complexity',
+      body: 'When a problem says 10^5, you already know the answer cannot be n². We keep a short reference on our desk during mocks — share it with your study group.',
+      mediaUrl: '',
+      linkUrl: 'https://www.bigocheatsheet.com/',
+      authorName: 'Comm Platform',
+      published: true,
+      createdAt: at(8),
+      updatedAt: now,
+    },
+    {
+      id: 'feed-debug-article',
+      kind: 'article',
+      title: 'Read the failing test before you rewrite the solution',
+      body: 'A surprising number of Wrong Answer submissions are off-by-one on the first hidden case. Print the invariant. Name the indices. Then change the code.\n\nWe will keep posting the failure patterns we see in office hours so you can pattern-match before contest night.',
+      mediaUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80',
+      linkUrl: '',
+      authorName: 'Comm Platform',
+      published: true,
+      createdAt: at(12),
+      updatedAt: now,
+    },
+    {
+      id: 'feed-java-collections-post',
+      kind: 'post',
+      title: 'Java collections you should be able to write cold',
+      body: 'HashMap, ArrayDeque, and a min-heap. If you hesitate on the import or the comparator, drill those three this weekend. Everything else in intern loops is built on them.',
+      mediaUrl: '',
+      linkUrl: '',
+      authorName: 'Comm Platform',
+      published: true,
+      createdAt: at(14),
+      updatedAt: now,
+    },
+  ];
 }
 
 function buildQuestions(skills: SkillRecord[], levels: LevelRecord[]): QuestionRecord[] {
@@ -110,6 +190,11 @@ export function createSeedStore(): CodingDataStore {
     levels,
     topics,
     cmsPages: [],
+    feedPosts: defaultFeedPosts(now),
+    feedLikes: [],
+    feedShares: [],
+    feedComments: [],
+    feedCommentLikes: [],
     notifications: [],
     settings: {
       siteName: 'Comm Platform',

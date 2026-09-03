@@ -20,8 +20,8 @@
       ],
       "sequence": 1,
       "published": true,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     }
   ],
   "questions": [
@@ -80,8 +80,8 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-09-03T16:39:56.058Z",
-      "updatedAt": "2026-09-03T16:39:56.058Z"
+      "createdAt": "2026-09-03T18:07:59.561Z",
+      "updatedAt": "2026-09-03T18:07:59.561Z"
     },
     {
       "id": 2,
@@ -125,8 +125,8 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-09-03T16:39:56.058Z",
-      "updatedAt": "2026-09-03T16:39:56.058Z"
+      "createdAt": "2026-09-03T18:07:59.561Z",
+      "updatedAt": "2026-09-03T18:07:59.561Z"
     },
     {
       "id": 3,
@@ -181,8 +181,8 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-09-03T16:39:56.058Z",
-      "updatedAt": "2026-09-03T16:39:56.058Z"
+      "createdAt": "2026-09-03T18:07:59.561Z",
+      "updatedAt": "2026-09-03T18:07:59.561Z"
     },
     {
       "id": 4,
@@ -227,8 +227,8 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-09-03T16:39:56.058Z",
-      "updatedAt": "2026-09-03T16:39:56.058Z"
+      "createdAt": "2026-09-03T18:07:59.561Z",
+      "updatedAt": "2026-09-03T18:07:59.561Z"
     },
     {
       "id": 5,
@@ -273,8 +273,8 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-09-03T16:39:56.058Z",
-      "updatedAt": "2026-09-03T16:39:56.058Z"
+      "createdAt": "2026-09-03T18:07:59.561Z",
+      "updatedAt": "2026-09-03T18:07:59.561Z"
     },
     {
       "id": 6,
@@ -319,40 +319,13 @@
         }
       ],
       "published": true,
-      "createdAt": "2026-09-03T16:39:56.058Z",
-      "updatedAt": "2026-09-03T16:39:56.058Z"
+      "createdAt": "2026-09-03T18:07:59.561Z",
+      "updatedAt": "2026-09-03T18:07:59.561Z"
     }
   ],
   "progress": [],
-  "interviewVotes": [
-    {
-      "userId": "07c925d3-e2e6-48f9-ad85-eb40e288db79",
-      "questionId": 1,
-      "createdAt": "2026-09-03T16:48:12.426Z"
-    },
-    {
-      "userId": "57a2ba22-61d0-4fcd-95d5-cfbed6135089",
-      "questionId": 1,
-      "createdAt": "2026-09-03T16:50:44.548Z"
-    },
-    {
-      "userId": "57a2ba22-61d0-4fcd-95d5-cfbed6135089",
-      "questionId": 3,
-      "createdAt": "2026-09-03T16:50:48.684Z"
-    }
-  ],
-  "voteCounts": [
-    {
-      "questionId": 1,
-      "voteCount": 2,
-      "updatedAt": "2026-09-03T16:50:44.548Z"
-    },
-    {
-      "questionId": 3,
-      "voteCount": 1,
-      "updatedAt": "2026-09-03T16:50:48.684Z"
-    }
-  ],
+  "interviewVotes": [],
+  "voteCounts": [],
   "submissions": [],
   "skills": [
     {
@@ -361,8 +334,8 @@
       "slug": "java",
       "languageKey": "java",
       "sequence": 1,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     },
     {
       "id": "skill-c",
@@ -370,8 +343,8 @@
       "slug": "c",
       "languageKey": "c",
       "sequence": 2,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     },
     {
       "id": "skill-cpp",
@@ -379,8 +352,8 @@
       "slug": "cpp",
       "languageKey": "cpp",
       "sequence": 3,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     }
   ],
   "levels": [
@@ -390,8 +363,8 @@
       "slug": "easy",
       "band": "EASY",
       "sequence": 1,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     },
     {
       "id": "level-medium",
@@ -399,8 +372,8 @@
       "slug": "medium",
       "band": "MEDIUM",
       "sequence": 2,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     },
     {
       "id": "level-hard",
@@ -408,8 +381,8 @@
       "slug": "hard",
       "band": "HARD",
       "sequence": 3,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     }
   ],
   "topics": [
@@ -418,48 +391,48 @@
       "name": "Array",
       "slug": "array",
       "sequence": 1,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     },
     {
       "id": "topic-string",
       "name": "String",
       "slug": "string",
       "sequence": 2,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     },
     {
       "id": "topic-searching",
       "name": "Searching",
       "slug": "searching",
       "sequence": 3,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     },
     {
       "id": "topic-dynamic-programming",
       "name": "Dynamic Programming",
       "slug": "dynamic-programming",
       "sequence": 4,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     },
     {
       "id": "topic-math",
       "name": "Math",
       "slug": "math",
       "sequence": 5,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     },
     {
       "id": "topic-hashmap",
       "name": "HashMap",
       "slug": "hashmap",
       "sequence": 6,
-      "createdAt": "2026-09-03T16:39:56.057Z",
-      "updatedAt": "2026-09-03T16:39:56.057Z"
+      "createdAt": "2026-09-03T18:07:59.560Z",
+      "updatedAt": "2026-09-03T18:07:59.560Z"
     }
   ],
   "cmsPages": [],
@@ -468,5 +441,83 @@
     "siteName": "Comm Platform",
     "supportEmail": "support@example.com",
     "maintenanceMessage": ""
-  }
+  },
+  "feedPosts": [
+    {
+      "id": "feed-welcome-article",
+      "kind": "article",
+      "title": "How we coach for intern and new-grad loops",
+      "body": "Most candidates freeze on the first clarifying question. We started publishing the same prompts our mentors use in mock loops: constraints first, then brute force, then the cut that actually ships.\n\nThis week we are highlighting array + hashmap patterns that showed up in recent intern interviews. Work them in Java if that is your interview language. Comment with the company loop you are preparing for and we will queue a follow-up post.",
+      "mediaUrl": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80",
+      "linkUrl": "",
+      "authorName": "Comm Platform",
+      "published": true,
+      "createdAt": "2026-09-02T18:27:20.969Z",
+      "updatedAt": "2026-09-03T18:27:20.967Z"
+    },
+    {
+      "id": "feed-office-hours-post",
+      "kind": "post",
+      "title": "Office hours Thursday",
+      "body": "Drop a question you missed in a recent screen. We will pick three and walk the solution live — no slides, just a shared editor.\n\nBring the prompt, the language you used, and where you got stuck. That last part is the useful one.",
+      "mediaUrl": "",
+      "linkUrl": "",
+      "authorName": "Comm Platform",
+      "published": true,
+      "createdAt": "2026-08-31T18:27:20.969Z",
+      "updatedAt": "2026-09-03T18:27:20.967Z"
+    },
+    {
+      "id": "feed-binary-search-video",
+      "kind": "video",
+      "title": "Binary search: the interview version",
+      "body": "A 12-minute walkthrough of the template we want you to write from memory: bounds, invariant, and the off-by-one that costs offers. Watch once, then implement Binary Search in Practice without looking back.",
+      "mediaUrl": "https://www.youtube.com/watch?v=KeL6fCOFMkY",
+      "linkUrl": "https://www.youtube.com/watch?v=KeL6fCOFMkY",
+      "authorName": "Comm Platform",
+      "published": true,
+      "createdAt": "2026-08-29T18:27:20.969Z",
+      "updatedAt": "2026-09-03T18:27:20.967Z"
+    },
+    {
+      "id": "feed-complexity-link",
+      "kind": "link",
+      "title": "A practical cheat sheet for time complexity",
+      "body": "When a problem says 10^5, you already know the answer cannot be n^2. We keep a short reference on our desk during mocks — share it with your study group.",
+      "mediaUrl": "",
+      "linkUrl": "https://www.bigocheatsheet.com/",
+      "authorName": "Comm Platform",
+      "published": true,
+      "createdAt": "2026-08-26T18:27:20.969Z",
+      "updatedAt": "2026-09-03T18:27:20.967Z"
+    },
+    {
+      "id": "feed-debug-article",
+      "kind": "article",
+      "title": "Read the failing test before you rewrite the solution",
+      "body": "A surprising number of Wrong Answer submissions are off-by-one on the first hidden case. Print the invariant. Name the indices. Then change the code.\n\nWe will keep posting the failure patterns we see in office hours so you can pattern-match before contest night.",
+      "mediaUrl": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80",
+      "linkUrl": "",
+      "authorName": "Comm Platform",
+      "published": true,
+      "createdAt": "2026-08-22T18:27:20.969Z",
+      "updatedAt": "2026-09-03T18:27:20.967Z"
+    },
+    {
+      "id": "feed-java-collections-post",
+      "kind": "post",
+      "title": "Java collections you should be able to write cold",
+      "body": "HashMap, ArrayDeque, and a min-heap. If you hesitate on the import or the comparator, drill those three this weekend. Everything else in intern loops is built on them.",
+      "mediaUrl": "",
+      "linkUrl": "",
+      "authorName": "Comm Platform",
+      "published": true,
+      "createdAt": "2026-08-20T18:27:20.969Z",
+      "updatedAt": "2026-09-03T18:27:20.967Z"
+    }
+  ],
+  "feedLikes": [],
+  "feedShares": [],
+  "feedComments": [],
+  "feedCommentLikes": []
 }

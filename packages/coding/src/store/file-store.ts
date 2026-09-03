@@ -2,7 +2,7 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { CodingDataStore } from '../schema';
-import { createSeedStore, defaultCatalog } from './seed';
+import { createSeedStore, defaultCatalog, defaultFeedPosts } from './seed';
 
 const DEFAULT_DIR = path.join(process.cwd(), '../../data/coding');
 
@@ -35,6 +35,26 @@ export function ensureCatalog(data: CodingDataStore): boolean {
   }
   if (!Array.isArray(data.cmsPages)) {
     data.cmsPages = [];
+    changed = true;
+  }
+  if (!Array.isArray(data.feedPosts) || data.feedPosts.length === 0) {
+    data.feedPosts = defaultFeedPosts(now);
+    changed = true;
+  }
+  if (!Array.isArray(data.feedLikes)) {
+    data.feedLikes = [];
+    changed = true;
+  }
+  if (!Array.isArray(data.feedShares)) {
+    data.feedShares = [];
+    changed = true;
+  }
+  if (!Array.isArray(data.feedComments)) {
+    data.feedComments = [];
+    changed = true;
+  }
+  if (!Array.isArray(data.feedCommentLikes)) {
+    data.feedCommentLikes = [];
     changed = true;
   }
   if (!Array.isArray(data.notifications)) {

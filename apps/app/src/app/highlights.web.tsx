@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchDashboard } from '@/coding/api/questionApi';
+import { HighlightsFeed } from '@/coding/components/HighlightsFeed';
 import { AppShell } from '@/components/app-shell';
 import { spaNavigate } from '@/lib/spa-nav';
 import { DIFFICULTY_FILL, submissionTone } from '@/coding/statusColors';
@@ -53,7 +54,7 @@ export default function HighlightsScreen() {
     <AppShell>
       <div className="hl">
         <style>{css}</style>
-        <header className="hl-hero">
+        <header className="hl-hero hl-desktop">
           <div>
             <p className="hl-kicker">Highlights</p>
             <h1>Your practice, in one glance</h1>
@@ -70,16 +71,16 @@ export default function HighlightsScreen() {
           </a>
         </header>
 
-        {isLoading ? <p className="hl-muted">Loading your insights…</p> : null}
+        {isLoading ? <p className="hl-muted hl-desktop">Loading your insights…</p> : null}
 
-        <section className="hl-kpis">
+        <section className="hl-kpis hl-desktop">
           <Kpi label="Solved" value={String(solved)} hint={`${completion}% of catalog`} />
           <Kpi label="In progress" value={String(attempted)} hint="Marked attempted" />
           <Kpi label="Still open" value={String(remaining)} hint="Not solved yet" />
           <Kpi label="Recent hit rate" value={recent.length ? `${hitRate}%` : '—'} hint={recent.length ? `${accepted}/${recent.length} accepted` : 'Submit to unlock'} />
         </section>
 
-        <section className="hl-grid">
+        <section className="hl-grid hl-desktop">
           <article className="hl-panel hl-span-2">
             <p className="hl-label">Insight</p>
             <h2>{insight}</h2>
@@ -105,7 +106,7 @@ export default function HighlightsScreen() {
           </article>
         </section>
 
-        <section className="hl-grid">
+        <section className="hl-grid hl-desktop">
           <article className="hl-panel">
             <p className="hl-label">Difficulty mix</p>
             <h2>Where you stand</h2>
@@ -163,6 +164,8 @@ export default function HighlightsScreen() {
             )}
           </article>
         </section>
+
+        <HighlightsFeed />
       </div>
     </AppShell>
   );
@@ -216,4 +219,51 @@ const css = `
 .ok { color:#15803d; font-weight:700; font-size:.75rem; }
 .pending { color:#b45309; font-weight:700; font-size:.75rem; }
 .fail { color:#dc2626; font-weight:700; font-size:.75rem; }
+@media (max-width:767px) {
+  .hl-desktop { display:none !important; }
+}
+.hl-feed { max-width:40rem; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
+@media (min-width:768px) { .hl-feed { max-width:44rem; margin:1.5rem auto 0; } }
+.hl-feed-head h2 { margin:.35rem 0 0; font-size:1.35rem; }
+.lf-card { background:#fff; border:1px solid #e5e7eb; border-radius:.9rem; padding:1rem 1.05rem 0; box-shadow:0 1px 2px rgb(0 0 0/.05); }
+.lf-head { display:flex; gap:.75rem; align-items:center; }
+.lf-avatar { width:44px; height:44px; border-radius:50%; background:#eef2ff; color:#4f46e5; display:inline-flex; align-items:center; justify-content:center; font-weight:800; font-size:.85rem; flex-shrink:0; }
+.lf-avatar.sm { width:32px; height:32px; font-size:.7rem; }
+.lf-meta { display:flex; flex-direction:column; min-width:0; }
+.lf-meta strong { font-size:.95rem; }
+.lf-meta span { color:#6b7280; font-size:.78rem; line-height:1.35; }
+.lf-meta span:last-child { text-transform:capitalize; }
+.lf-card h3 { margin:.85rem 0 .4rem; font-size:1.05rem; letter-spacing:-.02em; }
+.lf-body { margin:0; color:#374151; line-height:1.6; white-space:pre-wrap; font-size:.95rem; }
+.lf-more { margin-left:.35rem; border:0; background:none; color:#6366f1; font-weight:700; cursor:pointer; padding:0; font:inherit; }
+.lf-media { margin: .85rem -1.05rem 0; background:#0f172a; }
+.lf-media img { width:100%; max-height:360px; object-fit:cover; display:block; }
+.lf-media iframe { width:100%; aspect-ratio:16/9; border:0; display:block; }
+.lf-link { display:flex; flex-direction:column; gap:.15rem; margin:.85rem 0 0; padding:.8rem .9rem; border:1px solid #e5e7eb; border-radius:.65rem; text-decoration:none; background:#f9fafb; }
+.lf-link span { color:#111827; font-weight:700; }
+.lf-link em { color:#6366f1; font-style:normal; font-size:.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lf-stats { display:flex; gap:1rem; margin:.85rem 0 0; color:#6b7280; font-size:.8rem; }
+.lf-stats button { border:0; background:none; color:#6b7280; cursor:pointer; padding:0; font:inherit; }
+.lf-actions { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid #f3f4f6; margin-top:.7rem; }
+.lf-actions button { height:44px; border:0; background:#fff; color:#4b5563; font-weight:700; cursor:pointer; font-size:.88rem; display:inline-flex; align-items:center; justify-content:center; gap:.4rem; }
+.lf-actions button:hover { background:#f9fafb; color:#4f46e5; }
+.lf-actions button.on { color:#4f46e5; }
+.lf-thread { border-top:1px solid #f3f4f6; padding: .85rem 0 1rem; display:flex; flex-direction:column; gap:.75rem; }
+.lf-comment { display:flex; gap:.6rem; }
+.lf-comment.nested { margin-top:.65rem; }
+.lf-bubble { background:#f3f4f6; border-radius:.75rem; padding:.55rem .7rem; flex:1; }
+.lf-bubble strong { font-size:.82rem; }
+.lf-time { margin-left:.4rem; color:#9ca3af; font-size:.72rem; font-weight:600; }
+.lf-bubble p { margin:.25rem 0 0; color:#111827; font-size:.88rem; line-height:1.45; }
+.lf-comment-actions { display:flex; gap:.85rem; margin-top:.35rem; }
+.lf-comment-actions button { border:0; background:none; color:#6b7280; font-weight:700; font-size:.75rem; cursor:pointer; padding:0; }
+.lf-comment-actions button.on { color:#4f46e5; }
+.lf-empty { color:#6b7280; font-size:.85rem; margin:0; }
+.lf-composer { display:flex; flex-direction:column; gap:.4rem; }
+.lf-composer-row { display:flex; gap:.5rem; align-items:center; }
+.lf-composer input { flex:1; height:40px; border:1px solid #e5e7eb; border-radius:999px; padding:0 1rem; font:inherit; }
+.lf-composer-row > button { height:40px; border:0; border-radius:999px; background:#6366f1; color:#fff; font-weight:700; padding:0 1rem; cursor:pointer; }
+.lf-composer-row > button:disabled { opacity:.5; }
+.lf-replying { margin:0; font-size:.78rem; color:#4f46e5; display:flex; gap:.5rem; align-items:center; }
+.lf-replying button { border:0; background:none; color:#6b7280; cursor:pointer; }
 `;

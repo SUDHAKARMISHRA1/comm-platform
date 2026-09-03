@@ -1,5 +1,6 @@
 import type { ProgressRecord, SubmissionRecord } from '../schema';
 import type { ExecutionStatus, LanguageKey } from '../types';
+import { readStore } from './file-store';
 
 type ProgressRow = {
   user_id: string;
@@ -342,27 +343,47 @@ export async function getSubmissionRecord(userId: string, id: string): Promise<S
 type VoteRow = { user_id: string; question_id: number; created_at: string };
 type VoteCountRow = { question_id: number; vote_count: number; updated_at: string };
 
-let voteTablesReady: boolean | null = null;
+let voteBackfillDone = false;
 
-async function useVoteTables() {
+async function ensureVoteTables() {
   if (!config()) return false;
-  if (voteTablesReady === true) return true;
   try {
     await rest('question_interview_votes?select=question_id&limit=1');
-    voteTablesReady = true;
     return true;
   } catch (error) {
-    if (isMissingTable(error)) {
-      voteTablesReady = null;
-      return false;
-    }
+    if (isMissingTable(error)) return false;
     throw error;
   }
 }
 
+async function backfillVotesFromFileStore() {
+  if (voteBackfillDone) return;
+  const data = await readStore();
+  const votes = data.interviewVotes ?? [];
+  const questionIds = new Set<number>();
+  for (const vote of votes) {
+    if (!vote.userId || !Number.isFinite(vote.questionId)) continue;
+    questionIds.add(vote.questionId);
+    await rest('question_interview_votes?on_conflict=user_id,question_id', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' },
+      body: JSON.stringify({
+        user_id: vote.userId,
+        question_id: vote.questionId,
+        created_at: vote.createdAt,
+      }),
+    });
+  }
+  for (const questionId of questionIds) {
+    await syncVoteCount(questionId);
+  }
+  voteBackfillDone = true;
+}
+
 export async function listVoteCounts(): Promise<Map<number, number>> {
   const map = new Map<number, number>();
-  if (!(await useVoteTables())) return map;
+  if (!(await ensureVoteTables())) return map;
+  await backfillVotesFromFileStore();
   const rows = await rest<VoteCountRow[]>('question_vote_counts?select=question_id,vote_count');
   for (const row of rows ?? []) map.set(row.question_id, row.vote_count);
   return map;
@@ -370,7 +391,8 @@ export async function listVoteCounts(): Promise<Map<number, number>> {
 
 export async function listVotedQuestionIdsForUser(userId: string): Promise<Set<number>> {
   const mine = new Set<number>();
-  if (!(await useVoteTables())) return mine;
+  if (!(await ensureVoteTables())) return mine;
+  await backfillVotesFromFileStore();
   const rows = await rest<VoteRow[]>(
     `question_interview_votes?user_id=eq.${encodeURIComponent(userId)}&select=question_id`,
   );
@@ -397,7 +419,8 @@ async function syncVoteCount(questionId: number) {
 }
 
 export async function toggleInterviewVoteRecord(userId: string, questionId: number) {
-  if (!(await useVoteTables())) return null;
+  if (!(await ensureVoteTables())) return null;
+  await backfillVotesFromFileStore();
   const existing = await rest<VoteRow[]>(
     `question_interview_votes?user_id=eq.${encodeURIComponent(userId)}&question_id=eq.${questionId}&select=user_id`,
   );
@@ -423,5 +446,5 @@ export async function toggleInterviewVoteRecord(userId: string, questionId: numb
 }
 
 export async function isVotePersistenceEnabled() {
-  return useVoteTables();
+  return ensureVoteTables();
 }

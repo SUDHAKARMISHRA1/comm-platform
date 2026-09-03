@@ -44,6 +44,14 @@ const NAV: NavGroup[] = [
     ],
   },
   {
+    id: 'feed',
+    label: 'Highlights feed',
+    children: [
+      { href: '/admin/feed/new', label: 'Publish post' },
+      { href: '/admin/feed', label: 'Manage posts' },
+    ],
+  },
+  {
     id: 'email',
     label: 'Email',
     children: [
@@ -76,6 +84,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     users: true,
     problems: true,
     crm: true,
+    feed: true,
     email: true,
     push: true,
   });

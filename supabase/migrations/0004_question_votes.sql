@@ -50,3 +50,7 @@ on public.question_vote_counts
 for select
 to authenticated
 using (true);
+
+grant select, insert, delete on public.question_interview_votes to authenticated, service_role;
+grant select on public.question_vote_counts to authenticated;
+grant select, insert, update on public.question_vote_counts to service_role;

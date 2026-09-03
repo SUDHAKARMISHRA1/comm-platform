@@ -1,4 +1,4 @@
-import type { Difficulty, ExecutionStatus, LanguageKey, QuestionExample } from './types';
+import type { Difficulty, ExecutionStatus, FeedPostKind, LanguageKey, QuestionExample } from './types';
 
 /** Mirrors future Postgres tables — see supabase/migrations/0002_coding.sql */
 export type TestCaseRecord = {
@@ -84,6 +84,47 @@ export type CmsPageRecord = {
   updatedAt: string;
 };
 
+export type FeedPostRecord = {
+  id: string;
+  kind: FeedPostKind;
+  title: string;
+  body: string;
+  mediaUrl: string;
+  linkUrl: string;
+  authorName: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FeedLikeRecord = {
+  userId: string;
+  postId: string;
+  createdAt: string;
+};
+
+export type FeedShareRecord = {
+  userId: string;
+  postId: string;
+  createdAt: string;
+};
+
+export type FeedCommentRecord = {
+  id: string;
+  postId: string;
+  parentId: string | null;
+  userId: string;
+  authorName: string;
+  body: string;
+  createdAt: string;
+};
+
+export type FeedCommentLikeRecord = {
+  userId: string;
+  commentId: string;
+  createdAt: string;
+};
+
 export type NotificationChannel = 'email' | 'push';
 export type NotificationAudience = 'all' | 'active' | 'inactive';
 
@@ -149,6 +190,11 @@ export type CodingDataStore = {
   levels: LevelRecord[];
   topics: TopicRecord[];
   cmsPages: CmsPageRecord[];
+  feedPosts: FeedPostRecord[];
+  feedLikes: FeedLikeRecord[];
+  feedShares: FeedShareRecord[];
+  feedComments: FeedCommentRecord[];
+  feedCommentLikes: FeedCommentLikeRecord[];
   notifications: NotificationCampaignRecord[];
   settings: AdminSettingsRecord;
 };

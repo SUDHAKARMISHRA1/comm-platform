@@ -5,11 +5,13 @@ import { redirect } from 'next/navigation';
 
 import {
   deleteCmsPage,
+  deleteFeedPost,
   deleteLevel,
   deleteNotification,
   deleteSkill,
   deleteTopic,
   saveCmsPage,
+  saveFeedPost,
   saveLevel,
   saveNotification,
   saveSettings,
@@ -95,6 +97,29 @@ export async function upsertCmsPageAction(formData: FormData) {
 export async function removeCmsPageAction(formData: FormData) {
   await requireAdmin();
   await deleteCmsPage(String(formData.get('id')));
+  revalidateAdmin();
+}
+
+export async function upsertFeedPostAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '').trim() || undefined;
+  await saveFeedPost({
+    id,
+    kind: String(formData.get('kind') ?? 'post'),
+    title: String(formData.get('title') ?? ''),
+    body: String(formData.get('body') ?? ''),
+    mediaUrl: String(formData.get('mediaUrl') ?? ''),
+    linkUrl: String(formData.get('linkUrl') ?? ''),
+    authorName: String(formData.get('authorName') ?? ''),
+    published: formData.get('published') === 'on',
+  });
+  revalidateAdmin();
+  redirect('/admin/feed');
+}
+
+export async function removeFeedPostAction(formData: FormData) {
+  await requireAdmin();
+  await deleteFeedPost(String(formData.get('id')));
   revalidateAdmin();
 }
 

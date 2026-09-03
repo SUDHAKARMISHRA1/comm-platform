@@ -160,6 +160,59 @@ export type SubmissionPollResponse = {
   result?: ExecutionResult;
 };
 
+export type FeedPostKind = 'article' | 'post' | 'video' | 'link';
+
+export type FeedPostCard = {
+  id: string;
+  kind: FeedPostKind;
+  title: string;
+  body: string;
+  mediaUrl: string;
+  linkUrl: string;
+  authorName: string;
+  createdAt: string;
+  likeCount: number;
+  likedByMe: boolean;
+  commentCount: number;
+  shareCount: number;
+  sharedByMe: boolean;
+};
+
+export type FeedCommentNode = {
+  id: string;
+  postId: string;
+  parentId: string | null;
+  authorName: string;
+  body: string;
+  createdAt: string;
+  likeCount: number;
+  likedByMe: boolean;
+  replies: FeedCommentNode[];
+};
+
+export type FeedListResponse = {
+  posts: FeedPostCard[];
+  pagination: Pagination;
+};
+
+export type FeedLikeResponse = {
+  postId: string;
+  likeCount: number;
+  likedByMe: boolean;
+};
+
+export type FeedShareResponse = {
+  postId: string;
+  shareCount: number;
+  sharedByMe: boolean;
+};
+
+export type FeedCommentLikeResponse = {
+  commentId: string;
+  likeCount: number;
+  likedByMe: boolean;
+};
+
 export type CatalogPayload = {
   skills: { id: string; name: string; slug: string; languageKey: LanguageKey | null }[];
   levels: { id: string; name: string; slug: string; band: Difficulty }[];
