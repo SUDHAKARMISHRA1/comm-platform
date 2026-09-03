@@ -336,5 +336,92 @@ export async function getSubmissionRecord(userId: string, id: string): Promise<S
   const rows = await rest<AuditRow[]>(
     `audit_logs?action=eq.${encodeURIComponent(ACTION_SUBMISSION)}&actor_id=eq.${encodeURIComponent(userId)}&metadata->>id=eq.${encodeURIComponent(id)}&select=id,actor_id,action,metadata,created_at`,
   );
-  return rows[0] ? submissionFromAudit(rows[0]) : null;
+    return rows[0] ? submissionFromAudit(rows[0]) : null;
+}
+
+type VoteRow = { user_id: string; question_id: number; created_at: string };
+type VoteCountRow = { question_id: number; vote_count: number; updated_at: string };
+
+let voteTablesReady: boolean | null = null;
+
+async function useVoteTables() {
+  if (!config()) return false;
+  if (voteTablesReady === true) return true;
+  try {
+    await rest('question_interview_votes?select=question_id&limit=1');
+    voteTablesReady = true;
+    return true;
+  } catch (error) {
+    if (isMissingTable(error)) {
+      voteTablesReady = null;
+      return false;
+    }
+    throw error;
+  }
+}
+
+export async function listVoteCounts(): Promise<Map<number, number>> {
+  const map = new Map<number, number>();
+  if (!(await useVoteTables())) return map;
+  const rows = await rest<VoteCountRow[]>('question_vote_counts?select=question_id,vote_count');
+  for (const row of rows ?? []) map.set(row.question_id, row.vote_count);
+  return map;
+}
+
+export async function listVotedQuestionIdsForUser(userId: string): Promise<Set<number>> {
+  const mine = new Set<number>();
+  if (!(await useVoteTables())) return mine;
+  const rows = await rest<VoteRow[]>(
+    `question_interview_votes?user_id=eq.${encodeURIComponent(userId)}&select=question_id`,
+  );
+  for (const row of rows ?? []) mine.add(row.question_id);
+  return mine;
+}
+
+async function syncVoteCount(questionId: number) {
+  const rows = await rest<VoteRow[]>(
+    `question_interview_votes?question_id=eq.${questionId}&select=user_id`,
+  );
+  const voteCount = rows?.length ?? 0;
+  const now = new Date().toISOString();
+  await rest('question_vote_counts?on_conflict=question_id', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      question_id: questionId,
+      vote_count: voteCount,
+      updated_at: now,
+    }),
+  });
+  return voteCount;
+}
+
+export async function toggleInterviewVoteRecord(userId: string, questionId: number) {
+  if (!(await useVoteTables())) return null;
+  const existing = await rest<VoteRow[]>(
+    `question_interview_votes?user_id=eq.${encodeURIComponent(userId)}&question_id=eq.${questionId}&select=user_id`,
+  );
+  const hasVote = Boolean(existing[0]);
+  if (hasVote) {
+    await rest(
+      `question_interview_votes?user_id=eq.${encodeURIComponent(userId)}&question_id=eq.${questionId}`,
+      { method: 'DELETE', headers: { Prefer: 'return=minimal' } },
+    );
+  } else {
+    await rest('question_interview_votes', {
+      method: 'POST',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        user_id: userId,
+        question_id: questionId,
+        created_at: new Date().toISOString(),
+      }),
+    });
+  }
+  const voteCount = await syncVoteCount(questionId);
+  return { questionId, voteCount, votedByMe: !hasVote };
+}
+
+export async function isVotePersistenceEnabled() {
+  return useVoteTables();
 }

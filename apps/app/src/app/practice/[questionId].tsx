@@ -26,6 +26,7 @@ import { CodeEditor } from '@/coding/components/CodeEditor';
 import { ConsolePanel } from '@/coding/components/ConsolePanel';
 import { DifficultyBadge } from '@/coding/components/DifficultyBadge';
 import { MarkdownView } from '@/coding/components/MarkdownView';
+import { VoteButton } from '@/coding/components/VoteButton';
 import { useEditorDraft } from '@/coding/hooks/useEditorDraft';
 import { ApiError } from '@/coding/api/client';
 import { useAuth } from '@/providers/auth-provider';
@@ -45,6 +46,12 @@ export default function QuestionDetailScreen() {
   });
 
   const [language, setLanguage] = useState<LanguageKey>('java');
+
+  useEffect(() => {
+    if (!question) return;
+    const langs = question.supportedLanguages;
+    setLanguage(langs.includes('java') ? 'java' : langs[0] ?? 'java');
+  }, [question?.id]);
   const template =
     question?.codeTemplates?.[language] ?? LANGUAGES[language].template;
   const { code, setCode, resetDraft } = useEditorDraft(id, language, template);
@@ -161,6 +168,7 @@ export default function QuestionDetailScreen() {
       <View style={styles.problemHeader}>
         <Text style={styles.problemTitle}>{question.title}</Text>
         <DifficultyBadge difficulty={question.difficulty} />
+        <VoteButton questionId={question.id} voteCount={question.voteCount} votedByMe={question.votedByMe} />
       </View>
       <MarkdownView content={question.description} />
       <Text style={styles.section}>Input Format</Text>
@@ -185,12 +193,46 @@ export default function QuestionDetailScreen() {
   const editorPanel = (
     <View style={styles.editorCol}>
       <View style={styles.langRow}>
-        <Text style={styles.langLabel}>Language:</Text>
-        {(question.supportedLanguages as LanguageKey[]).map((lang) => (
-          <Pressable key={lang} onPress={() => setLanguage(lang)} style={[styles.langBtn, language === lang && styles.langBtnActive]}>
-            <Text style={[styles.langBtnText, language === lang && styles.langBtnTextActive]}>{LANGUAGES[lang].label}</Text>
-          </Pressable>
-        ))}
+        <Text style={styles.langLabel}>Language</Text>
+        {Platform.OS === 'web' ? (
+          <select
+            aria-label="Language"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as LanguageKey)}
+            style={{
+              height: 36,
+              minWidth: 140,
+              border: '1px solid #e5e7eb',
+              borderRadius: 8,
+              background: '#ffffff',
+              color: '#111827',
+              padding: '0 10px',
+              fontSize: 14,
+              fontWeight: 600,
+              fontFamily: 'inherit',
+            }}
+          >
+            {question.supportedLanguages.map((lang) => (
+              <option key={lang} value={lang}>
+                {LANGUAGES[lang].label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <View style={styles.nativeSelect}>
+            {question.supportedLanguages.map((lang) => (
+              <Pressable
+                key={lang}
+                onPress={() => setLanguage(lang)}
+                style={[styles.langBtn, language === lang && styles.langBtnActive]}
+              >
+                <Text style={[styles.langBtnText, language === lang && styles.langBtnTextActive]}>
+                  {LANGUAGES[lang].label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
         <Pressable onPress={resetDraft} style={styles.resetBtn}><Text style={styles.resetText}>Reset</Text></Pressable>
       </View>
       <CodeEditor language={language} value={code} onChange={setCode} onRun={() => runMutation.mutate()} />
@@ -293,8 +335,9 @@ const styles = StyleSheet.create({
   error: { color: colors.danger },
   link: { color: colors.primary, fontWeight: '600' },
   editorCol: { flex: 1, padding: space.md, gap: space.sm },
-  langRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs, flexWrap: 'wrap' },
+  langRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' },
   langLabel: { fontSize: type.small, color: colors.textMuted, fontWeight: '600' },
+  nativeSelect: { flexDirection: 'row', gap: space.xs, flexWrap: 'wrap' },
   langBtn: { paddingHorizontal: space.sm, paddingVertical: 4, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border },
   langBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   langBtnText: { fontSize: type.small, color: colors.text },

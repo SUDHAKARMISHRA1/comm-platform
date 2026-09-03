@@ -137,6 +137,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      question_interview_votes: {
+        Row: {
+          user_id: string;
+          question_id: number;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          question_id: number;
+          created_at?: string;
+        };
+        Update: {
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      question_vote_counts: {
+        Row: {
+          question_id: number;
+          vote_count: number;
+          updated_at: string;
+        };
+        Insert: {
+          question_id: number;
+          vote_count?: number;
+          updated_at?: string;
+        };
+        Update: {
+          vote_count?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       code_submissions: {
         Row: {
           id: string;

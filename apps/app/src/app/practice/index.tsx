@@ -1,175 +1,257 @@
-import { useQuery } from '@tanstack/react-query';
-import { Link, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Link } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
+import type { Difficulty, QuestionSummary } from '@comm-platform/coding';
 
 import { AppShell } from '@/components/app-shell';
 import { DifficultyBadge } from '@/coding/components/DifficultyBadge';
 import { StatusBadge } from '@/coding/components/StatusBadge';
-import { fetchCatalog, fetchQuestions } from '@/coding/api/questionApi';
-import { useAuth } from '@/providers/auth-provider';
+import { VoteButton } from '@/coding/components/VoteButton';
+import { DIFFICULTIES, PRACTICE_STATUSES, usePracticeBoard } from '@/coding/hooks/usePracticeBoard';
 
-const STATUSES = ['ALL', 'SOLVED', 'ATTEMPTED', 'NOT_ATTEMPTED'];
+const DIFF_META: Record<Difficulty, string> = {
+  EASY: 'Easy',
+  MEDIUM: 'Medium',
+  HARD: 'Hard',
+};
 
 export default function PracticeScreen() {
-  const { session, loading: authLoading } = useAuth();
-  const params = useLocalSearchParams<{ q?: string; page?: string }>();
-  const [search, setSearch] = useState(params.q ?? '');
-  const [skill, setSkill] = useState('');
-  const [level, setLevel] = useState('');
-  const [topic, setTopic] = useState('');
-  const [status, setStatus] = useState('ALL');
-  const page = Number(params.page ?? 1);
-
-  const catalogQuery = useQuery({
-    queryKey: ['catalog'],
-    queryFn: fetchCatalog,
-    enabled: Boolean(session) && !authLoading,
-  });
-
-  const skills = catalogQuery.data?.skills ?? [];
-  const levels = catalogQuery.data?.levels ?? [];
-  const topics = catalogQuery.data?.topics ?? [];
-
-  const queryParams = useMemo(
-    () => ({
-      q: search,
-      skill: skill || undefined,
-      level: level || undefined,
-      topic: topic || undefined,
-      status,
-      page,
-    }),
-    [search, skill, level, topic, status, page],
-  );
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['questions', queryParams],
-    queryFn: () => fetchQuestions(queryParams),
-    enabled: Boolean(session) && !authLoading,
-  });
+  const board = usePracticeBoard();
+  const skillName = board.selectedSkill?.name ?? 'Java';
 
   return (
     <AppShell>
       <ScrollView contentContainerStyle={styles.page}>
-        <Text style={styles.title}>Practice</Text>
-        {catalogQuery.data?.settings.maintenanceMessage ? (
-          <Text style={styles.warn}>{catalogQuery.data.settings.maintenanceMessage}</Text>
-        ) : null}
-        <TextInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search title, ID, or topic"
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
-        />
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
-          <Pressable onPress={() => setSkill('')} style={[styles.chip, !skill && styles.chipActive]}>
-            <Text style={[styles.chipText, !skill && styles.chipTextActive]}>All skills</Text>
-          </Pressable>
-          {skills.map((s) => (
-            <Pressable key={s.id} onPress={() => setSkill(s.id)} style={[styles.chip, skill === s.id && styles.chipActive]}>
-              <Text style={[styles.chipText, skill === s.id && styles.chipTextActive]}>{s.name}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
-          <Pressable onPress={() => setLevel('')} style={[styles.chip, !level && styles.chipActive]}>
-            <Text style={[styles.chipText, !level && styles.chipTextActive]}>All levels</Text>
-          </Pressable>
-          {levels.map((l) => (
-            <Pressable key={l.id} onPress={() => setLevel(l.id)} style={[styles.chip, level === l.id && styles.chipActive]}>
-              <Text style={[styles.chipText, level === l.id && styles.chipTextActive]}>{l.name}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
-          <Pressable onPress={() => setTopic('')} style={[styles.chip, !topic && styles.chipActive]}>
-            <Text style={[styles.chipText, !topic && styles.chipTextActive]}>All topics</Text>
-          </Pressable>
-          {topics.map((t) => (
-            <Pressable key={t.id} onPress={() => setTopic(t.name)} style={[styles.chip, topic === t.name && styles.chipActive]}>
-              <Text style={[styles.chipText, topic === t.name && styles.chipTextActive]}>{t.name}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <View style={styles.filters}>
-          {STATUSES.map((s) => (
-            <Pressable key={s} onPress={() => setStatus(s)} style={[styles.chip, status === s && styles.chipActive]}>
-              <Text style={[styles.chipText, status === s && styles.chipTextActive]}>{s.replace('_', ' ')}</Text>
-            </Pressable>
-          ))}
+        <View style={styles.head}>
+          <View style={styles.headCopy}>
+            <Text style={styles.kicker}>Practice</Text>
+            <Text style={styles.title}>Build fluency</Text>
+          </View>
+          <TextInput
+            value={board.search}
+            onChangeText={board.setSearch}
+            placeholder="Search problems"
+            placeholderTextColor={colors.textMuted}
+            style={styles.search}
+          />
         </View>
 
-        {authLoading || isLoading ? (
+        {board.maintenanceMessage ? <Text style={styles.warn}>{board.maintenanceMessage}</Text> : null}
+        {board.authLoading || board.catalogQuery.isLoading ? (
           <View style={styles.row}>
             <ActivityIndicator color={colors.primary} />
-            <Text style={styles.muted}>Loading questions...</Text>
+            <Text style={styles.muted}>Loading catalog…</Text>
           </View>
         ) : null}
-        {error ? <Text style={styles.error}>{error instanceof Error ? error.message : 'Failed to load questions.'}</Text> : null}
 
-        <View style={styles.table}>
-          <View style={styles.tableHead}>
-            <Text style={[styles.th, styles.colId]}>#</Text>
-            <Text style={[styles.th, styles.colTitle]}>Question</Text>
-            <Text style={[styles.th, styles.colDiff]}>Level</Text>
-            <Text style={[styles.th, styles.colTopic]}>Topic</Text>
-            <Text style={[styles.th, styles.colStatus]}>Status</Text>
-          </View>
-          {data?.questions.map((q) => (
-            <Link key={q.id} href={`/practice/${q.id}`} asChild>
-              <Pressable style={styles.tableRow}>
-                <Text style={[styles.td, styles.colId]}>{q.id}</Text>
-                <Text style={[styles.td, styles.colTitle, styles.link]}>{q.title}</Text>
-                <View style={styles.colDiff}>
-                  <DifficultyBadge difficulty={q.difficulty} />
-                </View>
-                <Text style={[styles.td, styles.colTopic]}>{q.topics[0]}</Text>
-                <View style={styles.colStatus}>
-                  <StatusBadge status={q.status} />
-                </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tracks}>
+          {board.skills.map((s) => {
+            const active = s.id === board.skill;
+            const count = board.skillCounts.get(s.id) ?? 0;
+            return (
+              <Pressable key={s.id} onPress={() => board.selectSkill(s.id)} style={[styles.track, active && styles.trackActive]}>
+                <Text style={[styles.trackName, active && styles.trackNameActive]}>{s.name}</Text>
+                <Text style={styles.trackCount}>{count} problems</Text>
               </Pressable>
-            </Link>
-          ))}
+            );
+          })}
+        </ScrollView>
+
+        <View style={styles.stats}>
+          <Stat label={`In ${skillName}`} value={String(board.stats.total)} />
+          <Stat label="Solved" value={String(board.stats.solved)} />
+          <Stat label="In progress" value={String(board.stats.attempted)} />
         </View>
 
-        {data ? (
-          <Text style={styles.muted}>
-            Page {data.pagination.page} · {data.pagination.total} questions
-          </Text>
+        <View style={styles.card}>
+          <Text style={styles.kicker}>Interview picks</Text>
+          <Text style={styles.sectionTitle}>Top problems · {skillName}</Text>
+          <Link href={`/practice/voted?skill=${board.skill}` as never} asChild>
+            <Pressable>
+              <Text style={styles.viewAll}>View more</Text>
+            </Pressable>
+          </Link>
+          {board.picks.length === 0 ? (
+            <Text style={styles.muted}>No interview votes in this section yet. Vote on a problem if you saw it in a recent interview.</Text>
+          ) : (
+            board.picks.map((q, i) => <PickRow key={q.id} q={q} rank={i + 1} />)
+          )}
+        </View>
+
+        <Text style={styles.filterLabel}>Level</Text>
+        <ChipRow
+          options={[{ id: '', label: 'All levels' }, ...board.levels.map((l) => ({ id: l.id, label: l.name }))]}
+          value={board.level}
+          onChange={board.setLevel}
+        />
+        <Text style={styles.filterLabel}>Topic</Text>
+        <ChipRow
+          options={[{ id: '', label: 'All topics' }, ...board.topics.map((t) => ({ id: t.name, label: t.name }))]}
+          value={board.topic}
+          onChange={board.setTopic}
+        />
+        <Text style={styles.filterLabel}>Status</Text>
+        <ChipRow
+          options={PRACTICE_STATUSES.map((s) => ({ id: s, label: s === 'ALL' ? 'All status' : s.replace('_', ' ') }))}
+          value={board.status}
+          onChange={(v) => board.setStatus(v as (typeof PRACTICE_STATUSES)[number])}
+        />
+        {board.filtersActive ? (
+          <Pressable onPress={board.resetFilters} style={styles.reset}>
+            <Text style={styles.resetText}>Reset filters</Text>
+          </Pressable>
         ) : null}
+
+        {DIFFICULTIES.map((diff) => {
+          const rows = board.grouped[diff];
+          const open = board.expanded === diff;
+          const shown = open ? rows : rows.slice(0, 3);
+          return (
+            <View key={diff} style={styles.card}>
+              <View style={styles.boardHead}>
+                <Text style={styles.sectionTitle}>{DIFF_META[diff]} · {rows.length}</Text>
+                <Pressable onPress={() => board.viewAll(diff)}>
+                  <Text style={styles.viewAll}>{open ? 'Show less' : 'View all'}</Text>
+                </Pressable>
+              </View>
+              {shown.length === 0 ? (
+                <Text style={styles.muted}>No {DIFF_META[diff].toLowerCase()} problems match.</Text>
+              ) : (
+                shown.map((q) => <BoardRow key={q.id} q={q} />)
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
     </AppShell>
   );
 }
 
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.stat}>
+      <Text style={styles.muted}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+    </View>
+  );
+}
+
+function ChipRow({
+  options,
+  value,
+  onChange,
+}: {
+  options: { id: string; label: string }[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+      {options.map((opt) => {
+        const active = opt.id === value;
+        return (
+          <Pressable key={opt.id || 'all'} onPress={() => onChange(opt.id)} style={[styles.chip, active && styles.chipActive]}>
+            <Text style={[styles.chipText, active && styles.chipTextActive]}>{opt.label}</Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+function PickRow({ q, rank }: { q: QuestionSummary; rank: number }) {
+  return (
+    <View style={styles.pick}>
+      <Link href={`/practice/${q.id}`} asChild>
+        <Pressable style={styles.pickMain}>
+          <Text style={styles.rank}>{String(rank).padStart(2, '0')}</Text>
+          <View style={styles.pickBody}>
+            <Text style={styles.pickTitle}>{q.title}</Text>
+            <Text style={styles.muted}>{q.topics[0] ?? 'General'}</Text>
+          </View>
+          <DifficultyBadge difficulty={q.difficulty} />
+        </Pressable>
+      </Link>
+      <VoteButton questionId={q.id} voteCount={q.voteCount} votedByMe={q.votedByMe} />
+    </View>
+  );
+}
+
+function BoardRow({ q }: { q: QuestionSummary }) {
+  return (
+    <View style={styles.boardRow}>
+      <Link href={`/practice/${q.id}`} asChild>
+        <Pressable style={styles.boardMain}>
+          <Text style={styles.pickTitle}>{q.title}</Text>
+          <StatusBadge status={q.status} />
+        </Pressable>
+      </Link>
+      <VoteButton questionId={q.id} voteCount={q.voteCount} votedByMe={q.votedByMe} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  page: { padding: space.lg, gap: space.md, maxWidth: 1000, width: '100%', alignSelf: 'center' },
+  page: { padding: space.md, gap: space.md, maxWidth: 1000, width: '100%', alignSelf: 'center', paddingBottom: space.xl },
+  head: { gap: space.sm },
+  headCopy: { gap: 4 },
+  kicker: { color: colors.primary, fontWeight: '700', letterSpacing: 1.1, textTransform: 'uppercase', fontSize: 11 },
   title: { fontSize: type.title, fontWeight: '700', color: colors.text },
-  input: {
+  search: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: 10,
+    backgroundColor: colors.surface,
+    color: colors.text,
+  },
+  warn: { color: colors.warning },
+  muted: { color: colors.textMuted, fontSize: type.small },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  tracks: { gap: space.sm, paddingRight: space.md },
+  track: {
+    minWidth: 140,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: space.md,
+    gap: 4,
+  },
+  trackActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  trackName: { fontWeight: '700', color: colors.text, fontSize: type.body },
+  trackNameActive: { color: colors.primary },
+  trackCount: { color: colors.textMuted, fontSize: type.small },
+  stats: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
+  stat: {
+    flexGrow: 1,
+    minWidth: 100,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
     padding: space.md,
-    backgroundColor: colors.surface,
-    color: colors.text,
+    gap: 4,
   },
-  filters: { flexDirection: 'row', gap: space.xs, flexWrap: 'wrap' },
+  statValue: { fontSize: 22, fontWeight: '700', color: colors.text },
+  card: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: space.md,
+    gap: space.sm,
+  },
+  sectionTitle: { fontSize: type.body, fontWeight: '700', color: colors.text },
+  pick: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.sm },
+  pickMain: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flex: 1, minWidth: 0 },
+  rank: { width: 28, color: colors.primary, fontWeight: '800', fontSize: type.small },
+  pickBody: { flex: 1, minWidth: 0, gap: 2 },
+  pickTitle: { color: colors.text, fontWeight: '700' },
+  filterLabel: { color: colors.textMuted, fontWeight: '700', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.8 },
+  chips: { gap: space.xs },
   chip: {
     paddingHorizontal: space.sm,
     paddingVertical: 6,
@@ -181,26 +263,10 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipText: { fontSize: type.small, color: colors.textMuted, fontWeight: '600' },
   chipTextActive: { color: colors.primaryText },
-  muted: { color: colors.textMuted },
-  warn: { color: colors.warning },
-  error: { color: colors.danger },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  table: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, overflow: 'hidden' },
-  tableHead: { flexDirection: 'row', backgroundColor: colors.surfaceMuted, padding: space.sm, gap: space.sm },
-  tableRow: {
-    flexDirection: 'row',
-    padding: space.sm,
-    gap: space.sm,
-    borderTopWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-  },
-  th: { fontSize: type.small, fontWeight: '700', color: colors.textMuted },
-  td: { fontSize: type.small, color: colors.text },
-  colId: { width: 32 },
-  colTitle: { flex: 2 },
-  colDiff: { flex: 1 },
-  colTopic: { flex: 1 },
-  colStatus: { flex: 1 },
-  link: { color: colors.primary, fontWeight: '600' },
+  reset: { alignSelf: 'flex-start', paddingVertical: space.sm },
+  resetText: { color: colors.primary, fontWeight: '700' },
+  boardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  viewAll: { color: colors.primary, fontWeight: '700', fontSize: type.small },
+  boardRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.sm, borderTopWidth: 1, borderColor: colors.borderMuted },
+  boardMain: { flex: 1, minWidth: 0, gap: 4 },
 });

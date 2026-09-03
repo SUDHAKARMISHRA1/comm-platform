@@ -104,6 +104,18 @@ export type AdminSettingsRecord = {
   maintenanceMessage: string;
 };
 
+export type InterviewVoteRecord = {
+  userId: string;
+  questionId: number;
+  createdAt: string;
+};
+
+export type VoteCountRecord = {
+  questionId: number;
+  voteCount: number;
+  updatedAt: string;
+};
+
 export type ProgressRecord = {
   userId: string;
   questionId: number;
@@ -130,6 +142,8 @@ export type CodingDataStore = {
   practiceSets: PracticeSetRecord[];
   questions: QuestionRecord[];
   progress: ProgressRecord[];
+  interviewVotes: InterviewVoteRecord[];
+  voteCounts: VoteCountRecord[];
   submissions: SubmissionRecord[];
   skills: SkillRecord[];
   levels: LevelRecord[];

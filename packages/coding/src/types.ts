@@ -24,6 +24,8 @@ export type QuestionSummary = {
   levelName?: string;
   topics: string[];
   status: QuestionStatus;
+  voteCount: number;
+  votedByMe: boolean;
 };
 
 export type QuestionExample = {
@@ -49,6 +51,14 @@ export type QuestionDetail = {
   topics: string[];
   supportedLanguages: LanguageKey[];
   status: QuestionStatus;
+  voteCount: number;
+  votedByMe: boolean;
+};
+
+export type VoteToggleResponse = {
+  questionId: number;
+  voteCount: number;
+  votedByMe: boolean;
 };
 
 export type Pagination = {

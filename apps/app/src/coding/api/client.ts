@@ -12,6 +12,10 @@ export function bindApiSession(session: Session | null) {
   boundSession = session;
 }
 
+export function currentApiUserId() {
+  return boundSession?.user?.id ?? 'demo-user';
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,

@@ -1,6 +1,9 @@
 import type { CatalogPayload, QuestionDetail, QuestionSummary, SubmissionDetail, SubmissionSummary } from '../types';
+import { mockVoteCount, mockVotedByMe } from './votes';
 
-export const MOCK_QUESTIONS: QuestionDetail[] = [
+type MockQuestion = Omit<QuestionDetail, 'voteCount' | 'votedByMe'>;
+
+export const MOCK_QUESTIONS: MockQuestion[] = [
   {
     id: 1,
     title: 'Two Sum',
@@ -80,6 +83,21 @@ export const MOCK_QUESTIONS: QuestionDetail[] = [
     constraints: '1 <= n <= 10^5\n-10^4 <= nums[i] <= 10^4',
     examples: [{ input: '9\n-2 1 -3 4 -1 2 1 -5 4', output: '6' }],
   },
+  {
+    id: 6,
+    title: 'Trapping Rain Water',
+    slug: 'trapping-rain-water',
+    difficulty: 'HARD',
+    status: 'NOT_ATTEMPTED',
+    topics: ['Array', 'Dynamic Programming'],
+    supportedLanguages: ['java', 'c', 'cpp'],
+    description:
+      'Given n non-negative integers representing an elevation map, compute how much water it can trap after raining.',
+    inputFormat: 'First line: n\nSecond line: n integers',
+    outputFormat: 'Total units of trapped water.',
+    constraints: '1 <= n <= 2 * 10^4\n0 <= height[i] <= 10^5',
+    examples: [{ input: '12\n0 1 0 2 1 0 1 3 2 1 2 1', output: '6' }],
+  },
 ];
 
 export const MOCK_SUBMISSIONS: SubmissionDetail[] = [
@@ -137,7 +155,7 @@ export function getHiddenTests(questionId: number) {
   return HIDDEN_TESTS[questionId] ?? [];
 }
 
-export function toSummary(q: QuestionDetail): QuestionSummary {
+export function toSummary(q: MockQuestion, userId?: string): QuestionSummary {
   return {
     id: q.id,
     title: q.title,
@@ -146,6 +164,8 @@ export function toSummary(q: QuestionDetail): QuestionSummary {
     skillId: q.skillId ?? 'skill-java',
     topics: q.topics,
     status: q.status,
+    voteCount: mockVoteCount(q.id),
+    votedByMe: userId ? mockVotedByMe(userId, q.id) : false,
   };
 }
 
@@ -158,10 +178,11 @@ export function listMockQuestions(filters: {
   level?: string;
   page?: number;
   pageSize?: number;
+  userId?: string;
 }): { questions: QuestionSummary[]; pagination: { page: number; pageSize: number; total: number } } {
   const pageSize = filters.pageSize ?? 20;
   const page = filters.page ?? 1;
-  let items = MOCK_QUESTIONS.map(toSummary);
+  let items = MOCK_QUESTIONS.map((q) => toSummary(q, filters.userId));
 
   if (filters.q) {
     const term = filters.q.toLowerCase();
@@ -197,8 +218,33 @@ export function listMockQuestions(filters: {
   };
 }
 
-export function getMockQuestion(id: number): QuestionDetail | undefined {
-  return MOCK_QUESTIONS.find((q) => q.id === id);
+export function getMockQuestion(id: number, userId?: string): QuestionDetail | undefined {
+  const q = MOCK_QUESTIONS.find((item) => item.id === id);
+  if (!q) return undefined;
+  return {
+    ...q,
+    voteCount: mockVoteCount(q.id),
+    votedByMe: userId ? mockVotedByMe(userId, q.id) : false,
+  };
+}
+
+export function listMockVotedQuestions(
+  userId: string,
+  filters: { skill?: string; page?: number; pageSize?: number },
+) {
+  const pageSize = filters.pageSize ?? 10;
+  const page = filters.page ?? 1;
+  let items = MOCK_QUESTIONS.map((q) => toSummary(q, userId)).filter((q) => q.voteCount > 0);
+  if (filters.skill) {
+    items = items.filter((q) => q.skillId === filters.skill);
+  }
+  items.sort((a, b) => b.voteCount - a.voteCount || a.id - b.id);
+  const total = items.length;
+  const start = (page - 1) * pageSize;
+  return {
+    questions: items.slice(start, start + pageSize),
+    pagination: { page, pageSize, total },
+  };
 }
 
 export function getAdjacentQuestionIds(id: number): { prev: number | null; next: number | null } {

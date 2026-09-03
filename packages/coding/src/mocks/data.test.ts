@@ -6,7 +6,7 @@ describe('mock questions', () => {
   it('loads questions', () => {
     const { questions, pagination } = listMockQuestions({});
     expect(questions.length).toBeGreaterThan(0);
-    expect(pagination.total).toBe(5);
+    expect(pagination.total).toBe(6);
   });
 
   it('filters by search', () => {
@@ -28,7 +28,7 @@ describe('mock questions', () => {
   it('paginates', () => {
     const page1 = listMockQuestions({ page: 1, pageSize: 2 });
     expect(page1.questions).toHaveLength(2);
-    expect(page1.pagination.total).toBe(5);
+    expect(page1.pagination.total).toBe(6);
   });
 });
 

@@ -52,6 +52,7 @@ function buildQuestions(skills: SkillRecord[], levels: LevelRecord[]): QuestionR
     ],
     4: [tc('t4-1', '5\n-1 0 3 5 9\n3', '2', false, 1)],
     5: [tc('t5-1', '9\n-2 1 -3 4 -1 2 1 -5 4', '6', false, 1)],
+    6: [tc('t6-1', '12\n0 1 0 2 1 0 1 3 2 1 2 1', '6', false, 1)],
   };
 
   const now = new Date().toISOString();
@@ -102,6 +103,8 @@ export function createSeedStore(): CodingDataStore {
     practiceSets: [practiceSet],
     questions: buildQuestions(skills, levels),
     progress: [],
+    interviewVotes: [],
+    voteCounts: [],
     submissions: [],
     skills,
     levels,

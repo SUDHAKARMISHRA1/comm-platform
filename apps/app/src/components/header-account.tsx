@@ -22,6 +22,8 @@ const MENU = [
   { label: 'Contests', href: '/contests' },
 ] as const;
 
+export { MENU };
+
 export function HeaderAccount({
   signingOut,
   onSignOut,
@@ -70,7 +72,7 @@ export function HeaderAccount({
 
   if (Platform.OS === 'web') {
     return (
-      <div className="cp-account" ref={(el) => { wrapRef.current = el; }}>
+      <div className="cp-account cp-account-desktop" ref={(el) => { wrapRef.current = el; }}>
         <style>{accountCss}</style>
         <div
           className="cp-bell-wrap"
@@ -242,6 +244,7 @@ export function HeaderAccount({
 
 const accountCss = `
 .cp-account { display:flex; align-items:center; gap:.45rem; position:relative; }
+.cp-account-desktop { display:flex; }
 .cp-bell-wrap, .cp-profile-wrap { position:relative; }
 .cp-icon-btn, .cp-avatar {
   width:36px; height:36px; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb;

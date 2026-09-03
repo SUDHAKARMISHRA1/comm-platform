@@ -43,7 +43,7 @@ export function FormMessage({ message, tone = 'danger' }: { message?: string; to
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  scroll: { flexGrow: 1, justifyContent: 'center', padding: space.lg, alignItems: 'center' },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: space.md, alignItems: 'center' },
   card: {
     width: '100%',
     maxWidth: 480,

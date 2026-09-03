@@ -8,6 +8,7 @@ import type {
   QuestionSummary,
   RunTestsResponse,
   SubmitCodeResponse,
+  VoteToggleResponse,
 } from '../types';
 import {
   compareOutput,
@@ -28,6 +29,9 @@ import {
   listSubmissionRecords,
   listAllSubmissionRecords,
   upsertProgress,
+  listVoteCounts,
+  listVotedQuestionIdsForUser,
+  toggleInterviewVoteRecord,
 } from './supabase-user-data';
 
 function slugify(text: string) {
@@ -48,7 +52,34 @@ async function loadProgressMap(userId: string) {
   return map;
 }
 
-function toSummary(q: QuestionRecord, status: QuestionStatus, skillName?: string, levelName?: string): QuestionSummary {
+async function loadVoteState(userId: string) {
+  if (isSupabasePersistenceEnabled()) {
+    const [counts, mine] = await Promise.all([listVoteCounts(), listVotedQuestionIdsForUser(userId)]);
+    return { counts, mine };
+  }
+  const data = await readStore();
+  const counts = new Map<number, number>();
+  if (data.voteCounts?.length) {
+    for (const row of data.voteCounts) counts.set(row.questionId, row.voteCount);
+  } else {
+    for (const vote of data.interviewVotes ?? []) {
+      counts.set(vote.questionId, (counts.get(vote.questionId) ?? 0) + 1);
+    }
+  }
+  const mine = new Set(
+    (data.interviewVotes ?? []).filter((vote) => vote.userId === userId).map((vote) => vote.questionId),
+  );
+  return { counts, mine };
+}
+
+function toSummary(
+  q: QuestionRecord,
+  status: QuestionStatus,
+  skillName?: string,
+  levelName?: string,
+  voteCount = 0,
+  votedByMe = false,
+): QuestionSummary {
   return {
     id: q.id,
     title: q.title,
@@ -60,10 +91,19 @@ function toSummary(q: QuestionRecord, status: QuestionStatus, skillName?: string
     levelName,
     topics: q.topics,
     status,
+    voteCount,
+    votedByMe,
   };
 }
 
-function toDetail(q: QuestionRecord, status: QuestionStatus, skillName?: string, levelName?: string): QuestionDetail {
+function toDetail(
+  q: QuestionRecord,
+  status: QuestionStatus,
+  skillName?: string,
+  levelName?: string,
+  voteCount = 0,
+  votedByMe = false,
+): QuestionDetail {
   return {
     id: q.id,
     title: q.title,
@@ -81,6 +121,8 @@ function toDetail(q: QuestionRecord, status: QuestionStatus, skillName?: string,
     topics: q.topics,
     supportedLanguages: q.supportedLanguages,
     status,
+    voteCount,
+    votedByMe,
   };
 }
 
@@ -183,6 +225,8 @@ export async function deleteQuestion(id: number) {
   return mutateStore((data) => {
     data.questions = data.questions.filter((q) => q.id !== id);
     data.progress = data.progress.filter((p) => p.questionId !== id);
+    data.interviewVotes = (data.interviewVotes ?? []).filter((v) => v.questionId !== id);
+    data.voteCounts = (data.voteCounts ?? []).filter((v) => v.questionId !== id);
     return true;
   });
 }
@@ -212,6 +256,7 @@ export async function listQuestionsForUser(
 ) {
   const data = await readStore();
   const pmap = await loadProgressMap(userId);
+  const votes = await loadVoteState(userId);
   let items = data.questions.filter((q) => q.published);
 
   if (filters.q) {
@@ -243,6 +288,76 @@ export async function listQuestionsForUser(
         pmap.get(q.id) ?? 'NOT_ATTEMPTED',
         data.skills.find((s) => s.id === q.skillId)?.name,
         data.levels.find((l) => l.id === q.levelId)?.name,
+        votes.counts.get(q.id) ?? 0,
+        votes.mine.has(q.id),
+      ),
+    ),
+    pagination: { page, pageSize, total },
+  };
+}
+
+export async function toggleInterviewVote(userId: string, questionId: number): Promise<VoteToggleResponse> {
+  const data = await readStore();
+  if (!data.questions.some((q) => q.id === questionId && q.published)) {
+    throw new Error('Question not found');
+  }
+
+  if (isSupabasePersistenceEnabled()) {
+    const fromDb = await toggleInterviewVoteRecord(userId, questionId);
+    if (!fromDb) {
+      throw new Error(
+        'Interview vote tables were not found in Supabase. Confirm question_interview_votes exists, then restart the web server.',
+      );
+    }
+    return fromDb;
+  }
+
+  return mutateStore((store) => {
+    store.interviewVotes ??= [];
+    store.voteCounts ??= [];
+    const idx = store.interviewVotes.findIndex((v) => v.userId === userId && v.questionId === questionId);
+    const now = new Date().toISOString();
+    if (idx >= 0) store.interviewVotes.splice(idx, 1);
+    else store.interviewVotes.push({ userId, questionId, createdAt: now });
+    const voteCount = store.interviewVotes.filter((v) => v.questionId === questionId).length;
+    const row = store.voteCounts.find((c) => c.questionId === questionId);
+    if (row) {
+      row.voteCount = voteCount;
+      row.updatedAt = now;
+    } else {
+      store.voteCounts.push({ questionId, voteCount, updatedAt: now });
+    }
+    return { questionId, voteCount, votedByMe: idx < 0 };
+  });
+}
+
+export async function listVotedQuestionsForUser(
+  userId: string,
+  filters: { skill?: string; page?: number; pageSize?: number },
+) {
+  const data = await readStore();
+  const pmap = await loadProgressMap(userId);
+  const votes = await loadVoteState(userId);
+  let items = data.questions.filter((q) => q.published && (votes.counts.get(q.id) ?? 0) > 0);
+  if (filters.skill) {
+    items = items.filter(
+      (q) => q.skillId === filters.skill || q.skillId === data.skills.find((s) => s.slug === filters.skill)?.id,
+    );
+  }
+  items.sort((a, b) => (votes.counts.get(b.id) ?? 0) - (votes.counts.get(a.id) ?? 0) || a.id - b.id);
+  const pageSize = filters.pageSize ?? 10;
+  const page = Math.max(1, filters.page ?? 1);
+  const total = items.length;
+  const slice = items.slice((page - 1) * pageSize, page * pageSize);
+  return {
+    questions: slice.map((q) =>
+      toSummary(
+        q,
+        pmap.get(q.id) ?? 'NOT_ATTEMPTED',
+        data.skills.find((s) => s.id === q.skillId)?.name,
+        data.levels.find((l) => l.id === q.levelId)?.name,
+        votes.counts.get(q.id) ?? 0,
+        votes.mine.has(q.id),
       ),
     ),
     pagination: { page, pageSize, total },
@@ -254,6 +369,7 @@ export async function getQuestionForUser(userId: string, id: number) {
   const q = data.questions.find((item) => item.id === id && item.published);
   if (!q) return null;
   const pmap = await loadProgressMap(userId);
+  const votes = await loadVoteState(userId);
   const ids = data.questions.filter((x) => x.published).sort((a, b) => a.sequence - b.sequence).map((x) => x.id);
   const idx = ids.indexOf(id);
   return {
@@ -262,6 +378,8 @@ export async function getQuestionForUser(userId: string, id: number) {
       pmap.get(id) ?? 'NOT_ATTEMPTED',
       data.skills.find((s) => s.id === q.skillId)?.name,
       data.levels.find((l) => l.id === q.levelId)?.name,
+      votes.counts.get(id) ?? 0,
+      votes.mine.has(id),
     ),
     navigation: { prev: idx > 0 ? (ids[idx - 1] ?? null) : null, next: idx < ids.length - 1 ? (ids[idx + 1] ?? null) : null },
     codeTemplates: q.codeTemplates,
@@ -272,12 +390,15 @@ export async function getDashboardForUser(userId: string): Promise<DashboardStat
   const data = await readStore();
   const published = data.questions.filter((q) => q.published);
   const pmap = await loadProgressMap(userId);
+  const votes = await loadVoteState(userId);
   const summaries = published.map((q) =>
     toSummary(
       q,
       pmap.get(q.id) ?? 'NOT_ATTEMPTED',
       data.skills.find((s) => s.id === q.skillId)?.name,
       data.levels.find((l) => l.id === q.levelId)?.name,
+      votes.counts.get(q.id) ?? 0,
+      votes.mine.has(q.id),
     ),
   );
   const solved = summaries.filter((q) => q.status === 'SOLVED').length;
@@ -437,7 +558,9 @@ export async function runUserCode(
 ): Promise<ExecutionResult> {
   if (!validateLanguage(language)) throw new Error('Invalid language');
   const result = await executeCode(language, sourceCode, stdin);
-  if (userId && questionId) await markAttempted(userId, questionId);
+  if (userId && questionId && result.status === 'ACCEPTED') {
+    await markAttempted(userId, questionId);
+  }
   return result;
 }
 
@@ -495,11 +618,11 @@ export async function runSampleTests(
     results.push({ index: i + 1, passed: ok, hidden: false, stdout: result.stdout, stderr: result.stderr });
   }
 
-  await markAttempted(userId, questionId);
-
   const status =
     fatalStatus ??
     (sample.length === 0 ? 'INTERNAL_ERROR' : passed === sample.length ? 'ACCEPTED' : 'WRONG_ANSWER');
+
+  if (status === 'ACCEPTED') await markAttempted(userId, questionId);
 
   return {
     status,
@@ -572,27 +695,28 @@ export async function submitUserCode(
     createdAt: new Date().toISOString(),
   };
 
-  if (isSupabasePersistenceEnabled()) {
-    await insertSubmission(record);
-    await upsertProgress({
-      userId,
-      questionId,
-      status: status === 'ACCEPTED' ? 'SOLVED' : 'ATTEMPTED',
-      updatedAt: record.createdAt,
-    });
-  } else {
-    await mutateStore((data) => {
-      data.submissions.unshift(record);
-      const prog = data.progress.find((p) => p.userId === userId && p.questionId === questionId);
-      const nextStatus = status === 'ACCEPTED' ? 'SOLVED' : 'ATTEMPTED';
-      if (prog) {
-        if (prog.status !== 'SOLVED') prog.status = nextStatus;
-        prog.updatedAt = record.createdAt;
-      } else {
-        data.progress.push({ userId, questionId, status: nextStatus, updatedAt: record.createdAt });
-      }
-      return record;
-    });
+  if (status === 'ACCEPTED') {
+    if (isSupabasePersistenceEnabled()) {
+      await insertSubmission(record);
+      await upsertProgress({
+        userId,
+        questionId,
+        status: 'SOLVED',
+        updatedAt: record.createdAt,
+      });
+    } else {
+      await mutateStore((data) => {
+        data.submissions.unshift(record);
+        const prog = data.progress.find((p) => p.userId === userId && p.questionId === questionId);
+        if (prog) {
+          prog.status = 'SOLVED';
+          prog.updatedAt = record.createdAt;
+        } else {
+          data.progress.push({ userId, questionId, status: 'SOLVED', updatedAt: record.createdAt });
+        }
+        return record;
+      });
+    }
   }
 
   return {

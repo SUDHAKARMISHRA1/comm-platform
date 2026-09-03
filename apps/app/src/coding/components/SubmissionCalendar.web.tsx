@@ -143,6 +143,12 @@ export function SubmissionCalendar({ submissions }: { submissions: SubmissionSum
 const css = `
 .cal { width: 100%; background:#fff; border:1px solid #e5e7eb; border-radius:.75rem; padding:.9rem 1rem .75rem; overflow: visible; box-shadow:0 1px 2px rgb(0 0 0/.04); font-family:'Inter',system-ui,-apple-system,sans-serif; }
 .cal-head { display:flex; flex-wrap:wrap; gap:.75rem; justify-content:space-between; align-items:flex-end; }
+@media (max-width:640px) {
+  .cal { padding:.75rem; }
+  .cal-nav { width:100%; justify-content:space-between; }
+  .cal-tip { width:min(92vw,280px); margin-left:0; left:50% !important; transform:translateX(-50%); }
+  .cal-tip-above { transform:translate(-50%, -100%); }
+}
 .cal-kicker { margin:0; font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#6366f1; }
 .cal h2 { margin:.25rem 0 0; font-size:1.05rem; color:#111827; }
 .cal-nav { display:flex; align-items:center; gap:.5rem; }

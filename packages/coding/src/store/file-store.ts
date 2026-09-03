@@ -41,6 +41,18 @@ export function ensureCatalog(data: CodingDataStore): boolean {
     data.notifications = [];
     changed = true;
   }
+  if (!Array.isArray(data.progress)) {
+    data.progress = [];
+    changed = true;
+  }
+  if (!Array.isArray(data.interviewVotes)) {
+    data.interviewVotes = [];
+    changed = true;
+  }
+  if (!Array.isArray(data.voteCounts)) {
+    data.voteCounts = [];
+    changed = true;
+  }
   if (!data.settings) {
     data.settings = {
       siteName: 'Comm Platform',
