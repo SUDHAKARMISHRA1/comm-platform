@@ -36,7 +36,7 @@ export default async function CmsPagesPage() {
                   </a>
                   <form action={removeCmsPageAction}>
                     <input type="hidden" name="id" value={page.id} />
-                    <button className="text-red-600" type="submit">
+                    <button className="text-[var(--color-danger)]" type="submit">
                       Delete
                     </button>
                   </form>

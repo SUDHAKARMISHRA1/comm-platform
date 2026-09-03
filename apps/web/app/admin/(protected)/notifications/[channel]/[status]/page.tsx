@@ -59,7 +59,7 @@ export default async function NotificationListPage({ params }: { params: Props['
                   <form action={removeNotificationAction}>
                     <input type="hidden" name="id" value={row.id} />
                     <input type="hidden" name="channel" value={channel} />
-                    <button className="text-red-600" type="submit">
+                    <button className="text-[var(--color-danger)]" type="submit">
                       Delete
                     </button>
                   </form>

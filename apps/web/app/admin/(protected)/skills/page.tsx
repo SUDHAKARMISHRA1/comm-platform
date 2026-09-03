@@ -48,7 +48,7 @@ export default async function SkillsListPage() {
                 <td className="px-4 py-3">
                   <form action={removeSkillAction}>
                     <input type="hidden" name="id" value={skill.id} />
-                    <button className="text-red-600" type="submit">
+                    <button className="text-[var(--color-danger)]" type="submit">
                       Delete
                     </button>
                   </form>

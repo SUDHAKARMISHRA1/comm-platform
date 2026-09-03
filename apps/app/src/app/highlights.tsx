@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   insight: { backgroundColor: colors.navy, borderRadius: radius.lg, padding: space.lg, gap: space.sm },
   featuredTag: { color: colors.primaryText, fontWeight: '700', textTransform: 'uppercase', fontSize: 11, letterSpacing: 1 },
   insightTitle: { color: colors.surface, fontSize: 18, fontWeight: '700', lineHeight: 24 },
-  insightBody: { color: '#cbd5e1', fontSize: type.body, lineHeight: 22 },
+  insightBody: { color: colors.textSubtle ?? '#9ca3af', fontSize: type.body, lineHeight: 22 },
   chip: { color: colors.navySoft, fontWeight: '700', fontSize: 12 },
   primaryAction: { alignSelf: 'flex-start', backgroundColor: colors.navyMuted, borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm },
   primaryActionText: { color: colors.primaryText, fontWeight: '700' },

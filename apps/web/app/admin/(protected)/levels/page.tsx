@@ -45,7 +45,7 @@ export default async function LevelsListPage() {
                 <td className="px-4 py-3">
                   <form action={removeLevelAction}>
                     <input type="hidden" name="id" value={level.id} />
-                    <button className="text-red-600" type="submit">
+                    <button className="text-[var(--color-danger)]" type="submit">
                       Delete
                     </button>
                   </form>

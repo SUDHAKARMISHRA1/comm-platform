@@ -135,7 +135,7 @@ export default async function AdminPracticeSetPage({ params }: Props) {
                   <form action={removeQuestionAction}>
                     <input type="hidden" name="setId" value={setId} />
                     <input type="hidden" name="questionId" value={q.id} />
-                    <button type="submit" className="text-red-600">
+                    <button type="submit" className="text-[var(--color-danger)]">
                       Delete
                     </button>
                   </form>

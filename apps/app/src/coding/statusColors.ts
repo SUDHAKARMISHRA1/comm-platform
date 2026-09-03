@@ -1,7 +1,7 @@
 export const DIFFICULTY_FILL = {
-  EASY: '#16a34a',
-  MEDIUM: '#eab308',
-  HARD: '#dc2626',
+  EASY: '#22c55e',
+  MEDIUM: '#f59e0b',
+  HARD: '#ef4444',
 } as const;
 
 export function submissionTone(status: string): 'ok' | 'pending' | 'fail' {

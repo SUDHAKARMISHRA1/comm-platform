@@ -20,7 +20,7 @@ export default async function AdminQuestionEditPage({ params }: Props) {
       </a>
       <h1 className="text-2xl font-semibold">Edit: {q.title}</h1>
       {skills.length === 0 || levels.length === 0 ? (
-        <p className="text-sm text-red-600">Restore at least one skill and one level before saving this problem.</p>
+        <p className="text-sm text-[var(--color-danger)]">Restore at least one skill and one level before saving this problem.</p>
       ) : null}
       <form action={upsertQuestion} className="grid gap-3 rounded-2xl border p-6">
         <input type="hidden" name="id" value={q.id} />

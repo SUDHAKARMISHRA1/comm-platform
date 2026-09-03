@@ -13,8 +13,8 @@ import {
 } from '@/coding/activity';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const FILL = ['#ffffff', '#bbf7d0', '#4ade80', '#16a34a', '#166534'];
-const INK = ['#0b1f3a', '#14532d', '#14532d', '#ffffff', '#ffffff'];
+const FILL = ['#f9fafb', '#ddd6fe', '#a78bfa', '#7c3aed', '#4c1d95'];
+const INK = ['#6b7280', '#4c1d95', '#4c1d95', '#ffffff', '#ffffff'];
 
 export function SubmissionCalendar({ submissions }: { submissions: SubmissionSummary[] }) {
   const now = new Date();

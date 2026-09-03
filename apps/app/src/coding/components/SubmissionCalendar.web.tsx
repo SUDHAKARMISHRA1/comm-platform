@@ -12,8 +12,8 @@ import {
 } from '@/coding/activity';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const FILL = ['#ffffff', '#bbf7d0', '#4ade80', '#16a34a', '#166534'];
-const INK = ['#0b1f3a', '#14532d', '#14532d', '#ffffff', '#ffffff'];
+const FILL = ['#f9fafb', '#ddd6fe', '#a78bfa', '#7c3aed', '#4c1d95'];
+const INK = ['#6b7280', '#4c1d95', '#4c1d95', '#ffffff', '#ffffff'];
 const TIP_W = 280;
 
 type TipState = {
@@ -96,7 +96,7 @@ export function SubmissionCalendar({ submissions }: { submissions: SubmissionSum
             <div
               key={cell.dateKey}
               className="cal-day"
-              style={{ background: FILL[level], color: INK[level], borderColor: count ? FILL[Math.min(4, level)] : '#e2e8f0' }}
+              style={{ background: FILL[level], color: INK[level], borderColor: count ? FILL[Math.min(4, level + 1)] : '#e5e7eb' }}
               onMouseEnter={(e) => showTip(e, cell.dateKey!, insight)}
               onMouseLeave={() => setTip(null)}
             >
@@ -141,30 +141,30 @@ export function SubmissionCalendar({ submissions }: { submissions: SubmissionSum
 }
 
 const css = `
-.cal { width: 100%; background:#fff; border:1px solid #e2e8f0; border-radius:1rem; padding:.9rem 1rem .75rem; overflow: visible; }
+.cal { width: 100%; background:#fff; border:1px solid #e5e7eb; border-radius:.75rem; padding:.9rem 1rem .75rem; overflow: visible; box-shadow:0 1px 2px rgb(0 0 0/.04); font-family:'Inter',system-ui,-apple-system,sans-serif; }
 .cal-head { display:flex; flex-wrap:wrap; gap:.75rem; justify-content:space-between; align-items:flex-end; }
-.cal-kicker { margin:0; font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#0b1f3a; }
-.cal h2 { margin:.25rem 0 0; font-size:1.05rem; color:#0b1f3a; }
+.cal-kicker { margin:0; font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#6366f1; }
+.cal h2 { margin:.25rem 0 0; font-size:1.05rem; color:#111827; }
 .cal-nav { display:flex; align-items:center; gap:.5rem; }
-.cal-nav button { width:1.75rem; height:1.75rem; border-radius:999px; border:1px solid #0b1f3a; background:#0b1f3a; color:#fff; cursor:pointer; }
-.cal-nav button:hover { background:#e8eef6; }
+.cal-nav button { width:1.75rem; height:1.75rem; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb; color:#374151; cursor:pointer; transition:background .12s; }
+.cal-nav button:hover { background:#eef2ff; border-color:#c7d2fe; color:#6366f1; }
 .cal-kpis { margin:.7rem 0 .55rem; display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem; }
 @media (max-width:700px) { .cal-kpis { grid-template-columns:1fr; } }
-.cal-kpis article { border:1px solid #e2e8f0; border-radius:.65rem; padding:.45rem .7rem; background:#f8fafc; display:flex; align-items:baseline; gap:.6rem; }
-.cal-kpis span { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#64748b; }
-.cal-kpis strong { font-size:1.15rem; color:#0b1f3a; }
-.cal-kpis em { font-style:normal; color:#64748b; font-size:.75rem; margin-left:auto; }
+.cal-kpis article { border:1px solid #e5e7eb; border-radius:.5rem; padding:.45rem .7rem; background:#f9fafb; display:flex; align-items:baseline; gap:.6rem; }
+.cal-kpis span { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#6b7280; }
+.cal-kpis strong { font-size:1.15rem; color:#111827; }
+.cal-kpis em { font-style:normal; color:#6b7280; font-size:.75rem; margin-left:auto; }
 .cal-week, .cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
-.cal-week span { text-align:center; font-size:10px; font-weight:700; color:#64748b; padding-bottom:2px; }
+.cal-week span { text-align:center; font-size:10px; font-weight:700; color:#6b7280; padding-bottom:2px; }
 .cal-empty { height: 34px; }
-.cal-day { height: 34px; border-radius:6px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; gap:.3rem; cursor:default; }
-.cal-day:hover { outline: 2px solid #0b1f3a; outline-offset: 0; z-index: 1; }
+.cal-day { height: 34px; border-radius:6px; border:1px solid #e5e7eb; display:flex; align-items:center; justify-content:center; gap:.3rem; cursor:default; }
+.cal-day:hover { outline: 2px solid #6366f1; outline-offset: 0; z-index: 1; }
 .cal-num { font-weight:700; font-size:.78rem; line-height:1; }
 .cal-count { font-size:10px; font-weight:700; opacity:.85; min-width:1.1rem; text-align:center; }
-.cal-tip { position:fixed; z-index:80; width:280px; margin-left:-140px; background:#0b1f3a; color:#e8eef6; padding:.7rem .8rem; border-radius:.7rem; pointer-events:none; box-shadow:0 12px 30px rgba(11,31,58,.28); }
+.cal-tip { position:fixed; z-index:80; width:280px; margin-left:-140px; background:#1e293b; color:#e2e8f0; padding:.7rem .8rem; border-radius:.5rem; pointer-events:none; box-shadow:0 10px 15px -3px rgb(0 0 0/.2); }
 .cal-tip-above { transform: translateY(-100%); }
 .cal-tip p { margin:.22rem 0 0; font-size:.78rem; line-height:1.4; }
-.cal-tip-date { margin:0 !important; color:#ffffff; font-weight:700; font-size:.75rem !important; }
-.cal-legend { display:flex; align-items:center; gap:.3rem; margin:.55rem 0 0; color:#64748b; font-size:.72rem; }
+.cal-tip-date { margin:0 !important; color:#f9fafb; font-weight:700; font-size:.75rem !important; }
+.cal-legend { display:flex; align-items:center; gap:.3rem; margin:.55rem 0 0; color:#6b7280; font-size:.72rem; }
 .cal-legend i { width:12px; height:12px; border-radius:3px; border:1px solid; display:inline-block; }
 `;

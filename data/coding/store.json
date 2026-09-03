@@ -22,6 +22,26 @@
       "published": true,
       "createdAt": "2026-08-30T17:06:37.791Z",
       "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "title": "Python",
+      "slug": "Python",
+      "description": "Beginners Python Practice",
+      "topics": [
+        "Array",
+        "List"
+      ],
+      "languages": [
+        "java",
+        "c",
+        "cpp",
+        "Python"
+      ],
+      "sequence": 2,
+      "published": true,
+      "id": "ps-python-1788284518987",
+      "createdAt": "2026-09-01T17:41:58.986Z",
+      "updatedAt": "2026-09-01T17:41:58.986Z"
     }
   ],
   "questions": [
@@ -152,7 +172,7 @@
         }
       ],
       "topics": [
-        "Math"
+        "Math2"
       ],
       "supportedLanguages": [
         "java",
@@ -306,6 +326,15 @@
       "sequence": 3,
       "createdAt": "2026-08-30T17:06:37.791Z",
       "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "id": "skill-python-1788284390754",
+      "name": "Python",
+      "slug": "python",
+      "languageKey": null,
+      "sequence": 4,
+      "createdAt": "2026-09-01T17:39:50.753Z",
+      "updatedAt": "2026-09-01T17:39:50.753Z"
     }
   ],
   "levels": [
@@ -372,11 +401,11 @@
     },
     {
       "id": "topic-math",
-      "name": "Math",
-      "slug": "math",
+      "name": "Math2",
+      "slug": "math2",
       "sequence": 5,
       "createdAt": "2026-08-30T17:06:37.791Z",
-      "updatedAt": "2026-08-30T17:06:37.791Z"
+      "updatedAt": "2026-09-01T17:44:25.348Z"
     },
     {
       "id": "topic-hashmap",
@@ -385,10 +414,29 @@
       "sequence": 6,
       "createdAt": "2026-08-30T17:06:37.791Z",
       "updatedAt": "2026-08-30T17:06:37.791Z"
+    },
+    {
+      "id": "topic-sum-of-two-number-1788284612042",
+      "name": "Sum Of Two Number",
+      "slug": "sum-of-two-number",
+      "sequence": 7,
+      "createdAt": "2026-09-01T17:43:32.042Z",
+      "updatedAt": "2026-09-01T17:43:32.042Z"
     }
   ],
   "cmsPages": [],
-  "notifications": [],
+  "notifications": [
+    {
+      "id": "ntf-1788285059228",
+      "channel": "push",
+      "title": "He",
+      "body": "He",
+      "audience": "active",
+      "status": "draft",
+      "createdAt": "2026-09-01T17:50:59.228Z",
+      "publishedAt": null
+    }
+  ],
   "settings": {
     "siteName": "Comm Platform",
     "supportEmail": "support@example.com",
