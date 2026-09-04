@@ -14,6 +14,10 @@ export default async function TopicsListPage() {
           Add topic
         </a>
       </div>
+      <p className="text-sm text-[var(--color-text-muted)]">
+        Topics are stored in the database and used as tags on problems. Create a topic here before assigning it on a
+        problem.
+      </p>
       <div className="overflow-x-auto rounded-2xl border">
         <table className="min-w-full text-sm">
           <thead className="bg-[var(--color-surface-muted)]">

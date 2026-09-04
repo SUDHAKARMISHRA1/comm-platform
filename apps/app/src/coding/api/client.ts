@@ -42,7 +42,7 @@ function jwtExp(accessToken: string): number | null {
   }
 }
 
-function sessionIsFresh(session: Session | null): session is Session {
+function sessionIsFresh(session: Session | null): boolean {
   if (!session?.access_token) return false;
   if (session.access_token === 'demo-access-token') return true;
   const exp = session.expires_at ?? jwtExp(session.access_token);

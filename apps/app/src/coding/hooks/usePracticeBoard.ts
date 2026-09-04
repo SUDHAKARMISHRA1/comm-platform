@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useLocalSearchParams } from 'expo-router';
 
 import type { Difficulty } from '@comm-platform/coding';
 
@@ -12,6 +13,7 @@ export const DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD'];
 export function usePracticeBoard() {
   const { session, loading: authLoading } = useAuth();
   const enabled = Boolean(session) && !authLoading;
+  const params = useLocalSearchParams<{ skill?: string }>();
 
   const [skill, setSkill] = useState('');
   const [search, setSearch] = useState('');
@@ -31,10 +33,17 @@ export function usePracticeBoard() {
   const topics = catalogQuery.data?.topics ?? [];
 
   useEffect(() => {
-    if (skill || skills.length === 0) return;
+    if (skills.length === 0) return;
+    const requested = typeof params.skill === 'string' ? params.skill : '';
+    if (requested) {
+      const match = skills.find((s) => s.id === requested || s.slug === requested);
+      if (match && skill !== match.id) setSkill(match.id);
+      return;
+    }
+    if (skill) return;
     const java = skills.find((s) => s.slug === 'java' || s.languageKey === 'java');
     setSkill(java?.id ?? skills[0]!.id);
-  }, [skills, skill]);
+  }, [skills, skill, params.skill]);
 
   const selectedSkill = skills.find((s) => s.id === skill) ?? null;
 
@@ -128,6 +137,8 @@ export function usePracticeBoard() {
     sectionQuery,
     boardQuery,
     skills,
+    featuredSkills: skills.slice(0, 3),
+    hasMoreSkills: skills.length > 3,
     levels,
     topics,
     skill,

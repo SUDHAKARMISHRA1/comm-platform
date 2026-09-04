@@ -25,6 +25,12 @@ export function ensureCatalog(data: CodingDataStore): boolean {
     data.skills = fallback.skills;
     changed = true;
   }
+  for (const skill of data.skills) {
+    if (skill.enabled !== false && skill.enabled !== true) {
+      skill.enabled = true;
+      changed = true;
+    }
+  }
   if (!Array.isArray(data.levels) || data.levels.length === 0) {
     data.levels = fallback.levels;
     changed = true;

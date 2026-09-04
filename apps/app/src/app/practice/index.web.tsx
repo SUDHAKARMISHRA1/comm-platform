@@ -50,7 +50,7 @@ export default function PracticeScreen() {
         {board.catalogQuery.error ? <p className="pr-err">Could not load practice catalog.</p> : null}
 
         <section className="pr-tracks" aria-label="Language sections">
-          {board.skills.map((s) => {
+          {board.featuredSkills.map((s) => {
             const active = s.id === board.skill;
             const count = board.skillCounts.get(s.id) ?? 0;
             return (
@@ -69,6 +69,13 @@ export default function PracticeScreen() {
             );
           })}
         </section>
+        {board.hasMoreSkills ? (
+          <div className="pr-see-more">
+            <a className="pr-more" href="/practice/skills" onClick={(e) => spaNavigate('/practice/skills', e)}>
+              See more skills
+            </a>
+          </div>
+        ) : null}
 
         <section className="pr-stats" aria-label={`${skillName} progress`}>
           <article><span>In {skillName}</span><strong>{board.stats.total}</strong></article>
@@ -243,6 +250,7 @@ const css = `
 .pr-warn { margin:0; color:#b45309; }
 .pr-err { margin:0; color:#b91c1c; }
 .pr-empty { margin:0; padding:.85rem 0; color:#6b7280; font-size:.875rem; }
+.pr-see-more { display:flex; justify-content:flex-end; margin-top:-.35rem; }
 .pr-tracks { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; }
 @media (max-width:700px) { .pr-tracks { grid-template-columns:1fr; } }
 .pr-track { display:flex; align-items:center; gap:.85rem; text-align:left; border:1px solid #e5e7eb; background:#fff; border-radius:.75rem; padding:.9rem 1rem; cursor:pointer; box-shadow:0 1px 2px rgb(0 0 0/.05); transition:transform .15s, box-shadow .15s, border-color .15s; }

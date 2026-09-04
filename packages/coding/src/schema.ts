@@ -51,6 +51,7 @@ export type SkillRecord = {
   slug: string;
   languageKey: LanguageKey | null;
   sequence: number;
+  enabled: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -61,6 +62,7 @@ export type LevelRecord = {
   slug: string;
   band: Difficulty;
   sequence: number;
+  enabled?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -70,6 +72,7 @@ export type TopicRecord = {
   name: string;
   slug: string;
   sequence: number;
+  enabled?: boolean;
   createdAt: string;
   updatedAt: string;
 };

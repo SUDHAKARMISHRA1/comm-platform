@@ -10,10 +10,101 @@ import type {
   NotificationAudience,
   NotificationCampaignRecord,
   NotificationChannel,
+  QuestionRecord,
   SkillRecord,
   TopicRecord,
 } from '../schema';
 import { mutateStore, readStore } from './file-store';
+import { isSupabasePersistenceEnabled } from './supabase-user-data';
+import {
+  catalogTablesReady,
+  deleteLevelDb,
+  deleteQuestionDb,
+  deleteSkillDb,
+  deleteTopicDb,
+  listLevelsDb,
+  listQuestionsDb,
+  listSkillsDb,
+  listTopicsDb,
+  upsertLevelDb,
+  upsertQuestionDb,
+  upsertSkillDb,
+  upsertTopicDb,
+} from './supabase-catalog';
+
+async function useCatalogDb() {
+  if (!isSupabasePersistenceEnabled()) return false;
+  return catalogTablesReady();
+}
+
+let catalogBackfillDone = false;
+
+async function backfillCatalogIfEmpty() {
+  if (catalogBackfillDone) return;
+  const [skills, topics, levels, questions] = await Promise.all([
+    listSkillsDb(),
+    listTopicsDb(),
+    listLevelsDb(),
+    listQuestionsDb(),
+  ]);
+  if (skills.length || topics.length || levels.length || questions.length) {
+    catalogBackfillDone = true;
+    return;
+  }
+  const local = await readStore();
+  for (const row of local.skills) await upsertSkillDb({ ...row, enabled: row.enabled !== false });
+  for (const row of local.topics) await upsertTopicDb(row);
+  for (const row of local.levels) await upsertLevelDb(row);
+  for (const row of local.questions) await upsertQuestionDb(row);
+  catalogBackfillDone = true;
+}
+
+export async function loadCatalogRecords() {
+  if (await useCatalogDb()) {
+    await backfillCatalogIfEmpty();
+    const [skills, levels, topics, questions] = await Promise.all([
+      listSkillsDb(),
+      listLevelsDb(),
+      listTopicsDb(),
+      listQuestionsDb(),
+    ]);
+    return { skills, levels, topics, questions };
+  }
+  const data = await readStore();
+  return {
+    skills: [...data.skills],
+    levels: [...data.levels],
+    topics: [...data.topics],
+    questions: [...data.questions],
+  };
+}
+
+export async function persistQuestion(row: QuestionRecord) {
+  if (await useCatalogDb()) {
+    await upsertQuestionDb(row);
+    return row;
+  }
+  return mutateStore((data) => {
+    const idx = data.questions.findIndex((q) => q.id === row.id);
+    if (idx >= 0) data.questions[idx] = row;
+    else data.questions.push(row);
+    return row;
+  });
+}
+
+export async function removeQuestionRecord(id: number) {
+  if (await useCatalogDb()) {
+    await deleteQuestionDb(id);
+    return true;
+  }
+  return mutateStore((data) => {
+    data.questions = data.questions.filter((q) => q.id !== id);
+    data.progress = data.progress.filter((p) => p.questionId !== id);
+    data.interviewVotes = (data.interviewVotes ?? []).filter((v) => v.questionId !== id);
+    data.voteCounts = (data.voteCounts ?? []).filter((v) => v.questionId !== id);
+    return true;
+  });
+}
 
 function slugify(text: string) {
   return text
@@ -23,15 +114,19 @@ function slugify(text: string) {
 }
 
 export async function getCatalog(): Promise<CatalogPayload> {
+  const { skills, levels, topics } = await loadCatalogRecords();
   const data = await readStore();
   return {
-    skills: [...data.skills]
+    skills: [...skills]
+      .filter((s) => s.enabled !== false)
       .sort((a, b) => a.sequence - b.sequence)
       .map((s) => ({ id: s.id, name: s.name, slug: s.slug, languageKey: s.languageKey })),
-    levels: [...data.levels]
+    levels: [...levels]
+      .filter((l) => l.enabled !== false)
       .sort((a, b) => a.sequence - b.sequence)
       .map((l) => ({ id: l.id, name: l.name, slug: l.slug, band: l.band })),
-    topics: [...data.topics]
+    topics: [...topics]
+      .filter((t) => t.enabled !== false)
       .sort((a, b) => a.sequence - b.sequence)
       .map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
     pages: data.cmsPages
@@ -52,127 +147,189 @@ export async function getCatalog(): Promise<CatalogPayload> {
 }
 
 export async function listSkills() {
-  const data = await readStore();
-  return [...data.skills].sort((a, b) => a.sequence - b.sequence);
+  const { skills } = await loadCatalogRecords();
+  return [...skills].sort((a, b) => a.sequence - b.sequence);
 }
 
 export async function listLevels() {
-  const data = await readStore();
-  return [...data.levels].sort((a, b) => a.sequence - b.sequence);
+  const { levels } = await loadCatalogRecords();
+  return [...levels].sort((a, b) => a.sequence - b.sequence);
 }
 
 export async function listTopics() {
-  const data = await readStore();
-  return [...data.topics].sort((a, b) => a.sequence - b.sequence);
+  const { topics } = await loadCatalogRecords();
+  return [...topics].sort((a, b) => a.sequence - b.sequence);
 }
 
-export async function saveSkill(input: { id?: string; name: string; languageKey?: string | null }) {
-  return mutateStore((data) => {
-    const now = new Date().toISOString();
-    const languageKey = (input.languageKey as LanguageKey | null | undefined) || null;
-    if (input.id) {
-      const row = data.skills.find((s) => s.id === input.id);
-      if (!row) throw new Error('Skill not found');
-      row.name = input.name.trim();
-      row.slug = slugify(input.name);
-      row.languageKey = languageKey;
-      row.updatedAt = now;
+export async function saveSkill(input: {
+  id?: string;
+  name: string;
+  languageKey?: string | null;
+  enabled?: boolean;
+}) {
+  const now = new Date().toISOString();
+  const languageKey = (input.languageKey as LanguageKey | null | undefined) || null;
+  const { skills } = await loadCatalogRecords();
+
+  if (input.id) {
+    const row = skills.find((s) => s.id === input.id);
+    if (!row) throw new Error('Skill not found');
+    row.name = input.name.trim();
+    row.slug = slugify(input.name);
+    row.languageKey = languageKey;
+    if (typeof input.enabled === 'boolean') row.enabled = input.enabled;
+    row.updatedAt = now;
+    if (await useCatalogDb()) return upsertSkillDb(row);
+    return mutateStore((data) => {
+      const local = data.skills.find((s) => s.id === row.id);
+      if (local) Object.assign(local, row);
       return row;
-    }
-    const row: SkillRecord = {
-      id: `skill-${slugify(input.name)}-${Date.now()}`,
-      name: input.name.trim(),
-      slug: slugify(input.name),
-      languageKey,
-      sequence: data.skills.length + 1,
-      createdAt: now,
-      updatedAt: now,
-    };
+    });
+  }
+
+  const row: SkillRecord = {
+    id: `skill-${slugify(input.name)}-${Date.now()}`,
+    name: input.name.trim(),
+    slug: slugify(input.name),
+    languageKey,
+    sequence: skills.length + 1,
+    enabled: input.enabled !== false,
+    createdAt: now,
+    updatedAt: now,
+  };
+  if (await useCatalogDb()) return upsertSkillDb(row);
+  return mutateStore((data) => {
     data.skills.push(row);
     return row;
   });
 }
 
 export async function deleteSkill(id: string) {
+  const { questions } = await loadCatalogRecords();
+  if (questions.some((q) => q.skillId === id)) {
+    throw new Error('Cannot delete a skill that is used by problems. Disable it instead.');
+  }
+  if (await useCatalogDb()) {
+    await deleteSkillDb(id);
+    return true;
+  }
   return mutateStore((data) => {
-    if (data.questions.some((q) => q.skillId === id)) {
-      throw new Error('Cannot delete a skill that is used by problems.');
-    }
     data.skills = data.skills.filter((s) => s.id !== id);
     return true;
   });
 }
 
 export async function saveLevel(input: { id?: string; name: string; band: Difficulty }) {
-  return mutateStore((data) => {
-    const now = new Date().toISOString();
-    if (input.id) {
-      const row = data.levels.find((s) => s.id === input.id);
-      if (!row) throw new Error('Level not found');
-      row.name = input.name.trim();
-      row.slug = slugify(input.name);
-      row.band = input.band;
-      row.updatedAt = now;
+  const now = new Date().toISOString();
+  const { levels, questions } = await loadCatalogRecords();
+  if (input.id) {
+    const row = levels.find((s) => s.id === input.id);
+    if (!row) throw new Error('Level not found');
+    row.name = input.name.trim();
+    row.slug = slugify(input.name);
+    row.band = input.band;
+    row.updatedAt = now;
+    const touched = questions.filter((q) => q.levelId === row.id);
+    for (const q of touched) q.difficulty = row.band;
+    if (await useCatalogDb()) {
+      await upsertLevelDb(row);
+      for (const q of touched) await upsertQuestionDb(q);
+      return row;
+    }
+    return mutateStore((data) => {
+      const local = data.levels.find((s) => s.id === row.id);
+      if (local) Object.assign(local, row);
       for (const q of data.questions) {
         if (q.levelId === row.id) q.difficulty = row.band;
       }
       return row;
-    }
-    const row: LevelRecord = {
-      id: `level-${slugify(input.name)}-${Date.now()}`,
-      name: input.name.trim(),
-      slug: slugify(input.name),
-      band: input.band,
-      sequence: data.levels.length + 1,
-      createdAt: now,
-      updatedAt: now,
-    };
+    });
+  }
+  const row: LevelRecord = {
+    id: `level-${slugify(input.name)}-${Date.now()}`,
+    name: input.name.trim(),
+    slug: slugify(input.name),
+    band: input.band,
+    sequence: levels.length + 1,
+    enabled: true,
+    createdAt: now,
+    updatedAt: now,
+  };
+  if (await useCatalogDb()) return upsertLevelDb(row);
+  return mutateStore((data) => {
     data.levels.push(row);
     return row;
   });
 }
 
 export async function deleteLevel(id: string) {
+  const { questions } = await loadCatalogRecords();
+  if (questions.some((q) => q.levelId === id)) {
+    throw new Error('Cannot delete a level that is used by problems.');
+  }
+  if (await useCatalogDb()) {
+    await deleteLevelDb(id);
+    return true;
+  }
   return mutateStore((data) => {
-    if (data.questions.some((q) => q.levelId === id)) {
-      throw new Error('Cannot delete a level that is used by problems.');
-    }
     data.levels = data.levels.filter((s) => s.id !== id);
     return true;
   });
 }
 
 export async function saveTopic(input: { id?: string; name: string }) {
-  return mutateStore((data) => {
-    const now = new Date().toISOString();
-    if (input.id) {
-      const row = data.topics.find((s) => s.id === input.id);
-      if (!row) throw new Error('Topic not found');
-      const previous = row.name;
-      row.name = input.name.trim();
-      row.slug = slugify(input.name);
-      row.updatedAt = now;
+  const now = new Date().toISOString();
+  const { topics, questions } = await loadCatalogRecords();
+  if (input.id) {
+    const row = topics.find((s) => s.id === input.id);
+    if (!row) throw new Error('Topic not found');
+    const previous = row.name;
+    row.name = input.name.trim();
+    row.slug = slugify(input.name);
+    row.updatedAt = now;
+    const touched = questions.filter((q) => q.topics.includes(previous));
+    for (const q of touched) q.topics = q.topics.map((t) => (t === previous ? row.name : t));
+    if (await useCatalogDb()) {
+      await upsertTopicDb(row);
+      for (const q of touched) await upsertQuestionDb(q);
+      return row;
+    }
+    return mutateStore((data) => {
+      const local = data.topics.find((s) => s.id === row.id);
+      if (local) Object.assign(local, row);
       for (const q of data.questions) {
         q.topics = q.topics.map((t) => (t === previous ? row.name : t));
       }
       return row;
-    }
-    const row: TopicRecord = {
-      id: `topic-${slugify(input.name)}-${Date.now()}`,
-      name: input.name.trim(),
-      slug: slugify(input.name),
-      sequence: data.topics.length + 1,
-      createdAt: now,
-      updatedAt: now,
-    };
+    });
+  }
+  const row: TopicRecord = {
+    id: `topic-${slugify(input.name)}-${Date.now()}`,
+    name: input.name.trim(),
+    slug: slugify(input.name),
+    sequence: topics.length + 1,
+    enabled: true,
+    createdAt: now,
+    updatedAt: now,
+  };
+  if (await useCatalogDb()) return upsertTopicDb(row);
+  return mutateStore((data) => {
     data.topics.push(row);
     return row;
   });
 }
 
 export async function deleteTopic(id: string) {
+  const { topics, questions } = await loadCatalogRecords();
+  const topic = topics.find((t) => t.id === id);
+  const touched = topic ? questions.filter((q) => q.topics.includes(topic.name)) : [];
+  for (const q of touched) q.topics = q.topics.filter((t) => t !== topic!.name);
+  if (await useCatalogDb()) {
+    await deleteTopicDb(id);
+    for (const q of touched) await upsertQuestionDb(q);
+    return true;
+  }
   return mutateStore((data) => {
-    const topic = data.topics.find((t) => t.id === id);
     data.topics = data.topics.filter((s) => s.id !== id);
     if (topic) {
       for (const q of data.questions) {

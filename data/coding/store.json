@@ -335,7 +335,8 @@
       "languageKey": "java",
       "sequence": 1,
       "createdAt": "2026-09-03T18:07:59.560Z",
-      "updatedAt": "2026-09-03T18:07:59.560Z"
+      "updatedAt": "2026-09-03T18:07:59.560Z",
+      "enabled": true
     },
     {
       "id": "skill-c",
@@ -344,7 +345,8 @@
       "languageKey": "c",
       "sequence": 2,
       "createdAt": "2026-09-03T18:07:59.560Z",
-      "updatedAt": "2026-09-03T18:07:59.560Z"
+      "updatedAt": "2026-09-03T18:07:59.560Z",
+      "enabled": true
     },
     {
       "id": "skill-cpp",
@@ -353,7 +355,8 @@
       "languageKey": "cpp",
       "sequence": 3,
       "createdAt": "2026-09-03T18:07:59.560Z",
-      "updatedAt": "2026-09-03T18:07:59.560Z"
+      "updatedAt": "2026-09-03T18:07:59.560Z",
+      "enabled": true
     }
   ],
   "levels": [

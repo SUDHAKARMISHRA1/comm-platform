@@ -19,9 +19,9 @@ function tc(id: string, input: string, output: string, hidden: boolean, sequence
 
 export function defaultCatalog(now = new Date().toISOString()) {
   const skills: SkillRecord[] = [
-    { id: 'skill-java', name: 'Java', slug: 'java', languageKey: 'java', sequence: 1, createdAt: now, updatedAt: now },
-    { id: 'skill-c', name: 'C', slug: 'c', languageKey: 'c', sequence: 2, createdAt: now, updatedAt: now },
-    { id: 'skill-cpp', name: 'C++', slug: 'cpp', languageKey: 'cpp', sequence: 3, createdAt: now, updatedAt: now },
+    { id: 'skill-java', name: 'Java', slug: 'java', languageKey: 'java', sequence: 1, enabled: true, createdAt: now, updatedAt: now },
+    { id: 'skill-c', name: 'C', slug: 'c', languageKey: 'c', sequence: 2, enabled: true, createdAt: now, updatedAt: now },
+    { id: 'skill-cpp', name: 'C++', slug: 'cpp', languageKey: 'cpp', sequence: 3, enabled: true, createdAt: now, updatedAt: now },
   ];
   const levels: LevelRecord[] = [
     { id: 'level-easy', name: 'Easy', slug: 'easy', band: 'EASY', sequence: 1, createdAt: now, updatedAt: now },

@@ -46,7 +46,7 @@ export default function PracticeScreen() {
         ) : null}
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tracks}>
-          {board.skills.map((s) => {
+          {board.featuredSkills.map((s) => {
             const active = s.id === board.skill;
             const count = board.skillCounts.get(s.id) ?? 0;
             return (
@@ -57,6 +57,13 @@ export default function PracticeScreen() {
             );
           })}
         </ScrollView>
+        {board.hasMoreSkills ? (
+          <Link href={'/practice/skills' as never} asChild>
+            <Pressable>
+              <Text style={styles.viewAll}>See more skills</Text>
+            </Pressable>
+          </Link>
+        ) : null}
 
         <View style={styles.stats}>
           <Stat label={`In ${skillName}`} value={String(board.stats.total)} />

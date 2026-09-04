@@ -19,14 +19,17 @@ import {
 } from '../execution';
 import { executeLocally } from '../local-execute';
 import { getJudge0LanguageId } from '../languages';
-import type { PracticeSetRecord, QuestionRecord, SubmissionRecord } from '../schema';
+import type { PracticeSetRecord, QuestionRecord, SkillRecord, SubmissionRecord } from '../schema';
 import { buildWeeklyActivity } from '../weekly-activity';
 import { mutateStore, readStore } from './file-store';
+import { loadCatalogRecords, persistQuestion, removeQuestionRecord } from './catalog';
 import {
   getSubmissionRecord,
   insertSubmission,
   isSupabasePersistenceEnabled,
   listProgressForUser,
+  listAllProgressRecords,
+  listProfileNames,
   listSubmissionRecords,
   listAllSubmissionRecords,
   upsertProgress,
@@ -40,6 +43,11 @@ function slugify(text: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+function isPublicQuestion(q: QuestionRecord, skills: SkillRecord[]) {
+  const skill = skills.find((s) => s.id === q.skillId);
+  return q.published && skill?.enabled !== false;
 }
 
 async function loadProgressMap(userId: string) {
@@ -160,6 +168,9 @@ export async function savePracticeSet(input: Omit<PracticeSetRecord, 'id' | 'cre
 }
 
 export async function deletePracticeSet(id: string) {
+  const { questions } = await loadCatalogRecords();
+  const toRemove = questions.filter((q) => q.practiceSetId === id);
+  for (const q of toRemove) await removeQuestionRecord(q.id);
   return mutateStore((data) => {
     data.practiceSets = data.practiceSets.filter((s) => s.id !== id);
     data.questions = data.questions.filter((q) => q.practiceSetId !== id);
@@ -177,69 +188,111 @@ export async function reorderPracticeSets(ids: string[]) {
   });
 }
 
-export async function listQuestionsAdmin(practiceSetId?: string) {
-  const data = await readStore();
-  let items = data.questions;
+export async function listQuestionsAdmin(filter?: string | { practiceSetId?: string; skillId?: string; levelId?: string }) {
+  const { questions } = await loadCatalogRecords();
+  const practiceSetId = typeof filter === 'string' ? filter : filter?.practiceSetId;
+  const skillId = typeof filter === 'string' ? undefined : filter?.skillId;
+  const levelId = typeof filter === 'string' ? undefined : filter?.levelId;
+  let items = questions;
   if (practiceSetId) items = items.filter((q) => q.practiceSetId === practiceSetId);
-  return [...items].sort((a, b) => a.sequence - b.sequence);
+  if (skillId) items = items.filter((q) => q.skillId === skillId);
+  if (levelId) items = items.filter((q) => q.levelId === levelId);
+  return [...items].sort((a, b) => a.sequence - b.sequence || a.id - b.id);
 }
 
 export async function getQuestionRecord(id: number) {
-  const data = await readStore();
-  return data.questions.find((q) => q.id === id) ?? null;
+  const { questions } = await loadCatalogRecords();
+  return questions.find((q) => q.id === id) ?? null;
+}
+
+export type QuestionSolver = {
+  userId: string;
+  displayName: string;
+  username: string;
+  status: 'SOLVED' | 'ATTEMPTED';
+  updatedAt: string;
+};
+
+export async function getQuestionSolveStats(questionIds?: number[]) {
+  const progress = isSupabasePersistenceEnabled()
+    ? await listAllProgressRecords()
+    : (await readStore()).progress;
+  const filtered = questionIds?.length
+    ? progress.filter((row) => questionIds.includes(row.questionId))
+    : progress;
+  const names = isSupabasePersistenceEnabled()
+    ? await listProfileNames(filtered.map((row) => row.userId))
+    : new Map<string, { displayName: string; username: string }>();
+
+  const byQuestion = new Map<number, { solvedCount: number; attemptedCount: number; solvers: QuestionSolver[] }>();
+  for (const row of filtered) {
+    const current = byQuestion.get(row.questionId) ?? { solvedCount: 0, attemptedCount: 0, solvers: [] };
+    if (row.status === 'SOLVED') current.solvedCount += 1;
+    else current.attemptedCount += 1;
+    const profile = names.get(row.userId);
+    current.solvers.push({
+      userId: row.userId,
+      displayName: profile?.displayName || row.userId.slice(0, 8),
+      username: profile?.username || '',
+      status: row.status,
+      updatedAt: row.updatedAt,
+    });
+    byQuestion.set(row.questionId, current);
+  }
+  for (const stats of byQuestion.values()) {
+    stats.solvers.sort((a, b) => {
+      if (a.status !== b.status) return a.status === 'SOLVED' ? -1 : 1;
+      return b.updatedAt.localeCompare(a.updatedAt);
+    });
+  }
+  return byQuestion;
 }
 
 export async function saveQuestion(
   input: Omit<QuestionRecord, 'id' | 'createdAt' | 'updatedAt'> & { id?: number },
 ) {
-  return mutateStore((data) => {
-    if (!data.skills.length) throw new Error('Create at least one skill before adding a problem.');
-    if (!data.levels.length) throw new Error('Create at least one level before adding a problem.');
-    if (!input.skillId) throw new Error('Every problem must be bound to one skill.');
-    if (!input.levelId) throw new Error('Every problem must have a level.');
-    const skill = data.skills.find((s) => s.id === input.skillId);
-    const level = data.levels.find((l) => l.id === input.levelId);
-    if (!skill) throw new Error('Selected skill was not found.');
-    if (!level) throw new Error('Selected level was not found.');
-    const now = new Date().toISOString();
-    const payload = { ...input, difficulty: level.band };
-    if (input.id) {
-      const idx = data.questions.findIndex((q) => q.id === input.id);
-      if (idx === -1) throw new Error('Question not found');
-      data.questions[idx] = { ...data.questions[idx]!, ...payload, id: input.id, updatedAt: now };
-      return data.questions[idx]!;
-    }
-    const nextId = data.questions.reduce((max, q) => Math.max(max, q.id), 0) + 1;
-    const row: QuestionRecord = {
-      ...payload,
-      id: nextId,
-      slug: input.slug || slugify(input.title),
-      createdAt: now,
-      updatedAt: now,
-    };
-    data.questions.push(row);
-    return row;
+  const { skills, levels, questions } = await loadCatalogRecords();
+  if (!skills.length) throw new Error('Create at least one skill before adding a problem.');
+  if (!levels.length) throw new Error('Create at least one level before adding a problem.');
+  if (!input.skillId) throw new Error('Every problem must be bound to one skill.');
+  if (!input.levelId) throw new Error('Every problem must have a level.');
+  const skill = skills.find((s) => s.id === input.skillId);
+  const level = levels.find((s) => s.id === input.levelId);
+  if (!skill) throw new Error('Selected skill was not found.');
+  if (!level) throw new Error('Selected level was not found.');
+  const now = new Date().toISOString();
+  const practiceSetId = input.practiceSetId || `ps-${input.skillId}`;
+  const payload = { ...input, practiceSetId, difficulty: level.band };
+  if (input.id) {
+    const existing = questions.find((q) => q.id === input.id);
+    if (!existing) throw new Error('Question not found');
+    return persistQuestion({ ...existing, ...payload, id: input.id, updatedAt: now });
+  }
+  const nextId = questions.reduce((max, q) => Math.max(max, q.id), 0) + 1;
+  return persistQuestion({
+    ...payload,
+    id: nextId,
+    slug: input.slug || slugify(input.title),
+    createdAt: now,
+    updatedAt: now,
   });
 }
 
 export async function deleteQuestion(id: number) {
-  return mutateStore((data) => {
-    data.questions = data.questions.filter((q) => q.id !== id);
-    data.progress = data.progress.filter((p) => p.questionId !== id);
-    data.interviewVotes = (data.interviewVotes ?? []).filter((v) => v.questionId !== id);
-    data.voteCounts = (data.voteCounts ?? []).filter((v) => v.questionId !== id);
-    return true;
-  });
+  return removeQuestionRecord(id);
 }
 
 export async function reorderQuestions(practiceSetId: string, ids: number[]) {
-  return mutateStore((data) => {
-    ids.forEach((id, i) => {
-      const row = data.questions.find((q) => q.id === id && q.practiceSetId === practiceSetId);
-      if (row) row.sequence = i + 1;
-    });
-    return true;
-  });
+  const { questions } = await loadCatalogRecords();
+  const now = new Date().toISOString();
+  for (const [i, id] of ids.entries()) {
+    const row = questions.find((q) => q.id === id && q.practiceSetId === practiceSetId);
+    if (!row) continue;
+    row.sequence = i + 1;
+    row.updatedAt = now;
+    await persistQuestion(row);
+  }
+  return true;
 }
 
 export async function listQuestionsForUser(
@@ -255,10 +308,10 @@ export async function listQuestionsForUser(
     pageSize?: number;
   },
 ) {
-  const data = await readStore();
+  const { questions, skills, levels } = await loadCatalogRecords();
   const pmap = await loadProgressMap(userId);
   const votes = await loadVoteState(userId);
-  let items = data.questions.filter((q) => q.published);
+  let items = questions.filter((q) => isPublicQuestion(q, skills));
 
   if (filters.q) {
     const term = filters.q.toLowerCase();
@@ -270,7 +323,7 @@ export async function listQuestionsForUser(
     );
   }
   if (filters.difficulty) items = items.filter((q) => q.difficulty === filters.difficulty);
-  if (filters.skill) items = items.filter((q) => q.skillId === filters.skill || q.skillId === data.skills.find((s) => s.slug === filters.skill)?.id);
+  if (filters.skill) items = items.filter((q) => q.skillId === filters.skill || q.skillId === skills.find((s) => s.slug === filters.skill)?.id);
   if (filters.level) items = items.filter((q) => q.levelId === filters.level || q.difficulty === filters.level);
   if (filters.topic) items = items.filter((q) => q.topics.some((t) => t.toLowerCase() === filters.topic!.toLowerCase()));
   if (filters.status && filters.status !== 'ALL') {
@@ -287,8 +340,8 @@ export async function listQuestionsForUser(
       toSummary(
         q,
         pmap.get(q.id) ?? 'NOT_ATTEMPTED',
-        data.skills.find((s) => s.id === q.skillId)?.name,
-        data.levels.find((l) => l.id === q.levelId)?.name,
+        skills.find((s) => s.id === q.skillId)?.name,
+        levels.find((l) => l.id === q.levelId)?.name,
         votes.counts.get(q.id) ?? 0,
         votes.mine.has(q.id),
       ),
@@ -298,8 +351,8 @@ export async function listQuestionsForUser(
 }
 
 export async function toggleInterviewVote(userId: string, questionId: number): Promise<VoteToggleResponse> {
-  const data = await readStore();
-  if (!data.questions.some((q) => q.id === questionId && q.published)) {
+  const { questions, skills } = await loadCatalogRecords();
+  if (!questions.some((q) => q.id === questionId && isPublicQuestion(q, skills))) {
     throw new Error('Question not found');
   }
 
@@ -336,13 +389,13 @@ export async function listVotedQuestionsForUser(
   userId: string,
   filters: { skill?: string; page?: number; pageSize?: number },
 ) {
-  const data = await readStore();
+  const { questions, skills, levels } = await loadCatalogRecords();
   const pmap = await loadProgressMap(userId);
   const votes = await loadVoteState(userId);
-  let items = data.questions.filter((q) => q.published && (votes.counts.get(q.id) ?? 0) > 0);
+  let items = questions.filter((q) => isPublicQuestion(q, skills) && (votes.counts.get(q.id) ?? 0) > 0);
   if (filters.skill) {
     items = items.filter(
-      (q) => q.skillId === filters.skill || q.skillId === data.skills.find((s) => s.slug === filters.skill)?.id,
+      (q) => q.skillId === filters.skill || q.skillId === skills.find((s) => s.slug === filters.skill)?.id,
     );
   }
   items.sort((a, b) => (votes.counts.get(b.id) ?? 0) - (votes.counts.get(a.id) ?? 0) || a.id - b.id);
@@ -355,8 +408,8 @@ export async function listVotedQuestionsForUser(
       toSummary(
         q,
         pmap.get(q.id) ?? 'NOT_ATTEMPTED',
-        data.skills.find((s) => s.id === q.skillId)?.name,
-        data.levels.find((l) => l.id === q.levelId)?.name,
+        skills.find((s) => s.id === q.skillId)?.name,
+        levels.find((l) => l.id === q.levelId)?.name,
         votes.counts.get(q.id) ?? 0,
         votes.mine.has(q.id),
       ),
@@ -366,19 +419,19 @@ export async function listVotedQuestionsForUser(
 }
 
 export async function getQuestionForUser(userId: string, id: number) {
-  const data = await readStore();
-  const q = data.questions.find((item) => item.id === id && item.published);
+  const { questions, skills, levels } = await loadCatalogRecords();
+  const q = questions.find((item) => item.id === id && isPublicQuestion(item, skills));
   if (!q) return null;
   const pmap = await loadProgressMap(userId);
   const votes = await loadVoteState(userId);
-  const ids = data.questions.filter((x) => x.published).sort((a, b) => a.sequence - b.sequence).map((x) => x.id);
+  const ids = questions.filter((x) => isPublicQuestion(x, skills) && x.skillId === q.skillId).sort((a, b) => a.sequence - b.sequence).map((x) => x.id);
   const idx = ids.indexOf(id);
   return {
     ...toDetail(
       q,
       pmap.get(id) ?? 'NOT_ATTEMPTED',
-      data.skills.find((s) => s.id === q.skillId)?.name,
-      data.levels.find((l) => l.id === q.levelId)?.name,
+      skills.find((s) => s.id === q.skillId)?.name,
+      levels.find((l) => l.id === q.levelId)?.name,
       votes.counts.get(id) ?? 0,
       votes.mine.has(id),
     ),
@@ -388,16 +441,16 @@ export async function getQuestionForUser(userId: string, id: number) {
 }
 
 export async function getDashboardForUser(userId: string): Promise<DashboardStats> {
-  const data = await readStore();
-  const published = data.questions.filter((q) => q.published);
+  const { questions, skills, levels } = await loadCatalogRecords();
+  const published = questions.filter((q) => isPublicQuestion(q, skills));
   const pmap = await loadProgressMap(userId);
   const votes = await loadVoteState(userId);
   const summaries = published.map((q) =>
     toSummary(
       q,
       pmap.get(q.id) ?? 'NOT_ATTEMPTED',
-      data.skills.find((s) => s.id === q.skillId)?.name,
-      data.levels.find((l) => l.id === q.levelId)?.name,
+      skills.find((s) => s.id === q.skillId)?.name,
+      levels.find((l) => l.id === q.levelId)?.name,
       votes.counts.get(q.id) ?? 0,
       votes.mine.has(q.id),
     ),
@@ -413,12 +466,12 @@ export async function getDashboardForUser(userId: string): Promise<DashboardStat
 
   const stored = isSupabasePersistenceEnabled()
     ? await listSubmissionRecords(userId)
-    : data.submissions.filter((s) => s.userId === userId);
+    : (await readStore()).submissions.filter((s) => s.userId === userId);
   const subs = stored
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 5)
     .map((s) => {
-      const q = data.questions.find((x) => x.id === s.questionId);
+      const q = questions.find((x) => x.id === s.questionId);
       return {
         id: s.id,
         questionId: s.questionId,
@@ -445,6 +498,7 @@ export async function getDashboardForUser(userId: string): Promise<DashboardStat
 }
 
 export async function listSubmissionsForUser(userId: string) {
+  const { questions } = await loadCatalogRecords();
   const data = await readStore();
   const stored = isSupabasePersistenceEnabled()
     ? await listSubmissionRecords(userId)
@@ -452,7 +506,7 @@ export async function listSubmissionsForUser(userId: string) {
   return stored
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((s) => {
-      const q = data.questions.find((x) => x.id === s.questionId);
+      const q = questions.find((x) => x.id === s.questionId);
       return {
         id: s.id,
         questionId: s.questionId,
@@ -467,12 +521,13 @@ export async function listSubmissionsForUser(userId: string) {
 }
 
 export async function listAdminSubmissions() {
+  const { questions } = await loadCatalogRecords();
   const data = await readStore();
   const stored = isSupabasePersistenceEnabled() ? await listAllSubmissionRecords() : data.submissions;
   return stored
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((s) => {
-      const q = data.questions.find((x) => x.id === s.questionId);
+      const q = questions.find((x) => x.id === s.questionId);
       const score = s.totalTestCases ? Math.round((s.passedTestCases / s.totalTestCases) * 100) : 0;
       return {
         id: s.id,
@@ -490,12 +545,13 @@ export async function listAdminSubmissions() {
 }
 
 export async function getSubmissionForUser(userId: string, id: string) {
+  const { questions } = await loadCatalogRecords();
   const data = await readStore();
   const s = isSupabasePersistenceEnabled()
     ? await getSubmissionRecord(userId, id)
     : data.submissions.find((x) => x.id === id && x.userId === userId) ?? null;
   if (!s) return null;
-  const q = data.questions.find((x) => x.id === s.questionId);
+  const q = questions.find((x) => x.id === s.questionId);
   return {
     ...s,
     questionTitle: q?.title ?? 'Unknown',

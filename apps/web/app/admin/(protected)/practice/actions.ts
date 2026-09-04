@@ -1,10 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import {
   deletePracticeSet,
   deleteQuestion,
+  getQuestionRecord,
   listPracticeSets,
   listQuestionsAdmin,
   reorderQuestions,
@@ -69,7 +71,21 @@ export async function upsertQuestion(formData: FormData) {
     sequence: number;
   }[];
 
-  await saveQuestion({
+  const topicNames = formData.getAll('topicName').map(String).filter(Boolean);
+  const topics = topicNames.length
+    ? topicNames
+    : String(formData.get('topics') ?? '')
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+  const languageChecks = formData.getAll('language').map((v) => String(v).trim() as LanguageKey).filter(Boolean);
+  const supportedLanguages = languageChecks.length
+    ? languageChecks
+    : String(formData.get('supportedLanguages') ?? 'java,c,cpp')
+        .split(',')
+        .map((l) => l.trim() as LanguageKey);
+
+  const saved = await saveQuestion({
     id,
     practiceSetId,
     sequence: Number(formData.get('sequence') ?? '1'),
@@ -81,21 +97,23 @@ export async function upsertQuestion(formData: FormData) {
     outputFormat: String(formData.get('outputFormat') ?? ''),
     constraints: String(formData.get('constraints') ?? ''),
     examples: JSON.parse(String(formData.get('examples') ?? '[]')),
-    topics: String(formData.get('topics') ?? '')
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean),
+    topics,
     skillId: String(formData.get('skillId') ?? ''),
     levelId: String(formData.get('levelId') ?? ''),
-    supportedLanguages: String(formData.get('supportedLanguages') ?? 'java,c,cpp')
-      .split(',')
-      .map((l) => l.trim() as LanguageKey),
+    supportedLanguages,
     codeTemplates: JSON.parse(String(formData.get('codeTemplates') ?? '{}')),
     testCases,
     published: formData.get('published') === 'on',
   });
-  revalidatePath(`/admin/practice/${practiceSetId}`);
-  if (id) revalidatePath(`/admin/practice/${practiceSetId}/questions/${id}`);
+  revalidatePath('/admin/practice');
+  revalidatePath('/admin/skills');
+  if (saved.skillId) revalidatePath(`/admin/skills/${saved.skillId}`);
+  if (practiceSetId) revalidatePath(`/admin/practice/${practiceSetId}`);
+  if (id) {
+    if (practiceSetId) revalidatePath(`/admin/practice/${practiceSetId}/questions/${id}`);
+    if (saved.skillId) revalidatePath(`/admin/skills/${saved.skillId}/questions/${id}`);
+  }
+  if (saved.skillId) redirect(`/admin/skills/${saved.skillId}`);
 }
 
 export async function removeQuestion(questionId: number, setId: string) {
@@ -150,6 +168,23 @@ export async function moveQuestionDown(formData: FormData) {
 export async function removeQuestionAction(formData: FormData) {
   await requireAdmin();
   const setId = String(formData.get('setId'));
+  const skillId = String(formData.get('skillId') ?? '');
   await deleteQuestion(Number(formData.get('questionId')));
-  revalidatePath(`/admin/practice/${setId}`);
+  if (setId) revalidatePath(`/admin/practice/${setId}`);
+  if (skillId) revalidatePath(`/admin/skills/${skillId}`);
+  revalidatePath('/admin/skills');
+}
+
+export async function toggleQuestionPublishedAction(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get('questionId'));
+  const question = await getQuestionRecord(id);
+  if (!question) return;
+  await saveQuestion({
+    ...question,
+    published: String(formData.get('published')) === '1',
+  });
+  revalidatePath('/admin/skills');
+  revalidatePath(`/admin/skills/${question.skillId}`);
+  if (question.practiceSetId) revalidatePath(`/admin/practice/${question.practiceSetId}`);
 }

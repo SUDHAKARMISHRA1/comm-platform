@@ -10,6 +10,7 @@ import {
   deleteNotification,
   deleteSkill,
   deleteTopic,
+  listSkills,
   saveCmsPage,
   saveFeedPost,
   saveLevel,
@@ -31,13 +32,30 @@ function revalidateAdmin() {
 export async function upsertSkillAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get('id') ?? '').trim() || undefined;
+  const rawEnabled = formData.get('enabled');
   await saveSkill({
     id,
     name: String(formData.get('name') ?? ''),
     languageKey: String(formData.get('languageKey') ?? '') || null,
+    enabled: rawEnabled == null ? undefined : rawEnabled === '1' || rawEnabled === 'on',
   });
   revalidateAdmin();
   redirect('/admin/skills');
+}
+
+export async function toggleSkillAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get('id'));
+  const skills = await listSkills();
+  const skill = skills.find((row) => row.id === id);
+  if (!skill) return;
+  await saveSkill({
+    id,
+    name: skill.name,
+    languageKey: skill.languageKey,
+    enabled: String(formData.get('enabled')) === '1',
+  });
+  revalidateAdmin();
 }
 
 export async function removeSkillAction(formData: FormData) {

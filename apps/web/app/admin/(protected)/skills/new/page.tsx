@@ -15,6 +15,10 @@ export default function AddSkillPage() {
           <option value="c">c</option>
           <option value="cpp">cpp</option>
         </select>
+        <select name="enabled" className="rounded-xl border px-3 py-2" defaultValue="1">
+          <option value="1">Enabled on Practice</option>
+          <option value="0">Disabled</option>
+        </select>
         <button className="w-fit rounded-xl bg-[var(--color-primary)] px-4 py-2 text-white" type="submit">
           Create skill
         </button>

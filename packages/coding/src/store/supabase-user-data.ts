@@ -208,6 +208,55 @@ export async function listProgressForUser(userId: string): Promise<ProgressRecor
   return [...latest.values()];
 }
 
+export async function listAllProgressRecords(): Promise<ProgressRecord[]> {
+  if (await useDedicatedTables()) {
+    const rows = await rest<ProgressRow[]>(
+      'user_question_progress?select=user_id,question_id,status,updated_at',
+    );
+    return (rows ?? []).map((row) => ({
+      userId: row.user_id,
+      questionId: row.question_id,
+      status: row.status,
+      updatedAt: row.updated_at,
+    }));
+  }
+  const rows = await rest<AuditRow[]>(
+    `audit_logs?action=eq.${encodeURIComponent(ACTION_PROGRESS)}&select=id,actor_id,action,metadata,created_at`,
+  );
+  const latest = new Map<string, ProgressRecord>();
+  for (const row of rows ?? []) {
+    const questionId = Number(row.metadata?.questionId);
+    const userId = String(row.metadata?.userId ?? row.actor_id ?? '');
+    if (!userId || !Number.isFinite(questionId)) continue;
+    latest.set(`${userId}:${questionId}`, {
+      userId,
+      questionId,
+      status: row.metadata?.status === 'SOLVED' ? 'SOLVED' : 'ATTEMPTED',
+      updatedAt: String(row.metadata?.updatedAt ?? row.created_at),
+    });
+  }
+  return [...latest.values()];
+}
+
+export async function listProfileNames(userIds: string[]) {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  if (!unique.length) return new Map<string, { displayName: string; username: string }>();
+  const filter = unique.map((id) => `"${id}"`).join(',');
+  try {
+    const rows = await rest<{ id: string; display_name: string | null; username: string }[]>(
+      `profiles?id=in.(${filter})&select=id,display_name,username`,
+    );
+    return new Map(
+      (rows ?? []).map((row) => [
+        row.id,
+        { displayName: row.display_name?.trim() || row.username, username: row.username },
+      ]),
+    );
+  } catch {
+    return new Map<string, { displayName: string; username: string }>();
+  }
+}
+
 export async function upsertProgress(record: ProgressRecord): Promise<void> {
   if (await useDedicatedTables()) {
     const existing = await rest<ProgressRow[]>(
