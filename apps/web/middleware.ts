@@ -28,7 +28,8 @@ export async function middleware(request: NextRequest) {
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, { status: 204, headers: corsHeaders(origin) });
     }
-    const response = NextResponse.next({ request });
+    const requestHeaders = new Headers(request.headers);
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
     Object.entries(corsHeaders(origin)).forEach(([k, v]) => response.headers.set(k, v));
     return response;
   }

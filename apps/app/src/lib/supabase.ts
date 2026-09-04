@@ -25,9 +25,25 @@ function detectSessionInUrl() {
   return hash.includes('access_token') || search.includes('code=') || search.includes('access_token');
 }
 
-/** navigator.locks can skip session recovery after a hard refresh. */
-async function bypassAuthLock<R>(_name: string, _timeout: number, fn: () => Promise<R>): Promise<R> {
-  return fn();
+/**
+ * Serialize auth work in-process. `navigator.locks` can skip session recovery
+ * after a hard refresh; a raw bypass lets concurrent `refreshSession` calls
+ * rotate the refresh token twice and lock the user out with 401s.
+ */
+let authLockQueue: Promise<void> = Promise.resolve();
+
+async function memoryAuthLock<R>(_name: string, _timeout: number, fn: () => Promise<R>): Promise<R> {
+  let release: () => void = () => undefined;
+  const previous = authLockQueue;
+  authLockQueue = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await previous;
+  try {
+    return await fn();
+  } finally {
+    release();
+  }
 }
 
 export function getSupabase(): TypedSupabaseClient {
@@ -54,7 +70,7 @@ export function getSupabase(): TypedSupabaseClient {
     }),
     storage: Platform.OS === 'web' ? createSafeAuthStorage() : AsyncStorage,
     detectSessionInUrl: detectSessionInUrl(),
-    lock: Platform.OS === 'web' ? bypassAuthLock : undefined,
+    lock: Platform.OS === 'web' ? memoryAuthLock : undefined,
   });
 
   return client;

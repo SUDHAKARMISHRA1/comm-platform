@@ -14,7 +14,9 @@ export async function requireApiUser(request: NextRequest) {
     return { error: NextResponse.json({ error: 'Auth not configured' }, { status: 500 }) };
   }
 
-  const supabase = createClient(url, anonKey);
+  const supabase = createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   const { data, error } = await supabase.auth.getUser(token);
   if (error || !data.user) {
     return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };

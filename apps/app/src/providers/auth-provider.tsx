@@ -86,6 +86,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
         }
+        if (next?.expires_at && next.expires_at <= Math.floor(Date.now() / 1000) + 60) {
+          const refreshed = await supabase.auth.refreshSession();
+          if (refreshed.error) {
+            log.error('Failed to refresh restored session', refreshed.error);
+          } else {
+            next = refreshed.data.session ?? next;
+          }
+        }
         if (!active) return;
         restoring = false;
         applySession(next);
@@ -113,9 +121,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
+    function onVisible() {
+      if (typeof document === 'undefined' || document.visibilityState !== 'visible') return;
+      void supabase.auth.getSession().then(async ({ data: current }) => {
+        if (!active) return;
+        const session = current.session;
+        if (!session?.expires_at || session.expires_at > Math.floor(Date.now() / 1000) + 60) return;
+        const refreshed = await supabase.auth.refreshSession();
+        if (!active) return;
+        if (refreshed.data.session) applySession(refreshed.data.session);
+      });
+    }
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisible);
+    }
+
     return () => {
       active = false;
       data.subscription.unsubscribe();
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisible);
+      }
     };
   }, [configured, demoMode]);
 

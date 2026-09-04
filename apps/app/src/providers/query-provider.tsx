@@ -1,13 +1,20 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
 
+import { ApiError } from '@/coding/api/client';
+
 export function QueryProvider({ children }: { children: ReactNode }) {
   const [client] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            retry: 1,
+            retry: (failureCount, error) => {
+              if (error instanceof ApiError && (error.status === 401 || error.status === 0)) {
+                return false;
+              }
+              return failureCount < 1;
+            },
             staleTime: 30_000,
           },
         },
