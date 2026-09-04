@@ -72,6 +72,12 @@ export type QuestionsResponse = {
   pagination: Pagination;
 };
 
+export type WeeklyActivityDay = {
+  day: string;
+  dateKey: string;
+  count: number;
+};
+
 export type DashboardStats = {
   total: number;
   solved: number;
@@ -81,6 +87,7 @@ export type DashboardStats = {
   recentPractice: { questionId: number; title: string; status: QuestionStatus }[];
   recommended: QuestionSummary[];
   recentSubmissions: SubmissionSummary[];
+  weeklyActivity: WeeklyActivityDay[];
 };
 
 export type SubmissionSummary = {
@@ -162,6 +169,15 @@ export type SubmissionPollResponse = {
 
 export type FeedPostKind = 'article' | 'post' | 'video' | 'link';
 
+export type FeedContentBlock = {
+  id: string;
+  kind: 'text' | 'image' | 'video' | 'slideshow';
+  text?: string;
+  url?: string;
+  urls?: string[];
+  caption?: string;
+};
+
 export type FeedPostCard = {
   id: string;
   kind: FeedPostKind;
@@ -176,6 +192,20 @@ export type FeedPostCard = {
   commentCount: number;
   shareCount: number;
   sharedByMe: boolean;
+  blocks: FeedContentBlock[];
+};
+
+export type FeedPostAdminRow = {
+  id: string;
+  kind: FeedPostKind;
+  title: string;
+  authorName: string;
+  published: boolean;
+  createdAt: string;
+  likeCount: number;
+  shareCount: number;
+  commentCount: number;
+  replyCount: number;
 };
 
 export type FeedCommentNode = {
@@ -187,6 +217,7 @@ export type FeedCommentNode = {
   createdAt: string;
   likeCount: number;
   likedByMe: boolean;
+  hidden?: boolean;
   replies: FeedCommentNode[];
 };
 

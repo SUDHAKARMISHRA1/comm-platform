@@ -1,3 +1,6 @@
+import type { FeedPostKind } from '../types';
+import type { FeedPostRecord } from '../schema';
+import { parseFeedBlocks } from '../feed-content';
 import { isSupabasePersistenceEnabled } from './supabase-user-data';
 
 type LikeRow = { user_id: string; post_id: string; created_at: string };
@@ -10,8 +13,60 @@ type CommentRow = {
   author_name: string;
   body: string;
   created_at: string;
+  hidden?: boolean | null;
 };
 type CommentLikeRow = { user_id: string; comment_id: string; created_at: string };
+type PostRow = {
+  id: string;
+  kind: string;
+  title: string;
+  body: string;
+  media_url: string;
+  link_url: string;
+  author_name: string;
+  published: boolean;
+  blocks: unknown;
+  created_at: string;
+  updated_at: string;
+};
+
+const POST_KINDS: FeedPostKind[] = ['article', 'post', 'video', 'link'];
+
+function asKind(value: string): FeedPostKind {
+  return POST_KINDS.includes(value as FeedPostKind) ? (value as FeedPostKind) : 'post';
+}
+
+function mapPost(row: PostRow): FeedPostRecord {
+  return {
+    id: row.id,
+    kind: asKind(row.kind),
+    title: row.title,
+    body: row.body ?? '',
+    mediaUrl: row.media_url ?? '',
+    linkUrl: row.link_url ?? '',
+    authorName: row.author_name || 'Comm Platform',
+    published: Boolean(row.published),
+    blocks: parseFeedBlocks(row.blocks),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function postPayload(row: FeedPostRecord) {
+  return {
+    id: row.id,
+    kind: row.kind,
+    title: row.title,
+    body: row.body,
+    media_url: row.mediaUrl,
+    link_url: row.linkUrl,
+    author_name: row.authorName,
+    published: row.published,
+    blocks: row.blocks ?? [],
+    created_at: row.createdAt,
+    updated_at: row.updatedAt,
+  };
+}
 
 function config() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, '');
@@ -47,6 +102,24 @@ function isMissingTable(error: unknown) {
   return message.includes('PGRST205') || message.includes('schema cache');
 }
 
+function isMissingColumn(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('PGRST204') || (message.includes('column') && message.includes('does not exist'));
+}
+
+function mapComments(rows: CommentRow[] | null) {
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    postId: row.post_id,
+    parentId: row.parent_id,
+    userId: row.user_id,
+    authorName: row.author_name,
+    body: row.body,
+    createdAt: row.created_at,
+    hidden: Boolean(row.hidden),
+  }));
+}
+
 export async function feedTablesReady() {
   if (!isSupabasePersistenceEnabled()) return false;
   try {
@@ -56,6 +129,65 @@ export async function feedTablesReady() {
     if (isMissingTable(error)) return false;
     throw error;
   }
+}
+
+export async function feedPostsReady() {
+  if (!isSupabasePersistenceEnabled()) return false;
+  try {
+    await rest('highlight_posts?select=id&limit=1');
+    return true;
+  } catch (error) {
+    if (isMissingTable(error)) return false;
+    throw error;
+  }
+}
+
+export async function listHighlightPosts() {
+  const rows = await rest<PostRow[]>('highlight_posts?select=*&order=created_at.desc');
+  return (rows ?? []).map(mapPost);
+}
+
+export async function getHighlightPost(id: string) {
+  const rows = await rest<PostRow[]>(`highlight_posts?id=eq.${encodeURIComponent(id)}&select=*&limit=1`);
+  const row = rows?.[0];
+  return row ? mapPost(row) : null;
+}
+
+export async function upsertHighlightPost(row: FeedPostRecord) {
+  await rest('highlight_posts?on_conflict=id', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(postPayload(row)),
+  });
+  return row;
+}
+
+export async function deleteHighlightPost(postId: string) {
+  const comments = (await listFeedComments()).filter((row) => row.postId === postId);
+  await Promise.all(
+    comments.map((comment) =>
+      rest(`highlight_comment_likes?comment_id=eq.${encodeURIComponent(comment.id)}`, {
+        method: 'DELETE',
+        headers: { Prefer: 'return=minimal' },
+      }),
+    ),
+  );
+  await rest(`highlight_comments?post_id=eq.${encodeURIComponent(postId)}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' },
+  });
+  await rest(`highlight_post_likes?post_id=eq.${encodeURIComponent(postId)}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' },
+  });
+  await rest(`highlight_post_shares?post_id=eq.${encodeURIComponent(postId)}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' },
+  });
+  await rest(`highlight_posts?id=eq.${encodeURIComponent(postId)}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' },
+  });
 }
 
 export async function listFeedLikes() {
@@ -69,18 +201,18 @@ export async function listFeedShares() {
 }
 
 export async function listFeedComments() {
-  const rows = await rest<CommentRow[]>(
-    'highlight_comments?select=id,post_id,parent_id,user_id,author_name,body,created_at&order=created_at.asc',
-  );
-  return (rows ?? []).map((row) => ({
-    id: row.id,
-    postId: row.post_id,
-    parentId: row.parent_id,
-    userId: row.user_id,
-    authorName: row.author_name,
-    body: row.body,
-    createdAt: row.created_at,
-  }));
+  try {
+    const rows = await rest<CommentRow[]>(
+      'highlight_comments?select=id,post_id,parent_id,user_id,author_name,body,created_at,hidden&order=created_at.asc',
+    );
+    return mapComments(rows);
+  } catch (error) {
+    if (!isMissingColumn(error)) throw error;
+    const rows = await rest<CommentRow[]>(
+      'highlight_comments?select=id,post_id,parent_id,user_id,author_name,body,created_at&order=created_at.asc',
+    );
+    return mapComments(rows);
+  }
 }
 
 export async function listFeedCommentLikes() {
@@ -152,4 +284,12 @@ export async function deleteFeedCommentLike(userId: string, commentId: string) {
     `highlight_comment_likes?user_id=eq.${encodeURIComponent(userId)}&comment_id=eq.${encodeURIComponent(commentId)}`,
     { method: 'DELETE', headers: { Prefer: 'return=minimal' } },
   );
+}
+
+export async function updateFeedCommentHidden(commentId: string, hidden: boolean) {
+  await rest(`highlight_comments?id=eq.${encodeURIComponent(commentId)}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({ hidden }),
+  });
 }

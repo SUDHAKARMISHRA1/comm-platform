@@ -17,6 +17,7 @@ import {
   saveSettings,
   saveSkill,
   saveTopic,
+  setFeedCommentHidden,
 } from '@comm-platform/coding/server';
 import type { Difficulty } from '@comm-platform/coding';
 import type { NotificationAudience, NotificationChannel } from '@comm-platform/coding';
@@ -112,8 +113,10 @@ export async function upsertFeedPostAction(formData: FormData) {
     linkUrl: String(formData.get('linkUrl') ?? ''),
     authorName: String(formData.get('authorName') ?? ''),
     published: formData.get('published') === 'on',
+    blocks: String(formData.get('blocks') ?? ''),
   });
   revalidateAdmin();
+  revalidatePath('/highlights');
   redirect('/admin/feed');
 }
 
@@ -121,6 +124,14 @@ export async function removeFeedPostAction(formData: FormData) {
   await requireAdmin();
   await deleteFeedPost(String(formData.get('id')));
   revalidateAdmin();
+}
+
+export async function hideFeedCommentAction(formData: FormData) {
+  await requireAdmin();
+  const postId = String(formData.get('postId') ?? '');
+  await setFeedCommentHidden(String(formData.get('commentId')), String(formData.get('hidden')) === '1');
+  revalidatePath('/admin/feed');
+  if (postId) revalidatePath(`/admin/feed/${postId}`);
 }
 
 export async function upsertNotificationAction(formData: FormData) {

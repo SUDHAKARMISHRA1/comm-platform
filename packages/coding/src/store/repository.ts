@@ -20,6 +20,7 @@ import {
 import { executeLocally } from '../local-execute';
 import { getJudge0LanguageId } from '../languages';
 import type { PracticeSetRecord, QuestionRecord, SubmissionRecord } from '../schema';
+import { buildWeeklyActivity } from '../weekly-activity';
 import { mutateStore, readStore } from './file-store';
 import {
   getSubmissionRecord,
@@ -439,6 +440,7 @@ export async function getDashboardForUser(userId: string): Promise<DashboardStat
     recentPractice: summaries.slice(0, 4).map((q) => ({ questionId: q.id, title: q.title, status: q.status })),
     recommended: summaries.filter((q) => q.status !== 'SOLVED').slice(0, 3),
     recentSubmissions: subs,
+    weeklyActivity: buildWeeklyActivity(stored),
   };
 }
 

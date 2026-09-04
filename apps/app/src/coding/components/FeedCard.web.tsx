@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import type { FeedCommentNode, FeedPostCard } from '@comm-platform/coding';
+import type { FeedCommentNode, FeedContentBlock, FeedPostCard } from '@comm-platform/coding';
 
 import {
   addFeedCommentApi,
@@ -82,10 +82,7 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['feed-comments', post.id] }),
   });
 
-  const long = post.body.length > PREVIEW;
-  const body = !expanded && long ? `${post.body.slice(0, PREVIEW).trim()}…` : post.body;
-  const video = youtubeId(post.mediaUrl) || youtubeId(post.linkUrl);
-  const image = post.mediaUrl && !video && !post.mediaUrl.includes('youtube') ? post.mediaUrl : '';
+  const blocks = post.blocks?.length ? post.blocks : [];
 
   return (
     <article className="lf-card" id={`post-${post.id}`}>
@@ -102,29 +99,8 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
         </div>
       </header>
       <h3>{post.title}</h3>
-      <p className="lf-body">
-        {body}
-        {long ? (
-          <button type="button" className="lf-more" onClick={() => setExpanded((value) => !value)}>
-            {expanded ? 'Show less' : 'see more'}
-          </button>
-        ) : null}
-      </p>
-      {video ? (
-        <div className="lf-media">
-          <iframe
-            title={post.title}
-            src={`https://www.youtube.com/embed/${video}`}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      ) : image ? (
-        <div className="lf-media">
-          <img src={image} alt="" />
-        </div>
-      ) : null}
-      {post.linkUrl && !video ? (
+      <FeedBody blocks={blocks} fallback={post.body} expanded={expanded} onToggle={() => setExpanded((value) => !value)} />
+      {post.linkUrl && !youtubeId(post.linkUrl) ? (
         <a className="lf-link" href={post.linkUrl} target="_blank" rel="noreferrer">
           <span>Open resource</span>
           <em>{post.linkUrl.replace(/^https?:\/\//, '')}</em>
@@ -209,6 +185,103 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
         </div>
       ) : null}
     </article>
+  );
+}
+
+function FeedBody({
+  blocks,
+  fallback,
+  expanded,
+  onToggle,
+}: {
+  blocks: FeedContentBlock[];
+  fallback: string;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const items = blocks.length
+    ? blocks
+    : fallback
+      ? [{ id: 'text', kind: 'text' as const, text: fallback }]
+      : [];
+  return (
+    <>
+      {items.map((block) => {
+        if (block.kind === 'text') {
+          const source = block.text ?? '';
+          const clip = !expanded && source.length > PREVIEW;
+          const text = clip ? `${source.slice(0, PREVIEW).trim()}…` : source;
+          if (!text.trim()) return null;
+          const showToggle = source.length > PREVIEW;
+          return (
+            <p className="lf-body" key={block.id}>
+              {text}
+              {showToggle ? (
+                <button type="button" className="lf-more" onClick={onToggle}>
+                  {expanded ? 'Show less' : 'see more'}
+                </button>
+              ) : null}
+            </p>
+          );
+        }
+        if (block.kind === 'image' && block.url) {
+          return (
+            <figure className="lf-media" key={block.id}>
+              <img src={block.url} alt={block.caption || ''} />
+              {block.caption ? <figcaption className="lf-caption">{block.caption}</figcaption> : null}
+            </figure>
+          );
+        }
+        if (block.kind === 'video' && block.url) {
+          const video = youtubeId(block.url);
+          return (
+            <div className="lf-media" key={block.id}>
+              {video ? (
+                <iframe
+                  title={block.caption || 'Video'}
+                  src={`https://www.youtube.com/embed/${video}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <video src={block.url} controls />
+              )}
+            </div>
+          );
+        }
+        if (block.kind === 'slideshow') {
+          const urls = (block.urls ?? []).map((url) => url.trim()).filter(Boolean);
+          if (!urls.length && block.url) urls.push(block.url);
+          if (!urls.length) return null;
+          return <Slideshow key={block.id} urls={urls} caption={block.caption} />;
+        }
+        return null;
+      })}
+    </>
+  );
+}
+
+function Slideshow({ urls, caption }: { urls: string[]; caption?: string }) {
+  const [index, setIndex] = useState(0);
+  const current = urls[index] ?? urls[0];
+  return (
+    <figure className="lf-media lf-slides">
+      <img src={current} alt={caption || ''} />
+      {urls.length > 1 ? (
+        <div className="lf-slide-nav">
+          <button type="button" onClick={() => setIndex((value) => (value === 0 ? urls.length - 1 : value - 1))}>
+            Prev
+          </button>
+          <span>
+            {index + 1}/{urls.length}
+          </span>
+          <button type="button" onClick={() => setIndex((value) => (value === urls.length - 1 ? 0 : value + 1))}>
+            Next
+          </button>
+        </div>
+      ) : null}
+      {caption ? <figcaption className="lf-caption">{caption}</figcaption> : null}
+    </figure>
   );
 }
 

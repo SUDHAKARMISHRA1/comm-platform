@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { buildWeeklyActivity } from '@comm-platform/coding';
 
 import { fetchDashboard } from '@/coding/api/questionApi';
 import { HighlightsFeed } from '@/coding/components/HighlightsFeed';
@@ -7,15 +8,10 @@ import { spaNavigate } from '@/lib/spa-nav';
 import { DIFFICULTY_FILL, submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
 
-const WEEK = [
-  { day: 'Mon', value: 40 },
-  { day: 'Tue', value: 65 },
-  { day: 'Wed', value: 35 },
-  { day: 'Thu', value: 80 },
-  { day: 'Fri', value: 55 },
-  { day: 'Sat', value: 90 },
-  { day: 'Sun', value: 48 },
-];
+function barHeight(count: number, max: number) {
+  if (max <= 0 || count <= 0) return 8;
+  return Math.max(14, Math.round((count / max) * 100));
+}
 
 export default function HighlightsScreen() {
   const { user, session, loading: authLoading } = useAuth();
@@ -38,6 +34,10 @@ export default function HighlightsScreen() {
   const weak = data?.difficultyProgress.slice().sort((a, b) => a.percent - b.percent)[0];
   const nextProblem = data?.recommended[0];
 
+  const week = data?.weeklyActivity ?? buildWeeklyActivity([]);
+  const weekMax = Math.max(0, ...week.map((d) => d.count));
+  const weekTotal = week.reduce((sum, d) => sum + d.count, 0);
+
   const insight =
     solved === 0
       ? 'You have not landed an accepted solution yet. One clean run today starts your trendline.'
@@ -59,7 +59,7 @@ export default function HighlightsScreen() {
             <p className="hl-kicker">Highlights</p>
             <h1>Your practice, in one glance</h1>
             <p className="hl-lead">
-              Hello {name}. These numbers come from your submissions and progress. The peer and weekly views are directional until live cohort analytics are wired from admin.
+              Hello {name}. These numbers come from your submissions and progress. The weekly pulse counts your attempts over the last seven days.
             </p>
           </div>
           <a
@@ -80,92 +80,102 @@ export default function HighlightsScreen() {
           <Kpi label="Recent hit rate" value={recent.length ? `${hitRate}%` : '—'} hint={recent.length ? `${accepted}/${recent.length} accepted` : 'Submit to unlock'} />
         </section>
 
-        <section className="hl-grid hl-desktop">
-          <article className="hl-panel hl-span-2">
-            <p className="hl-label">Insight</p>
-            <h2>{insight}</h2>
-            <p className="hl-copy">{attraction}</p>
-            {weak ? (
-              <p className="hl-chip">Focus next: {weak.difficulty} · {weak.percent}% complete ({weak.solved}/{weak.total})</p>
-            ) : null}
-          </article>
-          <article className="hl-panel">
-            <p className="hl-label">Weekly pulse</p>
-            <h2>Activity this week</h2>
-            <div className="hl-bars">
-              {WEEK.map((d) => (
-                <div className="hl-bar-col" key={d.day}>
-                  <div className="hl-bar-track">
-                    <div className="hl-bar-fill" style={{ height: `${Math.max(12, d.value)}%` }} />
-                  </div>
-                  <span>{d.day}</span>
-                </div>
-              ))}
-            </div>
-            <p className="hl-muted">Placeholder intensity until we store daily attempt counts.</p>
-          </article>
-        </section>
+        <div className="hl-layout">
+          <div className="hl-main">
+            <HighlightsFeed>
+              <article className="hl-panel hl-desktop">
+                <p className="hl-label">Insight</p>
+                <h2>{insight}</h2>
+                <p className="hl-copy">{attraction}</p>
+                {weak ? (
+                  <p className="hl-chip">Focus next: {weak.difficulty} · {weak.percent}% complete ({weak.solved}/{weak.total})</p>
+                ) : null}
+              </article>
+            </HighlightsFeed>
+          </div>
 
-        <section className="hl-grid hl-desktop">
-          <article className="hl-panel">
-            <p className="hl-label">Difficulty mix</p>
-            <h2>Where you stand</h2>
-            <div className="hl-mix">
-              {(data?.difficultyProgress ?? []).map((row) => (
-                <div key={row.difficulty}>
-                  <div className="hl-mix-row">
-                    <span>{row.difficulty}</span>
-                    <span>{row.percent}%</span>
+          <aside className="hl-side hl-desktop">
+            <article className="hl-panel">
+              <p className="hl-label">Weekly pulse</p>
+              <h2>Activity this week</h2>
+              <div className="hl-bars">
+                {week.map((d) => (
+                  <div className="hl-bar-col" key={d.dateKey}>
+                    <span className={d.count ? 'hl-bar-n' : 'hl-bar-n hl-bar-n-empty'}>{d.count || ''}</span>
+                    <div className="hl-bar-track">
+                      <div className="hl-bar-fill" style={{ height: `${barHeight(d.count, weekMax)}%` }} />
+                    </div>
+                    <span>{d.day}</span>
                   </div>
-                  <div className="hl-mix-track">
-                    <div
-                      className="hl-mix-fill"
-                      style={{ width: `${row.percent}%`, background: DIFFICULTY_FILL[row.difficulty] }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-          <article className="hl-panel">
-            <p className="hl-label">Latest verdicts</p>
-            <h2>Recent submissions</h2>
-            {recent.length === 0 ? (
-              <p className="hl-muted">No submissions yet. Run tests, then submit — your hit rate appears here.</p>
-            ) : (
-              <ul className="hl-list">
-                {recent.slice(0, 5).map((s) => (
-                  <li key={s.id}>
-                    <a href={`/submissions/${s.id}`} onClick={(e) => spaNavigate(`/submissions/${s.id}`, e)}>
-                      <strong>{s.questionTitle}</strong>
-                      <span className={submissionTone(s.status)}>{s.status.replace(/_/g, ' ')}</span>
-                    </a>
-                  </li>
                 ))}
-              </ul>
-            )}
-          </article>
-          <article className="hl-panel">
-            <p className="hl-label">Worth your next hour</p>
-            <h2>Recommended</h2>
-            {(data?.recommended ?? []).length === 0 ? (
-              <p className="hl-muted">You are caught up on recommendations.</p>
-            ) : (
-              <ul className="hl-list">
-                {data!.recommended.slice(0, 4).map((q) => (
-                  <li key={q.id}>
-                    <a href={`/practice/${q.id}`} onClick={(e) => spaNavigate(`/practice/${q.id}`, e)}>
-                      <strong>{q.title}</strong>
-                      <span>{q.difficulty}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </article>
-        </section>
+              </div>
+              <p className="hl-muted">
+                {weekTotal === 0
+                  ? 'No submissions yet this week. Run a problem to start your pulse.'
+                  : `${weekTotal} submission${weekTotal === 1 ? '' : 's'} across the last 7 days.`}
+              </p>
+            </article>
 
-        <HighlightsFeed />
+            <article className="hl-panel">
+              <p className="hl-label">Worth your next hour</p>
+              <h2>Recommended</h2>
+              {(data?.recommended ?? []).length === 0 ? (
+                <p className="hl-muted">You are caught up on recommendations.</p>
+              ) : (
+                <ul className="hl-list">
+                  {data!.recommended.slice(0, 4).map((q) => (
+                    <li key={q.id}>
+                      <a href={`/practice/${q.id}`} onClick={(e) => spaNavigate(`/practice/${q.id}`, e)}>
+                        <strong>{q.title}</strong>
+                        <span>{q.difficulty}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+
+            <article className="hl-panel">
+              <p className="hl-label">Difficulty mix</p>
+              <h2>Where you stand</h2>
+              <div className="hl-mix">
+                {(data?.difficultyProgress ?? []).map((row) => (
+                  <div key={row.difficulty}>
+                    <div className="hl-mix-row">
+                      <span>{row.difficulty}</span>
+                      <span>{row.percent}%</span>
+                    </div>
+                    <div className="hl-mix-track">
+                      <div
+                        className="hl-mix-fill"
+                        style={{ width: `${row.percent}%`, background: DIFFICULTY_FILL[row.difficulty] }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="hl-panel">
+              <p className="hl-label">Latest verdicts</p>
+              <h2>Recent submissions</h2>
+              {recent.length === 0 ? (
+                <p className="hl-muted">No submissions yet. Run tests, then submit — your hit rate appears here.</p>
+              ) : (
+                <ul className="hl-list">
+                  {recent.slice(0, 5).map((s) => (
+                    <li key={s.id}>
+                      <a href={`/submissions/${s.id}`} onClick={(e) => spaNavigate(`/submissions/${s.id}`, e)}>
+                        <strong>{s.questionTitle}</strong>
+                        <span className={submissionTone(s.status)}>{s.status.replace(/_/g, ' ')}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+          </aside>
+        </div>
       </div>
     </AppShell>
   );
@@ -192,11 +202,16 @@ const css = `
 .hl-cta { display:inline-flex; height:2.75rem; align-items:center; padding:0 1.1rem; border-radius:.5rem; background:#6366f1; color:#fff; text-decoration:none; font-weight:700; font-size:.875rem; transition:background .15s; width:100%; justify-content:center; }
 @media (min-width:640px) { .hl-cta { width:auto; } }
 .hl-cta:hover { background:#4f46e5; }
-.hl-kpis, .hl-grid, .hl-hero { max-width:80rem; width:100%; }
+.hl-kpis, .hl-hero, .hl-layout { max-width:80rem; width:100%; }
 .hl-kpis { margin:0 auto 1.25rem; display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); }
-.hl-grid { margin:0 auto 1.25rem; display:grid; gap:1rem; grid-template-columns:repeat(3,1fr); }
-@media (max-width:900px) { .hl-grid { grid-template-columns:1fr; } .hl-span-2 { grid-column:auto; } }
-.hl-span-2 { grid-column:span 2; }
+.hl-layout { margin:0 auto; display:grid; gap:1.25rem; grid-template-columns:1fr; align-items:start; }
+@media (min-width:960px) {
+  .hl-layout { grid-template-columns:minmax(0,1fr) 20rem; gap:1.5rem; }
+  .hl-side { position:sticky; top:1rem; }
+}
+.hl-main, .hl-featured, .hl-feed { display:flex; flex-direction:column; gap:1.25rem; min-width:0; }
+.hl-featured, .hl-feed { gap:12px; }
+.hl-side { display:flex; flex-direction:column; gap:1rem; }
 .hl-kpi, .hl-panel { background:#fff; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.15rem 1.2rem; box-shadow:0 1px 2px rgb(0 0 0/.04); }
 .hl-label { margin:0; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#6b7280; }
 .hl-kpi-value { margin:.35rem 0 0; font-size:2rem; font-weight:750; letter-spacing:-.03em; color:#111827; }
@@ -204,11 +219,13 @@ const css = `
 .hl-panel h2 { margin:.45rem 0 0; font-size:1.15rem; color:#111827; }
 .hl-copy { margin:.7rem 0 0; color:#374151; line-height:1.65; }
 .hl-chip { display:inline-block; margin-top:1rem; background:#eef2ff; color:#4f46e5; border:1px solid #c7d2fe; border-radius:999px; padding:.35rem .75rem; font-size:.8rem; font-weight:700; }
-.hl-bars { margin-top:1.1rem; display:flex; align-items:flex-end; gap:.55rem; height:8rem; }
-.hl-bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:.4rem; height:100%; }
+.hl-bars { margin-top:1.1rem; display:flex; align-items:flex-end; gap:.4rem; height:9.25rem; }
+.hl-bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:.3rem; height:100%; }
 .hl-bar-track { flex:1; width:100%; display:flex; align-items:flex-end; background:#f3f4f6; border-radius:.5rem; overflow:hidden; }
 .hl-bar-fill { width:100%; background:linear-gradient(180deg,#818cf8,#6366f1); border-radius:.5rem .5rem 0 0; }
-.hl-bar-col span { font-size:11px; color:#6b7280; font-weight:600; }
+.hl-bar-col > span:last-child { font-size:11px; color:#6b7280; font-weight:600; }
+.hl-bar-n { font-size:10px; color:#4f46e5; font-weight:700; line-height:1; min-height:12px; }
+.hl-bar-n-empty { visibility:hidden; }
 .hl-mix { margin-top:1rem; display:flex; flex-direction:column; gap:.85rem; }
 .hl-mix-row { display:flex; justify-content:space-between; font-size:.85rem; font-weight:600; color:#374151; }
 .hl-mix-track { height:6px; background:#f3f4f6; border-radius:99px; overflow:hidden; margin-top:.35rem; }
@@ -222,9 +239,8 @@ const css = `
 @media (max-width:767px) {
   .hl-desktop { display:none !important; }
 }
-.hl-feed { max-width:40rem; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
-@media (min-width:768px) { .hl-feed { max-width:44rem; margin:1.5rem auto 0; } }
 .hl-feed-head h2 { margin:.35rem 0 0; font-size:1.35rem; }
+.hl-feed-sentinel { height:1px; width:100%; }
 .lf-card { background:#fff; border:1px solid #e5e7eb; border-radius:.9rem; padding:1rem 1.05rem 0; box-shadow:0 1px 2px rgb(0 0 0/.05); }
 .lf-head { display:flex; gap:.75rem; align-items:center; }
 .lf-avatar { width:44px; height:44px; border-radius:50%; background:#eef2ff; color:#4f46e5; display:inline-flex; align-items:center; justify-content:center; font-weight:800; font-size:.85rem; flex-shrink:0; }
@@ -239,6 +255,11 @@ const css = `
 .lf-media { margin: .85rem -1.05rem 0; background:#0f172a; }
 .lf-media img { width:100%; max-height:360px; object-fit:cover; display:block; }
 .lf-media iframe { width:100%; aspect-ratio:16/9; border:0; display:block; }
+.lf-media video { width:100%; display:block; background:#0f172a; }
+.lf-caption { margin:0; padding:.55rem .9rem .85rem; color:#6b7280; font-size:.8rem; background:#fff; }
+.lf-slides { position:relative; }
+.lf-slide-nav { display:flex; justify-content:space-between; align-items:center; gap:.5rem; padding:.45rem .75rem .7rem; background:#fff; color:#4b5563; font-size:.8rem; font-weight:700; }
+.lf-slide-nav button { border:1px solid #e5e7eb; background:#fff; border-radius:.5rem; padding:.25rem .6rem; cursor:pointer; font:inherit; font-weight:700; }
 .lf-link { display:flex; flex-direction:column; gap:.15rem; margin:.85rem 0 0; padding:.8rem .9rem; border:1px solid #e5e7eb; border-radius:.65rem; text-decoration:none; background:#f9fafb; }
 .lf-link span { color:#111827; font-weight:700; }
 .lf-link em { color:#6366f1; font-style:normal; font-size:.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

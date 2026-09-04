@@ -5,3 +5,5 @@ export * from './mocks/data';
 export * from './mocks/votes';
 export * from './mocks/mock-feed';
 export * from './execution';
+export * from './weekly-activity';
+export * from './feed-content';

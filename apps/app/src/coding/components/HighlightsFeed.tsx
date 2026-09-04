@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 
 import { colors, space, type } from '@comm-platform/ui';
@@ -6,7 +7,7 @@ import { colors, space, type } from '@comm-platform/ui';
 import { fetchFeed } from '@/coding/api/feedApi';
 import { FeedCard } from '@/coding/components/FeedCard';
 
-export function HighlightsFeed() {
+export function HighlightsFeed(_props?: { children?: ReactNode }) {
   const feed = useInfiniteQuery({
     queryKey: ['highlights-feed'],
     queryFn: ({ pageParam }) => fetchFeed(pageParam, 3),

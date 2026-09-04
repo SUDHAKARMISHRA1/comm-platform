@@ -63,9 +63,21 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['feed-comments', post.id] }),
   });
 
-  const long = post.body.length > PREVIEW;
-  const body = !expanded && long ? `${post.body.slice(0, PREVIEW).trim()}…` : post.body;
-  const image = post.mediaUrl && !post.mediaUrl.includes('youtube') && !post.mediaUrl.includes('youtu.be') ? post.mediaUrl : '';
+  const blocks = post.blocks?.length ? post.blocks : [];
+  const text =
+    blocks
+      .filter((block) => block.kind === 'text')
+      .map((block) => block.text ?? '')
+      .join('\n\n') || post.body;
+  const long = text.length > PREVIEW;
+  const body = !expanded && long ? `${text.slice(0, PREVIEW).trim()}…` : text;
+  const images = blocks.flatMap((block) => {
+    if (block.kind === 'image' && block.url) return [block.url];
+    if (block.kind === 'slideshow') return (block.urls ?? []).filter(Boolean);
+    return [];
+  });
+  const image = images[0] || (post.mediaUrl && !post.mediaUrl.includes('youtube') && !post.mediaUrl.includes('youtu.be') ? post.mediaUrl : '');
+  const videoUrl = blocks.find((block) => block.kind === 'video' && block.url)?.url;
 
   return (
     <View style={styles.card}>
@@ -88,6 +100,11 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
         </Pressable>
       ) : null}
       {image ? <Image source={{ uri: image }} style={styles.image} /> : null}
+      {videoUrl ? (
+        <Pressable onPress={() => void Linking.openURL(videoUrl)}>
+          <Text style={styles.link}>Watch video</Text>
+        </Pressable>
+      ) : null}
       {post.linkUrl ? (
         <Pressable onPress={() => void Linking.openURL(post.linkUrl)}>
           <Text style={styles.link}>{post.linkUrl}</Text>

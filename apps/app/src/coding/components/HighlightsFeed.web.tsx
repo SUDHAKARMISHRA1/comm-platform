@@ -1,10 +1,10 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 import { fetchFeed } from '@/coding/api/feedApi';
 import { FeedCard } from '@/coding/components/FeedCard';
 
-export function HighlightsFeed() {
+export function HighlightsFeed({ children }: { children?: ReactNode }) {
   const sentinel = useRef<HTMLDivElement | null>(null);
   const feed = useInfiniteQuery({
     queryKey: ['highlights-feed'],
@@ -27,27 +27,41 @@ export function HighlightsFeed() {
   }, [feed.hasNextPage, feed.isFetchingNextPage, feed.fetchNextPage]);
 
   const posts = feed.data?.pages.flatMap((page) => page.posts) ?? [];
+  const featured = posts[0];
+  const rest = posts.slice(1);
 
   return (
-    <section className="hl-feed">
-      <div className="hl-feed-head">
-        <p className="hl-label">From the team</p>
-        <h2>Articles, posts, and videos</h2>
-        <p className="hl-copy">
-          Published by admins. Like what you found useful, share a link with your study group, and leave a comment if
-          you saw this in a loop.
-        </p>
-      </div>
-      {feed.isLoading ? <p className="hl-muted">Loading the feed…</p> : null}
-      {feed.isError ? <p className="hl-muted">Could not load the feed. Sign in and confirm the API is running.</p> : null}
-      {posts.map((post) => (
-        <FeedCard key={post.id} post={post} />
-      ))}
-      <div ref={sentinel} />
-      {feed.isFetchingNextPage ? <p className="hl-muted">Loading more…</p> : null}
-      {!feed.isLoading && posts.length === 0 ? (
-        <p className="hl-muted">No published posts yet. Admins can add them from Highlights feed in the admin panel.</p>
+    <>
+      <section className="hl-featured">
+        <div className="hl-feed-head">
+          <p className="hl-label">Latest from the team</p>
+          <h2>Published for you</h2>
+        </div>
+        {feed.isLoading ? <p className="hl-muted">Loading the latest article…</p> : null}
+        {feed.isError ? (
+          <p className="hl-muted">Could not load the latest article. Sign in and confirm the API is running.</p>
+        ) : null}
+        {featured ? <FeedCard post={featured} /> : null}
+        {!feed.isLoading && !featured ? (
+          <p className="hl-muted">No published posts yet. Admins can add them from Highlights feed in the admin panel.</p>
+        ) : null}
+      </section>
+
+      {children}
+
+      {rest.length > 0 || feed.isFetchingNextPage ? (
+        <section className="hl-feed">
+          <div className="hl-feed-head">
+            <p className="hl-label">From the team</p>
+            <h2>More articles</h2>
+          </div>
+          {rest.map((post) => (
+            <FeedCard key={post.id} post={post} />
+          ))}
+          {feed.isFetchingNextPage ? <p className="hl-muted">Loading more…</p> : null}
+        </section>
       ) : null}
-    </section>
+      <div ref={sentinel} className="hl-feed-sentinel" />
+    </>
   );
 }

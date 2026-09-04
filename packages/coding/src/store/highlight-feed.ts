@@ -5,16 +5,21 @@ import type {
   FeedCommentLikeResponse,
   FeedLikeResponse,
   FeedListResponse,
+  FeedPostAdminRow,
   FeedPostKind,
   FeedShareResponse,
 } from '../types';
-import { nestComments, toFeedCard } from '../feed-helpers';
+import { nestComments, toFeedAdminRow, toFeedCard } from '../feed-helpers';
+import { blocksFromPost, mediaFromBlocks, parseFeedBlocks, previewTextFromBlocks } from '../feed-content';
 import { mutateStore, readStore } from './file-store';
 import { isSupabasePersistenceEnabled } from './supabase-user-data';
 import {
   deleteFeedCommentLike,
   deleteFeedLike,
+  deleteHighlightPost,
+  feedPostsReady,
   feedTablesReady,
+  getHighlightPost,
   insertFeedComment,
   insertFeedCommentLike,
   insertFeedLike,
@@ -23,6 +28,9 @@ import {
   listFeedComments,
   listFeedLikes,
   listFeedShares,
+  listHighlightPosts,
+  updateFeedCommentHidden,
+  upsertHighlightPost,
 } from './supabase-feed';
 
 const KINDS: FeedPostKind[] = ['article', 'post', 'video', 'link'];
@@ -33,6 +41,36 @@ function asKind(value: string): FeedPostKind {
 
 const FEED_TABLES_MISSING =
   'Highlight feed tables were not found in Supabase. Confirm highlight_post_likes exists, then restart the web server.';
+
+const FEED_POSTS_MISSING =
+  'Highlight posts table was not found in Supabase. Run supabase/migrations/0008_highlight_posts.sql, then restart the web server.';
+
+async function requireFeedPostsReady() {
+  if (!isSupabasePersistenceEnabled()) return false;
+  if (!(await feedPostsReady())) throw new Error(FEED_POSTS_MISSING);
+  return true;
+}
+
+async function loadPosts(): Promise<FeedPostRecord[]> {
+  if (await requireFeedPostsReady()) {
+    const posts = await listHighlightPosts();
+    if (posts.length) return posts;
+    const local = (await readStore()).feedPosts ?? [];
+    if (!local.length) return [];
+    for (const post of local) await upsertHighlightPost(post);
+    return listHighlightPosts();
+  }
+  const data = await readStore();
+  return [...(data.feedPosts ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+async function loadPost(id: string) {
+  if (await requireFeedPostsReady()) {
+    return getHighlightPost(id);
+  }
+  const data = await readStore();
+  return (data.feedPosts ?? []).find((post) => post.id === id) ?? null;
+}
 
 async function engagement() {
   if (isSupabasePersistenceEnabled()) {
@@ -56,14 +94,43 @@ async function engagement() {
 }
 
 export async function listFeedPosts() {
-  const data = await readStore();
-  return [...(data.feedPosts ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return loadPosts();
+}
+
+async function engagementOrEmpty() {
+  try {
+    return await engagement();
+  } catch {
+    return {
+      likes: [],
+      shares: [],
+      comments: [],
+      commentLikes: [],
+      persist: 'file' as const,
+    };
+  }
+}
+
+export async function listFeedPostsWithStats(): Promise<FeedPostAdminRow[]> {
+  const posts = await listFeedPosts();
+  const { likes, shares, comments } = await engagementOrEmpty();
+  return posts.map((post) => toFeedAdminRow(post, likes, shares, comments));
+}
+
+export async function getFeedPostAdmin(id: string) {
+  const post = await loadPost(id);
+  if (!post) return null;
+  const { likes, shares, comments, commentLikes } = await engagementOrEmpty();
+  return {
+    post,
+    stats: toFeedAdminRow(post, likes, shares, comments),
+    comments: nestComments(id, 'admin', comments, commentLikes, { includeHidden: true }),
+  };
 }
 
 export async function listPublishedFeed(userId: string, page = 1, pageSize = 5): Promise<FeedListResponse> {
-  const data = await readStore();
   const { likes, shares, comments } = await engagement();
-  const items = (data.feedPosts ?? [])
+  const items = (await loadPosts())
     .filter((post) => post.published)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const safePage = Math.max(1, page);
@@ -77,18 +144,15 @@ export async function listPublishedFeed(userId: string, page = 1, pageSize = 5):
 }
 
 export async function listPostComments(userId: string, postId: string) {
-  const data = await readStore();
-  const post = (data.feedPosts ?? []).find((row) => row.id === postId && row.published);
-  if (!post) throw new Error('Post not found');
+  const post = await loadPost(postId);
+  if (!post?.published) throw new Error('Post not found');
   const { comments, commentLikes } = await engagement();
   return nestComments(postId, userId, comments, commentLikes);
 }
 
 export async function toggleFeedLike(userId: string, postId: string): Promise<FeedLikeResponse> {
-  const data = await readStore();
-  if (!(data.feedPosts ?? []).some((post) => post.id === postId && post.published)) {
-    throw new Error('Post not found');
-  }
+  const post = await loadPost(postId);
+  if (!post?.published) throw new Error('Post not found');
   const now = new Date().toISOString();
   const social = await engagement();
   const existing = social.likes.find((row) => row.userId === userId && row.postId === postId);
@@ -117,10 +181,8 @@ export async function toggleFeedLike(userId: string, postId: string): Promise<Fe
 }
 
 export async function shareFeedPost(userId: string, postId: string): Promise<FeedShareResponse> {
-  const data = await readStore();
-  if (!(data.feedPosts ?? []).some((post) => post.id === postId && post.published)) {
-    throw new Error('Post not found');
-  }
+  const post = await loadPost(postId);
+  if (!post?.published) throw new Error('Post not found');
   const now = new Date().toISOString();
   const social = await engagement();
   const already = social.shares.some((row) => row.userId === userId && row.postId === postId);
@@ -157,10 +219,8 @@ export async function addFeedComment(
   const text = body.trim();
   if (!text) throw new Error('Comment cannot be empty');
   if (text.length > 2000) throw new Error('Comment is too long');
-  const data = await readStore();
-  if (!(data.feedPosts ?? []).some((post) => post.id === postId && post.published)) {
-    throw new Error('Post not found');
-  }
+  const post = await loadPost(postId);
+  if (!post?.published) throw new Error('Post not found');
   const social = await engagement();
   let rootParent: string | null = parentId || null;
   if (rootParent) {
@@ -230,43 +290,84 @@ export async function saveFeedPost(input: {
   linkUrl?: string;
   authorName?: string;
   published: boolean;
+  blocks?: unknown;
 }) {
   const title = input.title.trim();
   if (!title) throw new Error('Title is required');
+  const parsed = parseFeedBlocks(input.blocks);
+  const blocks = parsed.length
+    ? parsed
+    : blocksFromPost({
+        body: input.body,
+        mediaUrl: input.mediaUrl,
+        linkUrl: input.linkUrl,
+      });
+  const body = previewTextFromBlocks(blocks) || input.body;
+  const mediaUrl = mediaFromBlocks(blocks) || (input.mediaUrl ?? '').trim();
+  const now = new Date().toISOString();
+  const row: FeedPostRecord = {
+    id: input.id?.trim() || `feed-${Date.now()}`,
+    kind: asKind(input.kind),
+    title,
+    body,
+    mediaUrl,
+    linkUrl: (input.linkUrl ?? '').trim(),
+    authorName: (input.authorName ?? '').trim() || 'Comm Platform',
+    published: input.published,
+    blocks,
+    createdAt: now,
+    updatedAt: now,
+  };
+  if (await requireFeedPostsReady()) {
+    if (input.id) {
+      const existing = await getHighlightPost(input.id);
+      if (!existing) throw new Error('Post not found');
+      row.createdAt = existing.createdAt;
+    }
+    return upsertHighlightPost(row);
+  }
   return mutateStore((data) => {
-    const now = new Date().toISOString();
     data.feedPosts ??= [];
     if (input.id) {
-      const row = data.feedPosts.find((post) => post.id === input.id);
-      if (!row) throw new Error('Post not found');
-      row.kind = asKind(input.kind);
-      row.title = title;
-      row.body = input.body;
-      row.mediaUrl = (input.mediaUrl ?? '').trim();
-      row.linkUrl = (input.linkUrl ?? '').trim();
-      row.authorName = (input.authorName ?? '').trim() || 'Comm Platform';
-      row.published = input.published;
-      row.updatedAt = now;
-      return row;
+      const current = data.feedPosts.find((post) => post.id === input.id);
+      if (!current) throw new Error('Post not found');
+      current.kind = row.kind;
+      current.title = row.title;
+      current.body = row.body;
+      current.mediaUrl = row.mediaUrl;
+      current.linkUrl = row.linkUrl;
+      current.authorName = row.authorName;
+      current.published = row.published;
+      current.blocks = row.blocks;
+      current.updatedAt = now;
+      return current;
     }
-    const row: FeedPostRecord = {
-      id: `feed-${Date.now()}`,
-      kind: asKind(input.kind),
-      title,
-      body: input.body,
-      mediaUrl: (input.mediaUrl ?? '').trim(),
-      linkUrl: (input.linkUrl ?? '').trim(),
-      authorName: (input.authorName ?? '').trim() || 'Comm Platform',
-      published: input.published,
-      createdAt: now,
-      updatedAt: now,
-    };
     data.feedPosts.push(row);
     return row;
   });
 }
 
+export async function setFeedCommentHidden(commentId: string, hidden: boolean) {
+  if (isSupabasePersistenceEnabled()) {
+    const social = await engagementOrEmpty();
+    if (social.persist !== 'db') throw new Error(FEED_TABLES_MISSING);
+    await updateFeedCommentHidden(commentId, hidden);
+    return true;
+  }
+  return mutateStore((data) => {
+    data.feedComments ??= [];
+    const row = data.feedComments.find((comment) => comment.id === commentId);
+    if (!row) throw new Error('Comment not found');
+    row.hidden = hidden;
+    return true;
+  });
+}
+
 export async function deleteFeedPost(id: string) {
+  if (await requireFeedPostsReady()) {
+    await deleteHighlightPost(id);
+    return true;
+  }
   return mutateStore((data) => {
     data.feedPosts = (data.feedPosts ?? []).filter((post) => post.id !== id);
     data.feedLikes = (data.feedLikes ?? []).filter((row) => row.postId !== id);

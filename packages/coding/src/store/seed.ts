@@ -190,7 +190,7 @@ export function createSeedStore(): CodingDataStore {
     levels,
     topics,
     cmsPages: [],
-    feedPosts: defaultFeedPosts(now),
+    feedPosts: [],
     feedLikes: [],
     feedShares: [],
     feedComments: [],

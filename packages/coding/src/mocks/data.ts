@@ -1,4 +1,5 @@
 import type { CatalogPayload, QuestionDetail, QuestionSummary, SubmissionDetail, SubmissionSummary } from '../types';
+import { buildWeeklyActivity } from '../weekly-activity';
 import { mockVoteCount, mockVotedByMe } from './votes';
 
 type MockQuestion = Omit<QuestionDetail, 'voteCount' | 'votedByMe'>;
@@ -265,7 +266,7 @@ export function getMockSubmission(id: string): SubmissionDetail | undefined {
 }
 
 export function getMockDashboard() {
-  const summaries = MOCK_QUESTIONS.map(toSummary);
+  const summaries = MOCK_QUESTIONS.map((q) => toSummary(q));
   const solved = summaries.filter((q) => q.status === 'SOLVED').length;
   const attempted = summaries.filter((q) => q.status === 'ATTEMPTED').length;
   const total = summaries.length;
@@ -285,6 +286,7 @@ export function getMockDashboard() {
     recentPractice: summaries.slice(0, 4).map((q) => ({ questionId: q.id, title: q.title, status: q.status })),
     recommended: summaries.filter((q) => q.status !== 'SOLVED').slice(0, 3),
     recentSubmissions: listMockSubmissions().slice(0, 5),
+    weeklyActivity: buildWeeklyActivity(listMockSubmissions()),
   };
 }
 

@@ -34,6 +34,21 @@ describe('highlight feed helpers', () => {
     expect(card.shareCount).toBe(1);
   });
 
+  it('omits hidden comments from the public card count and tree', () => {
+    const comments: FeedCommentRecord[] = [
+      { id: 'c1', postId: 'feed-1', parentId: null, userId: 'u2', authorName: 'Ada', body: 'Nice', createdAt: post.createdAt },
+      { id: 'c2', postId: 'feed-1', parentId: null, userId: 'u3', authorName: 'Lin', body: 'Spam', createdAt: post.createdAt, hidden: true },
+    ];
+    const card = toFeedCard(post, 'u1', [], [], comments);
+    expect(card.commentCount).toBe(1);
+    expect(card.blocks.some((block) => block.kind === 'text')).toBe(true);
+    const tree = nestComments('feed-1', 'u1', comments, []);
+    expect(tree).toHaveLength(1);
+    expect(tree[0]?.body).toBe('Nice');
+    const adminTree = nestComments('feed-1', 'admin', comments, [], { includeHidden: true });
+    expect(adminTree).toHaveLength(2);
+  });
+
   it('nests replies under the root comment', () => {
     const comments: FeedCommentRecord[] = [
       { id: 'c1', postId: 'feed-1', parentId: null, userId: 'u1', authorName: 'Ada', body: 'Root', createdAt: post.createdAt },

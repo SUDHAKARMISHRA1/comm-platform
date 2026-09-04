@@ -1,4 +1,4 @@
-import type { Difficulty, ExecutionStatus, FeedPostKind, LanguageKey, QuestionExample } from './types';
+import type { Difficulty, ExecutionStatus, FeedContentBlock, FeedPostKind, LanguageKey, QuestionExample } from './types';
 
 /** Mirrors future Postgres tables — see supabase/migrations/0002_coding.sql */
 export type TestCaseRecord = {
@@ -95,6 +95,7 @@ export type FeedPostRecord = {
   published: boolean;
   createdAt: string;
   updatedAt: string;
+  blocks?: FeedContentBlock[];
 };
 
 export type FeedLikeRecord = {
@@ -117,6 +118,7 @@ export type FeedCommentRecord = {
   authorName: string;
   body: string;
   createdAt: string;
+  hidden?: boolean;
 };
 
 export type FeedCommentLikeRecord = {

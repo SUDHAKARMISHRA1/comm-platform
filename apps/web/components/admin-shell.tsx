@@ -47,8 +47,8 @@ const NAV: NavGroup[] = [
     id: 'feed',
     label: 'Highlights feed',
     children: [
+      { href: '/admin/feed', label: 'Published posts' },
       { href: '/admin/feed/new', label: 'Publish post' },
-      { href: '/admin/feed', label: 'Manage posts' },
     ],
   },
   {
