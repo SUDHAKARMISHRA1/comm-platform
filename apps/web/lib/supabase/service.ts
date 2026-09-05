@@ -1,3 +1,4 @@
+/** Service-role client for admin user directory after `requireAdmin()`. Never expose this key to the browser. */
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@comm-platform/types';
 

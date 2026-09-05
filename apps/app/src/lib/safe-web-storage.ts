@@ -1,3 +1,4 @@
+/** Expo web: localStorage when available, otherwise an in-memory Map (private mode / blocked cookies). */
 const memory = new Map<string, string>();
 
 let storageAvailable: boolean | null = null;

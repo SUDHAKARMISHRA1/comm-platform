@@ -1,3 +1,4 @@
+/** POST /api/code/run — execute source with the user's Bearer token. */
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { runUserCode } from '@comm-platform/coding/server';

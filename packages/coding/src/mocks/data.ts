@@ -1,3 +1,4 @@
+/** Built-in practice catalog used when `EXPO_PUBLIC_USE_MOCK_API=true` (no Next.js API required). */
 import type { CatalogPayload, QuestionDetail, QuestionSummary, SubmissionDetail, SubmissionSummary } from '../types';
 import { buildWeeklyActivity } from '../weekly-activity';
 import { mockVoteCount, mockVotedByMe } from './votes';

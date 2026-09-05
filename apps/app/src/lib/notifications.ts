@@ -1,3 +1,7 @@
+/**
+ * In-app notification list derived from submissions (localStorage "seen" ids).
+ * Not push delivery — admin email/push campaigns are stored separately in the coding store.
+ */
 import type { SubmissionSummary } from '@comm-platform/coding';
 
 import { getWebStorageItem, setWebStorageItem } from '@/lib/safe-web-storage';

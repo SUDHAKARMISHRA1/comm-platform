@@ -1,3 +1,8 @@
+/**
+ * HTTP client for the Next.js `/api` routes.
+ * Sends `Authorization: Bearer <supabase access token>`. CORS is allowed by `apps/web/middleware.ts`.
+ * When `EXPO_PUBLIC_USE_MOCK_API=true`, API modules skip this client and use in-package mocks.
+ */
 import type { Session } from '@supabase/supabase-js';
 
 import { getSupabase } from '@/lib/supabase';
@@ -73,6 +78,7 @@ async function refreshBoundSession(): Promise<Session | null> {
   return refreshInFlight;
 }
 
+/** Prefer a live session; refresh ~60s before JWT expiry. Demo tokens are never refreshed. */
 async function resolveAccessToken(): Promise<string | null> {
   const supabase = getSupabase();
   const { data } = await supabase.auth.getSession();

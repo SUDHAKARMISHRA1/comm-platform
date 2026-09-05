@@ -1,3 +1,4 @@
+/** Map Supabase / Postgres error text to a short message the UI can show. */
 export function toUserMessage(error: { message?: string; code?: string } | string | null | undefined): string {
   const raw = typeof error === 'string' ? error : (error?.message ?? '');
   const code = typeof error === 'object' && error ? error.code : undefined;

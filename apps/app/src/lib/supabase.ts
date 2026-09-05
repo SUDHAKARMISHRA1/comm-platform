@@ -1,3 +1,4 @@
+/** Singleton Supabase client for the Expo app (AsyncStorage on native, safe web storage on web). */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 

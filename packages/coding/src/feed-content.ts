@@ -1,3 +1,4 @@
+/** Normalize admin feed JSON into typed content blocks (text, image, video, slideshow). */
 import type { FeedContentBlock } from './types';
 
 const BLOCK_KINDS = new Set<FeedContentBlock['kind']>(['text', 'image', 'video', 'slideshow']);
@@ -80,8 +81,4 @@ export function mediaFromBlocks(blocks: FeedContentBlock[]) {
   if (image?.url) return image.url;
   const slides = blocks.find((block) => block.kind === 'slideshow' && (block.urls?.length || block.url));
   return slides?.urls?.[0] || slides?.url || '';
-}
-
-export function emptyTextBlock(): FeedContentBlock {
-  return { id: newId(), kind: 'text', text: '' };
 }

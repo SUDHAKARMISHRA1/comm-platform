@@ -1,3 +1,7 @@
+/**
+ * Compiles and runs Java/C/C++ on the Next.js host (javac, gcc, g++).
+ * Used when Judge0 is not configured. Requires those toolchains on the machine.
+ */
 import { execFile, spawn } from 'node:child_process';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

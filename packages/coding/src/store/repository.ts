@@ -1,3 +1,10 @@
+/**
+ * Student-facing coding API used by Next.js routes.
+ *
+ * Catalog, progress, votes, and submissions read from Supabase when
+ * `isSupabasePersistenceEnabled()` is true; otherwise they use the JSON file-store.
+ * Code execution is Judge0 → local compiler → Piston → Java mock (see `executeCode`).
+ */
 import type {
   DashboardStats,
   Difficulty,
@@ -562,6 +569,7 @@ export async function getSubmissionForUser(userId: string, id: string) {
   };
 }
 
+/** Judge0 if configured; else host javac/gcc; else Piston; Java falls back to a pattern-matching mock. */
 async function executeCode(language: LanguageKey, sourceCode: string, stdin: string): Promise<ExecutionResult> {
   const judge0Url = process.env.JUDGE0_BASE_URL;
   if (judge0Url) {

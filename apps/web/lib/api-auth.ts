@@ -1,3 +1,8 @@
+/**
+ * Auth for `/api/*` routes used by the Expo app.
+ * Validates the Bearer access token with the anon key (`getUser(token)`).
+ * Admin cookie sessions use `requireAdmin()` instead — do not mix the two.
+ */
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 
@@ -33,6 +38,7 @@ export function apiDisplayName(user: { email?: string | null; user_metadata?: Re
   return named?.trim() || user.email?.split('@')[0] || 'Member';
 }
 
+/** Stub 429 used when the client sends `x-rate-limit-test: 1`. Not a real rate limiter. */
 export function rateLimitResponse() {
   return NextResponse.json(
     { error: 'You have reached the execution limit. Please wait a moment before trying again.' },

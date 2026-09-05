@@ -1,6 +1,6 @@
 import type { Difficulty, ExecutionStatus, FeedContentBlock, FeedPostKind, LanguageKey, QuestionExample } from './types';
 
-/** Mirrors future Postgres tables — see supabase/migrations/0002_coding.sql */
+/** JSON store + Postgres row shapes. See `supabase/migrations/0002_coding.sql` through `0009_practice_catalog.sql`. */
 export type TestCaseRecord = {
   id: string;
   input: string;

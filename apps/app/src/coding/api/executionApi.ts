@@ -1,3 +1,4 @@
+/** Run / hidden tests / submit. Mock path is used when `EXPO_PUBLIC_USE_MOCK_API=true`. */
 import {
   mockRunCode,
   mockSubmitCode,

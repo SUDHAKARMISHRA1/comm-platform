@@ -1,3 +1,4 @@
+/** Scoped console logger (`[time] [LEVEL] [scope] message`). */
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const levelOrder: Record<LogLevel, number> = {

@@ -1,3 +1,4 @@
+/** Month/year filters for admin user and submission tables. */
 export function matchesMonthYear(iso: string | null | undefined, month?: string, year?: string) {
   if (!iso) return !month && !year;
   const date = new Date(iso);

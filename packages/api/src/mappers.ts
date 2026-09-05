@@ -1,3 +1,4 @@
+/** Snake_case PostgREST rows → camelCase types used by the apps. */
 import type { AccountStatus, AdminUserOverview, AdminUserOverviewRow, Profile, ProfileRow } from '@comm-platform/types';
 
 export function mapProfile(row: ProfileRow): Profile {

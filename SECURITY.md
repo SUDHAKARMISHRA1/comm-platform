@@ -16,7 +16,7 @@
 ## Auth sessions
 
 - Expo persists the Supabase session with AsyncStorage on native and the default web storage on web.
-- Next.js admin uses `@supabase/ssr` cookies. Middleware refreshes the session. Always use `getUser()` on the server, not `getSession()`, for authorization.
+- Next.js admin uses `@supabase/ssr` cookies. Always use `getUser()` on the server, not `getSession()`, for authorization. Middleware only handles `/` → `/admin/login` and CORS for `/api/*`; it does not refresh the Auth session.
 
 ## Audit log
 

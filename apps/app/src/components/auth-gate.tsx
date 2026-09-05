@@ -5,9 +5,17 @@ import { colors } from '@comm-platform/ui';
 
 import { useAuth } from '@/providers/auth-provider';
 
+/** Marketing/auth screens anyone can open. */
 const PUBLIC_SEGMENTS = new Set(['home', 'login', 'signup', 'forgot-password', 'reset-password']);
+/** Signed-in users are sent to /highlights instead of these. */
 const AUTH_SEGMENTS = new Set(['login', 'signup', 'forgot-password']);
 
+/**
+ * Route guard for Expo Router:
+ * - missing Supabase config → `/setup`
+ * - signed out on a protected route → `/login` (or `/home` from highlights)
+ * - signed in on login/home → `/highlights`
+ */
 export function AuthGate() {
   const { configured, demoMode, loading, session } = useAuth();
   const segments = useSegments();

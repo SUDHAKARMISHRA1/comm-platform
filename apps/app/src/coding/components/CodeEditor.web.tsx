@@ -85,7 +85,6 @@ export function CodeEditor({ language, value, onChange, onRun }: Props) {
       editorRef.current = null;
     };
     // Create once; language/value sync happens in the effects below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

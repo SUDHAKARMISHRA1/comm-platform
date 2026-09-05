@@ -1,3 +1,4 @@
+/** Domain types for the coding platform (questions, execution, feed). Shared by Expo and the API. */
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD';
 export type QuestionStatus = 'SOLVED' | 'ATTEMPTED' | 'NOT_ATTEMPTED';
 export type LanguageKey = 'java' | 'c' | 'cpp';
@@ -159,12 +160,6 @@ export type RunTestsResponse = {
   stderr: string;
   compileOutput: string;
   testCaseResults: TestCaseResult[];
-};
-
-export type SubmissionPollResponse = {
-  submissionId: string;
-  status: 'QUEUED' | 'RUNNING' | 'COMPLETED';
-  result?: ExecutionResult;
 };
 
 export type FeedPostKind = 'article' | 'post' | 'video' | 'link';

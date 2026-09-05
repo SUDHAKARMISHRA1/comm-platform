@@ -1,3 +1,4 @@
+/** Zod schemas for signup, sign-in, password reset, and profile edit. Shared by Expo and admin. */
 import { z } from 'zod';
 
 export const emailSchema = z
@@ -60,7 +61,7 @@ export const resetPasswordSchema = z
 export const updateProfileSchema = z.object({
   displayName: displayNameSchema,
   username: usernameSchema,
-  bio: z.string().trim().max(280, 'Bio must be 280 characters or fewer').default(''),
+  bio: bioSchema.default(''),
 });
 
 export type SignUpInput = z.infer<typeof signUpSchema>;

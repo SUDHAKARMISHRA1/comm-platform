@@ -1,3 +1,4 @@
+/** Highlights feed posts, likes, shares, and comments in Postgres. */
 import type { FeedPostKind } from '../types';
 import type { FeedPostRecord } from '../schema';
 import { parseFeedBlocks } from '../feed-content';

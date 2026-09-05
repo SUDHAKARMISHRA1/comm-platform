@@ -1,3 +1,4 @@
+/** Admin catalog CRUD. Prefers Supabase when persistence is enabled, otherwise the JSON file-store. */
 import type {
   CatalogPayload,
   Difficulty,

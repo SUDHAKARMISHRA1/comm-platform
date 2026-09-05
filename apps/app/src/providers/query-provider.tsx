@@ -1,3 +1,4 @@
+/** React Query wrapper. Does not retry on 401 (expired session) or status 0 (network / API down). */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
 

@@ -1,3 +1,7 @@
+/**
+ * Local-only session when mock API is on and Supabase env is missing.
+ * Lets the student UI run without a backend. The token is `demo-access-token` — never send it to production APIs.
+ */
 import { Platform } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 

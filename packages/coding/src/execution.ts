@@ -1,3 +1,7 @@
+/**
+ * Remote executors and test doubles for run/submit.
+ * Judge0 and Piston are called only from the Next.js server, never the browser.
+ */
 import type { ExecutionResult, ExecutionStatus, LanguageKey } from './types';
 import { getHiddenTests } from './mocks/data';
 

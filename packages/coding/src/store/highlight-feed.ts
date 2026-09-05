@@ -1,3 +1,4 @@
+/** Highlights feed for students and admin. Dual-writes to Supabase and/or the JSON file-store. */
 import { randomUUID } from 'node:crypto';
 
 import type { FeedCommentRecord, FeedPostRecord } from '../schema';

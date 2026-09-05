@@ -1,3 +1,4 @@
+/** Server-only admin gate: cookie session + `user_roles.role === 'admin'`. Redirects to login or /forbidden. */
 import { redirect } from 'next/navigation';
 
 import { resolveAdminAccess } from '@/lib/admin-access';

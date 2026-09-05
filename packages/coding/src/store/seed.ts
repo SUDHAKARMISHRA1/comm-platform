@@ -1,3 +1,4 @@
+/** Default catalog and sample questions written to `store.json` on first API call. */
 import { LANGUAGES } from '../languages';
 import type {
   CodingDataStore,

@@ -1,3 +1,4 @@
+/** Cookie-based Supabase client for admin Server Components and server actions. */
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
@@ -20,7 +21,7 @@ export async function createServerSupabase() {
             cookieStore.set(name, value, { ...options, path: '/' });
           });
         } catch {
-          // Server Components cannot always set cookies; middleware refreshes the session.
+          // Server Components cannot always write cookies (read-only render paths).
         }
       },
     },

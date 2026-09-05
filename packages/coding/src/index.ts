@@ -1,3 +1,4 @@
+/** Client-safe coding types, mocks, and helpers. Server persistence is `@comm-platform/coding/server`. */
 export * from './types';
 export * from './schema';
 export * from './languages';

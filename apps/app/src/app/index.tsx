@@ -1,3 +1,4 @@
+/** Entry route: setup (no env) → highlights (signed in) or home (signed out). */
 import { Redirect } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 

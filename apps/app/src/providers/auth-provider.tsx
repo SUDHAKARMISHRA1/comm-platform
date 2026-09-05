@@ -1,3 +1,6 @@
+/**
+ * Restores the Supabase (or demo) session and keeps `bindApiSession` in sync for coding API calls.
+ */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 

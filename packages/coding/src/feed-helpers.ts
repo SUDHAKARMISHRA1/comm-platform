@@ -1,3 +1,4 @@
+/** Map feed records to student cards / nested comment trees. */
 import type {
   FeedCommentLikeRecord,
   FeedCommentRecord,

@@ -1,3 +1,4 @@
+/** Shared color, spacing, radius, and type tokens used by Expo screens and `@comm-platform/ui` components. */
 export const colors = {
   // Backgrounds
   bg: '#fafafa',

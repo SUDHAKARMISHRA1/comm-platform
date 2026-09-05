@@ -1,3 +1,8 @@
+/**
+ * Progress, interview votes, and submissions in Postgres.
+ * Enabled when `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set.
+ * If coding tables are not migrated yet, rows are read back from `audit_logs`.
+ */
 import type { ProgressRecord, SubmissionRecord } from '../schema';
 import type { ExecutionStatus, LanguageKey } from '../types';
 import { readStore } from './file-store';
@@ -42,6 +47,7 @@ function config() {
   return { url, key };
 }
 
+/** True when the web API can talk to Supabase with the service role (server-only). */
 export function isSupabasePersistenceEnabled() {
   return config() !== null;
 }

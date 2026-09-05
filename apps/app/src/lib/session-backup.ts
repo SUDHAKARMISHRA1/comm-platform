@@ -1,3 +1,7 @@
+/**
+ * Extra copy of the Supabase session on web (localStorage + sessionStorage).
+ * Recovers login after a hard refresh when the default auth storage misses the tokens.
+ */
 import type { Session } from '@supabase/supabase-js';
 
 const BACKUP_KEY = 'comm-platform:auth-session';

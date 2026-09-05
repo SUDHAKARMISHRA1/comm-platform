@@ -1,3 +1,4 @@
+/** Highlights feed HTTP + mock fallback. */
 import {
   addMockFeedComment,
   listMockFeed,

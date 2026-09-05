@@ -1,3 +1,4 @@
+/** Pure access matrix for admin UI. A client-side `isAdmin` flag is never trusted. */
 export type AdminAccess = 'unauthenticated' | 'forbidden' | 'allowed';
 
 export function resolveAdminAccess(input: {

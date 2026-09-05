@@ -1,3 +1,4 @@
+/** Submission history HTTP + mock fallback. */
 import { getMockSubmission, listMockSubmissions, type SubmissionDetail } from '@comm-platform/coding';
 
 import { USE_MOCK_API, apiFetch } from './client';

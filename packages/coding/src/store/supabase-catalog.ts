@@ -1,3 +1,4 @@
+/** Skills, levels, topics, and questions in Postgres. Falls back to the JSON store when tables are missing. */
 import type { Difficulty, LanguageKey } from '../types';
 import type { LevelRecord, QuestionRecord, SkillRecord, TestCaseRecord, TopicRecord } from '../schema';
 import { isSupabasePersistenceEnabled } from './supabase-user-data';

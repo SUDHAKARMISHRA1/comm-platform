@@ -1,3 +1,4 @@
+/** Practice questions, catalog, dashboard, and interview votes. */
 import {
   getAdjacentQuestionIds,
   getMockCatalog,

@@ -1,3 +1,4 @@
+/** Last-7-days activity buckets for the student dashboard calendar. */
 import type { WeeklyActivityDay } from './types';
 
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;

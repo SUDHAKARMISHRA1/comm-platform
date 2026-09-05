@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, space, type } from '@comm-platform/ui';
+import { radius, space } from '@comm-platform/ui';
 import type { Difficulty } from '@comm-platform/coding';
 
 const COLORS: Record<Difficulty, { bg: string; text: string }> = {

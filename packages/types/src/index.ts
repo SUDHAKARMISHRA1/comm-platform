@@ -1,3 +1,4 @@
+/** Shared domain types and the Supabase `Database` shape used by typed clients. */
 export type UserId = string;
 
 export type RoleName = 'user' | 'admin';
@@ -11,13 +12,6 @@ export type Profile = {
   createdAt: string;
   updatedAt: string;
 };
-
-export type UserRole = {
-  userId: UserId;
-  role: RoleName;
-};
-
-export type AuthSessionStatus = 'unauthenticated' | 'authenticated';
 
 export type AccountStatus = 'active' | 'unconfirmed' | 'banned';
 

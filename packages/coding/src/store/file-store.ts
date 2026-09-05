@@ -1,3 +1,8 @@
+/**
+ * JSON persistence for coding data (`data/coding/store.json`).
+ * `CODING_DATA_DIR` is resolved from the Next.js process cwd (`apps/web`), so the
+ * default `../../data/coding` points at the repo-level store.
+ */
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 

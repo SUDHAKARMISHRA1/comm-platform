@@ -1,3 +1,4 @@
+/** Shared Supabase browser-client factory, env readers, error mapping, and profile mappers. */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@comm-platform/types';
 
@@ -8,6 +9,7 @@ export type PublicEnv = {
 
 export type TypedSupabaseClient = SupabaseClient<Database>;
 
+/** Reads Expo (`EXPO_PUBLIC_*`) or Next (`NEXT_PUBLIC_*`) anon keys — same Supabase project. */
 export function readPublicEnv(env: Record<string, string | undefined> = process.env): PublicEnv {
   const supabaseUrl =
     env.EXPO_PUBLIC_SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL ?? env.SUPABASE_URL;
@@ -40,6 +42,7 @@ type AuthStorage = {
 
 type AuthLock = <R>(name: string, acquireTimeout: number, fn: () => Promise<R>) => Promise<R>;
 
+/** Anon-key browser client. Pass custom `storage` on Expo web so private-mode still works. */
 export function createBrowserSupabaseClient(options?: {
   env?: PublicEnv;
   storage?: AuthStorage;
@@ -65,5 +68,4 @@ export function createBrowserSupabaseClient(options?: {
 export { createLogger, type LogLevel } from './logger';
 export { toUserMessage } from './errors';
 export { mapProfile, mapAdminUser, accountStatus } from './mappers';
-export { createClient };
 export type { SupabaseClient };

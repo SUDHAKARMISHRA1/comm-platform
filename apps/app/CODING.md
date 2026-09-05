@@ -1,13 +1,13 @@
 # Coding Practice Platform
 
-Student-facing coding practice UI integrated into the Expo product app, with Next.js API routes for code execution (Judge0 adapter).
+Student-facing coding practice UI in the Expo product app, with Next.js API routes for catalog, feed, votes, and code execution.
 
 ## Prerequisites
 
 - Node.js 20.19+
 - pnpm 10
-- Supabase project (existing auth)
-- Optional: self-hosted [Judge0](https://github.com/judge0/judge0) for real code execution
+- Supabase project (existing auth) when not using mock API
+- Optional: self-hosted [Judge0](https://github.com/judge0/judge0) or a local JDK/gcc for real code execution
 
 ## Run locally
 
@@ -26,7 +26,7 @@ pnpm dev:app
 ### With backend API
 
 ```bash
-# Terminal 1 — Next.js API routes
+# Terminal 1 — Next.js API + admin
 cp apps/web/.env.example apps/web/.env.local
 # Set EXPO_PUBLIC_USE_MOCK_API=false in apps/app/.env
 pnpm dev:web   # http://localhost:3000
@@ -35,7 +35,7 @@ pnpm dev:web   # http://localhost:3000
 pnpm dev:app
 ```
 
-Sign in, then open **Dashboard**, **Practice**, or **Submissions** from the header.
+Sign in, then open **Highlights**, **Dashboard**, **Practice**, or **Submissions** from the header.
 
 ## Environment variables
 
@@ -54,37 +54,51 @@ Sign in, then open **Dashboard**, **Practice**, or **Submissions** from the head
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase URL (auth verification) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
-| `JUDGE0_BASE_URL` | Judge0 API URL (optional; mock if unset) |
+| `JUDGE0_BASE_URL` | Judge0 API URL (optional) |
 | `JUDGE0_API_KEY` | Judge0/RapidAPI key if required |
+| `PISTON_BASE_URL` | Piston API (used after local compile fails) |
+| `CODING_DATA_DIR` | JSON store directory (default `../../data/coding`) |
 
 ## Routes
 
 | Route | Description |
 | --- | --- |
+| `/highlights` | Feed of articles/posts (default after login) |
 | `/dashboard` | Stats, progress, recommendations |
 | `/practice` | Question list with search/filters |
+| `/practice/skills` | Skill catalog |
+| `/practice/voted` | Interview-voted questions |
 | `/practice/:questionId` | Problem + Monaco editor + run/submit |
 | `/submissions` | Submission history |
 | `/submissions/:id` | Submission detail |
 
+Monaco runs on **web** only (loaded from jsDelivr). Native shows a fallback message.
+
 ## API contract (backend)
 
-All endpoints require `Authorization: Bearer <supabase_access_token>`.
+All endpoints require `Authorization: Bearer <supabase_access_token>`. CORS for Expo web is set in `apps/web/middleware.ts`.
 
+- `GET /api/catalog`
 - `GET /api/questions?q&difficulty&topic&status&page&pageSize`
 - `GET /api/questions/:questionId`
+- `POST /api/questions/:questionId/vote`
+- `GET /api/questions/voted`
 - `GET /api/dashboard`
 - `GET /api/submissions`
 - `GET /api/submissions/:submissionId`
 - `POST /api/code/run` — `{ language, sourceCode, stdin }`
 - `POST /api/code/submit` — `{ questionId, language, sourceCode }`
+- `POST /api/code/tests` — hidden tests for a question
+- `GET /api/feed`
+- `POST /api/feed/:postId/like|share`
+- `GET|POST /api/feed/:postId/comments`
+- `POST /api/feed/comments/:commentId/like`
 
 Frontend sends `language: "java" | "c" | "cpp"` — Judge0 IDs are mapped server-side only.
 
 ## Judge0 local setup
 
 ```bash
-# Example with Docker (see Judge0 docs)
 docker run -d -p 2358:2358 judge0/judge0-ce:latest
 ```
 
@@ -99,9 +113,8 @@ pnpm --filter @comm-platform/coding test
 pnpm --filter @comm-platform/app test
 ```
 
-## Assumptions
+## Notes
 
-- Mock question data until admin question management is wired to the API.
-- User progress/submissions are mock-backed; replace with Postgres when backend is ready.
-- Monaco editor runs on **web** only; native shows a fallback message.
+- Admin practice/skills/feed are wired to the same store the student API uses.
+- Progress/submissions use Postgres when coding migrations + service role are present; otherwise `data/coding/store.json`.
 - Existing header/footer/theme from `AppShell` is preserved.

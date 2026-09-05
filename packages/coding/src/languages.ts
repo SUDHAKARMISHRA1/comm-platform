@@ -1,3 +1,4 @@
+/** Practice languages. Judge0 IDs stay on the server — the Expo app sends `java` | `c` | `cpp`. */
 import type { LanguageKey } from './types';
 
 export type LanguageConfig = {
@@ -51,12 +52,6 @@ int main() {
 }`,
   },
 };
-
-export const LANGUAGE_LIST = Object.values(LANGUAGES);
-
-export function getLanguage(key: LanguageKey): LanguageConfig {
-  return LANGUAGES[key];
-}
 
 export function getJudge0LanguageId(key: LanguageKey): number {
   return LANGUAGES[key].judge0LanguageId;

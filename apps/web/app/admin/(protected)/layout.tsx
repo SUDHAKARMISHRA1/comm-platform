@@ -1,3 +1,4 @@
+/** Cookie + role check before any protected admin page renders. */
 import { cookies } from 'next/headers';
 import { connection } from 'next/server';
 

@@ -81,14 +81,14 @@ describe('local java execution', () => {
     );
     expect(result.status).toBe('ACCEPTED');
     expect(result.stdout.trim()).toBe('15');
-  });
+  }, 15_000);
 
   it('reports compile errors', async () => {
     const { executeLocally } = await import('../local-execute');
     const result = await executeLocally('java', 'public class Main {', '');
     expect(result.status).toBe('COMPILATION_ERROR');
     expect(result.compileOutput.length).toBeGreaterThan(0);
-  });
+  }, 15_000);
 
   it('uses custom stdin', async () => {
     const { executeLocally } = await import('../local-execute');

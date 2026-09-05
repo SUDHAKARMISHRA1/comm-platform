@@ -1,5 +1,6 @@
 'use server';
 
+/** Admin login form action. Rejects non-admins after a successful Auth sign-in. */
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 

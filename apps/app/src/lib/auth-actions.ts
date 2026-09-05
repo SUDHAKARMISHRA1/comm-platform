@@ -1,3 +1,4 @@
+/** Sign up / sign in against Supabase Auth. Returns a user-facing message on failure. */
 import type { TypedSupabaseClient } from '@comm-platform/api';
 import { mapProfile, toUserMessage } from '@comm-platform/api';
 import { signInSchema, signUpSchema, type SignInInput, type SignUpInput } from '@comm-platform/validation';

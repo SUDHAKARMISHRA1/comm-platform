@@ -1,3 +1,7 @@
+/**
+ * Load Monaco from jsDelivr (not the npm package). Native Expo has no editor — see CodeEditor.tsx.
+ * Version is pinned to 0.52.2 to match the previous monaco-editor dependency.
+ */
 const MONACO_VS = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs';
 
 type Monaco = {

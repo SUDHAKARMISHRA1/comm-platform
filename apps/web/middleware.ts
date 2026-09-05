@@ -1,3 +1,10 @@
+/**
+ * Next.js edge middleware:
+ * - `/` → `/admin/login` (there is no public marketing site here)
+ * - `/api/*` CORS for the Expo web origin (`localhost:8081`)
+ * - no-store on `/admin`
+ * Session cookies are not refreshed here; admin pages call `requireAdmin()`.
+ */
 import { NextResponse, type NextRequest } from 'next/server';
 
 const ALLOWED_ORIGINS = new Set([
