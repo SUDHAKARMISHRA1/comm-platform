@@ -103,6 +103,12 @@ Confirm after `0001`:
 
 Later migrations add coding questions, votes, submissions, the highlights feed, and the practice catalog. Until those tables exist, the API still serves (and writes) `data/coding/store.json`.
 
+To load the starter **Java** practice set (38 original problems, ids 101–138), run `supabase/seeds/001_java_practice_pack.sql` in the SQL editor after `0009_practice_catalog.sql`. Safe to re-run (upserts on id).
+
+To load the starter **C** practice set (same 38 problems, ids 201–238), run `supabase/seeds/002_c_practice_pack.sql`. Do not paste `scripts/*.mjs` into SQL — those files only generate the `.sql` seeds.
+
+To load the starter **C++** practice set (same 38 problems, ids 301–338), run `supabase/seeds/003_cpp_practice_pack.sql`.
+
 ## 5. Create the first admin
 
 Sign up once in the product app, then in SQL:
