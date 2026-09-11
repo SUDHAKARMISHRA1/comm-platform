@@ -7,23 +7,23 @@ import { AppShell } from '@/components/app-shell';
 
 const highlights = [
   {
-    title: 'Conversations that stay organised',
-    description: 'Bring people together in focused spaces, with a clear place for every update and decision.',
+    title: 'Original Java, C, and C++ sets',
+    description: 'Work through Easy, Medium, and Hard problems with stdin/stdout tests instead of leftover interview dumps.',
+  },
+  {
+    title: 'Run tests as you go',
+    description: 'Write a solution, submit it, and see which cases pass without leaving the practice workspace.',
   },
   {
     title: 'Made for every screen',
-    description: 'Start in your browser and continue seamlessly on mobile when the app launches on Android and iOS.',
-  },
-  {
-    title: 'A calm, private workspace',
-    description: 'Simple controls and thoughtful defaults help teams communicate with clarity and confidence.',
+    description: 'Start in your browser and continue on mobile when the app launches on Android and iOS.',
   },
 ];
 
 const activity = [
-  { initial: 'M', name: 'Maya Chen', detail: 'Shared an update in Product design', time: 'Just now' },
-  { initial: 'R', name: 'Rohan Patel', detail: 'Started a team discussion', time: '18 min ago' },
-  { initial: 'A', name: 'Amelia Ross', detail: 'Joined the Launch workspace', time: '1 hr ago' },
+  { initial: 'M', name: 'Maya Chen', detail: 'Solved Two Sum in the Java pack', time: 'Just now' },
+  { initial: 'R', name: 'Rohan Patel', detail: 'Passed tests on a C medium problem', time: '18 min ago' },
+  { initial: 'A', name: 'Amelia Ross', detail: 'Started the C++ practice path', time: '1 hr ago' },
 ];
 
 export default function HomeScreen() {
@@ -31,10 +31,12 @@ export default function HomeScreen() {
     <AppShell>
       <ScrollView contentContainerStyle={styles.page}>
         <View style={styles.hero}>
-          <Text style={styles.badge}>Connect with clarity</Text>
-          <Text style={styles.title}>A better home for the conversations that move work forward.</Text>
+          <Text style={styles.badge}>Practice with structure</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            Coding practice for Java, C, and C++.
+          </Text>
           <Text style={styles.body}>
-            Comm Platform brings updates, people, and shared momentum into one simple, dependable place.
+            Work through Easy, Medium, and Hard problems, run tests, and track what you have solved.
           </Text>
           <View style={styles.actions}>
             <Link href="/signup" asChild>
@@ -48,17 +50,17 @@ export default function HomeScreen() {
               </Pressable>
             </Link>
           </View>
-          <Text style={styles.muted}>A simple start today. More collaborative tools on the way.</Text>
+          <Text style={styles.muted}>Start with Java, C, or C++. Contests and more languages come later.</Text>
         </View>
 
         <View style={styles.preview}>
-          <Text style={styles.previewKicker}>Your workspace</Text>
+          <Text style={styles.previewKicker}>Your practice</Text>
           <Text style={styles.previewTitle}>Good morning</Text>
           <View style={styles.workspaceCard}>
             <View style={styles.workspaceRow}>
               <View>
-                <Text style={styles.workspaceName}>Launch workspace</Text>
-                <Text style={styles.muted}>8 members · Active now</Text>
+                <Text style={styles.workspaceName}>Java practice path</Text>
+                <Text style={styles.muted}>38 problems · Easy to Hard</Text>
               </View>
               <Text style={styles.live}>Live</Text>
             </View>
@@ -77,8 +79,8 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        <Text style={styles.sectionKicker}>What&apos;s happening</Text>
-        <Text style={styles.sectionTitle}>A place built around progress.</Text>
+        <Text style={styles.sectionKicker}>What you get</Text>
+        <Text style={styles.sectionTitle}>A practice path built around progress.</Text>
         <View style={styles.cards}>
           {highlights.map((item, index) => (
             <View key={item.title} style={styles.card}>

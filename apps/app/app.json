@@ -22,7 +22,10 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Comm Platform",
+      "shortName": "Comm Platform",
+      "description": "Practice coding problems in Java, C, and C++."
     },
     "plugins": [
       "expo-router",

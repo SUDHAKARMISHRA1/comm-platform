@@ -99,7 +99,13 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
         </div>
       </header>
       <h3>{post.title}</h3>
-      <FeedBody blocks={blocks} fallback={post.body} expanded={expanded} onToggle={() => setExpanded((value) => !value)} />
+      <FeedBody
+        blocks={blocks}
+        fallback={post.body}
+        title={post.title}
+        expanded={expanded}
+        onToggle={() => setExpanded((value) => !value)}
+      />
       {post.linkUrl && !youtubeId(post.linkUrl) ? (
         <a className="lf-link" href={post.linkUrl} target="_blank" rel="noreferrer">
           <span>Open resource</span>
@@ -188,14 +194,20 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
   );
 }
 
+function mediaAlt(caption: string | undefined, fallback: string) {
+  return caption?.trim() || fallback;
+}
+
 function FeedBody({
   blocks,
   fallback,
+  title,
   expanded,
   onToggle,
 }: {
   blocks: FeedContentBlock[];
   fallback: string;
+  title: string;
   expanded: boolean;
   onToggle: () => void;
 }) {
@@ -227,7 +239,7 @@ function FeedBody({
         if (block.kind === 'image' && block.url) {
           return (
             <figure className="lf-media" key={block.id}>
-              <img src={block.url} alt={block.caption || ''} />
+              <img src={block.url} alt={mediaAlt(block.caption, title)} />
               {block.caption ? <figcaption className="lf-caption">{block.caption}</figcaption> : null}
             </figure>
           );
@@ -238,7 +250,7 @@ function FeedBody({
             <div className="lf-media" key={block.id}>
               {video ? (
                 <iframe
-                  title={block.caption || 'Video'}
+                  title={mediaAlt(block.caption, title)}
                   src={`https://www.youtube.com/embed/${video}`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -253,7 +265,7 @@ function FeedBody({
           const urls = (block.urls ?? []).map((url) => url.trim()).filter(Boolean);
           if (!urls.length && block.url) urls.push(block.url);
           if (!urls.length) return null;
-          return <Slideshow key={block.id} urls={urls} caption={block.caption} />;
+          return <Slideshow key={block.id} urls={urls} caption={block.caption} title={title} />;
         }
         return null;
       })}
@@ -261,12 +273,12 @@ function FeedBody({
   );
 }
 
-function Slideshow({ urls, caption }: { urls: string[]; caption?: string }) {
+function Slideshow({ urls, caption, title }: { urls: string[]; caption?: string; title: string }) {
   const [index, setIndex] = useState(0);
   const current = urls[index] ?? urls[0];
   return (
     <figure className="lf-media lf-slides">
-      <img src={current} alt={caption || ''} />
+      <img src={current} alt={mediaAlt(caption, title)} />
       {urls.length > 1 ? (
         <div className="lf-slide-nav">
           <button type="button" onClick={() => setIndex((value) => (value === 0 ? urls.length - 1 : value - 1))}>

@@ -3,6 +3,8 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { colors } from '@comm-platform/ui';
 
+import { SeoHead } from '@/components/seo-head';
+import { seoForSegment } from '@/lib/seo';
 import { useAuth } from '@/providers/auth-provider';
 
 /** Marketing/auth screens anyone can open. */
@@ -49,11 +51,14 @@ export function AuthGate() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.bg, flex: 1, width: '100%' },
-      }}
-    />
+    <>
+      <SeoHead {...seoForSegment(first ? String(first) : 'home')} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg, flex: 1, width: '100%' },
+        }}
+      />
+    </>
   );
 }

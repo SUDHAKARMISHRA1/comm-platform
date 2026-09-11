@@ -19,8 +19,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Comm Platform',
-  description: 'A thoughtful home for conversations that move work forward.',
+  title: {
+    default: 'Comm Platform Admin',
+    template: '%s · Comm Platform Admin',
+  },
+  description: 'Admin portal and API for Comm Platform coding practice (Java, C, and C++).',
+  robots: { index: false, follow: false, nocache: true },
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

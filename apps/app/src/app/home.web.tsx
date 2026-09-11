@@ -1,23 +1,23 @@
 import { AppShell } from '@/components/app-shell';
 
 const activity = [
-  { initial: 'M', name: 'Maya Chen', detail: 'Shared an update in Product design', time: 'Just now', color: '#eef2ff', text: '#4f46e5' },
-  { initial: 'R', name: 'Rohan Patel', detail: 'Started a team discussion', time: '18 min ago', color: '#f0fdf4', text: '#15803d' },
-  { initial: 'A', name: 'Amelia Ross', detail: 'Joined the Launch workspace', time: '1 hr ago', color: '#fef3c7', text: '#b45309' },
+  { initial: 'M', name: 'Maya Chen', detail: 'Solved Two Sum in the Java pack', time: 'Just now', color: '#eef2ff', text: '#4f46e5' },
+  { initial: 'R', name: 'Rohan Patel', detail: 'Passed tests on a C medium problem', time: '18 min ago', color: '#f0fdf4', text: '#15803d' },
+  { initial: 'A', name: 'Amelia Ross', detail: 'Started the C++ practice path', time: '1 hr ago', color: '#fef3c7', text: '#b45309' },
 ];
 
 const highlights = [
   {
-    title: 'Conversations that stay organised',
-    description: 'Bring people together in focused spaces, with a clear place for every update and decision.',
+    title: 'Original Java, C, and C++ sets',
+    description: 'Work through Easy, Medium, and Hard problems with stdin/stdout tests instead of leftover interview dumps.',
+  },
+  {
+    title: 'Run tests as you go',
+    description: 'Write a solution, submit it, and see which cases pass without leaving the practice workspace.',
   },
   {
     title: 'Made for every screen',
-    description: 'Start in your browser and continue seamlessly on mobile when the app launches on Android and iOS.',
-  },
-  {
-    title: 'A calm, private workspace',
-    description: 'Simple controls and thoughtful defaults help teams communicate with clarity and confidence.',
+    description: 'Start in your browser and continue on mobile when the app launches on Android and iOS.',
   },
 ];
 
@@ -32,28 +32,28 @@ export default function HomeScreen() {
             <div className="cp-copy">
               <p className="cp-pill">
                 <span className="cp-pill-dot" />
-                CONNECT WITH CLARITY
+                PRACTICE WITH STRUCTURE
               </p>
-              <h1>A better home for the conversations that move work forward.</h1>
+              <h1>Coding practice for Java, C, and C++.</h1>
               <p className="cp-lead">
-                Comm Platform brings updates, people, and shared momentum into one simple, dependable place.
+                Work through Easy, Medium, and Hard problems, run tests in the browser, and track what you have solved.
               </p>
               <div className="cp-actions">
                 <a href="/signup" className="cp-btn-dark">
                   Create your account <span aria-hidden>→</span>
                 </a>
                 <a href="#updates" className="cp-btn-light">
-                  Explore updates
+                  See how practice works
                 </a>
               </div>
-              <p className="cp-fine">A simple start today. More collaborative tools on the way.</p>
+              <p className="cp-fine">Start with Java, C, or C++. Contests and more languages come later.</p>
             </div>
 
             <div className="cp-preview-wrap">
               <div className="cp-preview">
                 <div className="cp-preview-head">
                   <div>
-                    <p className="cp-kicker">Your workspace</p>
+                    <p className="cp-kicker">Your practice</p>
                     <h2>Good morning, Alex</h2>
                   </div>
                   <span className="cp-avatar">A</span>
@@ -61,8 +61,8 @@ export default function HomeScreen() {
                 <div className="cp-workspace">
                   <div className="cp-workspace-row">
                     <div>
-                      <p className="cp-workspace-name">Launch workspace</p>
-                      <p className="cp-subtle">8 members · Active now</p>
+                      <p className="cp-workspace-name">Java practice path</p>
+                      <p className="cp-subtle">38 problems · Easy to Hard</p>
                     </div>
                     <span className="cp-live">Live</span>
                   </div>
@@ -91,9 +91,9 @@ export default function HomeScreen() {
 
         <section className="cp-updates" id="updates">
           <div className="cp-updates-inner">
-            <p className="cp-section-label">WHAT&apos;S HAPPENING</p>
-            <h2>A place built around progress.</h2>
-            <p className="cp-lead">These are placeholder updates for now. They can later come from your admin-managed content system.</p>
+            <p className="cp-section-label">WHAT YOU GET</p>
+            <h2>A practice path built around progress.</h2>
+            <p className="cp-lead">Pick a language, open a problem, and keep a record of the tests you pass.</p>
             <div className="cp-cards">
               {highlights.map((item, index) => (
                 <article className="cp-card" key={item.title}>
@@ -109,8 +109,8 @@ export default function HomeScreen() {
         <section className="cp-cta-wrap">
           <div className="cp-cta">
             <p className="cp-cta-label">READY WHEN YOU ARE</p>
-            <h2>Start with one conversation. Build from there.</h2>
-            <p>Create your account and see the product app in action.</p>
+            <h2>Start with one problem. Build from there.</h2>
+            <p>Create your account, pick Java, C, or C++, and begin a structured practice path.</p>
             <a href="/signup" className="cp-btn-navy">
               Sign up for Comm Platform
             </a>

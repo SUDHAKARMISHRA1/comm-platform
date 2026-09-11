@@ -77,6 +77,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     return (
       <div className="cp-shell">
         <style>{webCss}</style>
+        <a href="#main-content" className="cp-skip">
+          Skip to content
+        </a>
         <header className="cp-header">
           <a href={homeHref} className="cp-brand">
             <span className="cp-brand-mark"><span className="cp-brand-dot" /></span>
@@ -161,10 +164,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           </>
         ) : null}
 
-        <div className="cp-shell-main">{children}</div>
+        <main id="main-content" className="cp-shell-main">
+          {children}
+        </main>
         <footer className="cp-footer">
           <span className="cp-footer-text">Comm Platform</span>
-          <span className="cp-footer-text">Connection, made considered.</span>
+          <span className="cp-footer-text">Practice Java, C, and C++ problems.</span>
         </footer>
       </div>
     );
@@ -205,7 +210,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Comm Platform</Text>
-        <Text style={styles.footerText}>Connection, made considered.</Text>
+        <Text style={styles.footerText}>Practice Java, C, and C++ problems.</Text>
       </View>
 
       <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={closeMenu}>
@@ -268,6 +273,22 @@ html, body, #root {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.cp-skip {
+  position: absolute;
+  left: -999px;
+  top: .75rem;
+  z-index: 200;
+  padding: .6rem .9rem;
+  border-radius: .5rem;
+  background: #111827;
+  color: #fff;
+  font-size: .875rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.cp-skip:focus {
+  left: 1rem;
+}
 .cp-shell {
   width: 100%;
   height: 100%;

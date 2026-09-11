@@ -22,7 +22,7 @@ export function AuthScreen({ title, subtitle, children }: AuthScreenProps) {
         >
           <View style={styles.card}>
             <Text style={styles.kicker}>Comm Platform</Text>
-            <Text style={styles.title}>{title}</Text>
+            <Text accessibilityRole="header" style={styles.title}>{title}</Text>
             <Text style={styles.subtitle}>{subtitle}</Text>
             {children}
           </View>

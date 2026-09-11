@@ -99,7 +99,13 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
           <Text style={styles.link}>{expanded ? 'Show less' : 'see more'}</Text>
         </Pressable>
       ) : null}
-      {image ? <Image source={{ uri: image }} style={styles.image} /> : null}
+      {image ? (
+        <Image
+          accessibilityLabel={post.title}
+          source={{ uri: image }}
+          style={styles.image}
+        />
+      ) : null}
       {videoUrl ? (
         <Pressable onPress={() => void Linking.openURL(videoUrl)}>
           <Text style={styles.link}>Watch video</Text>

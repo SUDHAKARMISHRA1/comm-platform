@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /login
+Allow: /signup
+Disallow: /dashboard
+Disallow: /practice
+Disallow: /highlights
+Disallow: /submissions
+Disallow: /profile
+Disallow: /settings
+Disallow: /notifications
+Disallow: /setup
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /contests
+Disallow: /leaderboard
