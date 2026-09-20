@@ -5,6 +5,7 @@
  */
 import type { Session } from '@supabase/supabase-js';
 
+import { reportApiFailure } from '@/coding/api/report-failure';
 import { getSupabase } from '@/lib/supabase';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000/api';
@@ -101,10 +102,18 @@ export async function apiFetch<T>(path: string, init?: RequestInit, allowRetry =
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  const method = (init?.method ?? 'GET').toString().toUpperCase();
+
   let response: Response;
   try {
     response = await fetch(`${BASE_URL}${path}`, { ...init, headers });
   } catch {
+    if (!USE_MOCK_API) {
+      reportApiFailure(
+        { method, path, statusCode: 0, errorMessage: 'Network error' },
+        token,
+      );
+    }
     throw new ApiError('Network error. Check that the API server is running (pnpm dev:web).', 0);
   }
 
@@ -115,18 +124,20 @@ export async function apiFetch<T>(path: string, init?: RequestInit, allowRetry =
     }
   }
 
-  if (response.status === 401) {
-    throw new ApiError('Session expired or invalid. Please sign in again.', 401);
-  }
-  if (response.status === 429) {
-    throw new ApiError('You have reached the execution limit. Please wait a moment before trying again.', 429);
-  }
-  if (response.status === 404) {
-    throw new ApiError('Resource not found.', 404);
-  }
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new ApiError(body?.error ?? 'Something went wrong. Please try again.', response.status);
+    const message =
+      response.status === 401
+        ? 'Session expired or invalid. Please sign in again.'
+        : response.status === 429
+          ? 'You have reached the execution limit. Please wait a moment before trying again.'
+          : response.status === 404
+            ? 'Resource not found.'
+            : (body?.error ?? 'Something went wrong. Please try again.');
+    if (!USE_MOCK_API) {
+      reportApiFailure({ method, path, statusCode: response.status, errorMessage: message }, token);
+    }
+    throw new ApiError(message, response.status);
   }
 
   return response.json() as Promise<T>;

@@ -1,5 +1,13 @@
 /** Snake_case PostgREST rows → camelCase types used by the apps. */
-import type { AccountStatus, AdminUserOverview, AdminUserOverviewRow, Profile, ProfileRow } from '@comm-platform/types';
+import type {
+  AccountStatus,
+  AdminUserOverview,
+  AdminUserOverviewRow,
+  FrontendApiFailure,
+  FrontendApiFailureRow,
+  Profile,
+  ProfileRow,
+} from '@comm-platform/types';
 
 export function mapProfile(row: ProfileRow): Profile {
   return {
@@ -21,6 +29,25 @@ export function accountStatus(row: Pick<AdminUserOverviewRow, 'email_confirmed_a
     return 'unconfirmed';
   }
   return 'active';
+}
+
+export function mapFrontendApiFailure(row: FrontendApiFailureRow): FrontendApiFailure {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    method: row.method,
+    path: row.path,
+    statusCode: row.status_code,
+    errorCode: row.error_code,
+    errorMessage: row.error_message,
+    requestId: row.request_id,
+    clientPlatform: row.client_platform,
+    appVersion: row.app_version,
+    userAgent: row.user_agent,
+    pagePath: row.page_path,
+    metadata: row.metadata ?? {},
+    createdAt: row.created_at,
+  };
 }
 
 export function mapAdminUser(row: AdminUserOverviewRow): AdminUserOverview {

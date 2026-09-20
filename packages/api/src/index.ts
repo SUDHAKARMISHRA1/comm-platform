@@ -67,5 +67,5 @@ export function createBrowserSupabaseClient(options?: {
 
 export { createLogger, type LogLevel } from './logger';
 export { toUserMessage } from './errors';
-export { mapProfile, mapAdminUser, accountStatus } from './mappers';
+export { mapProfile, mapAdminUser, mapFrontendApiFailure, accountStatus } from './mappers';
 export type { SupabaseClient };

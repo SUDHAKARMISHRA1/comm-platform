@@ -89,7 +89,7 @@ Never put `SUPABASE_SERVICE_ROLE_KEY` in the Expo app or any `NEXT_PUBLIC_` / `E
 
 ## 4. Apply the database migrations
 
-In the Supabase SQL editor, run every file in `supabase/migrations/` in order (`0001_init.sql` … `0009_practice_catalog.sql`).
+In the Supabase SQL editor, run every file in `supabase/migrations/` in order (`0001_init.sql` … `0010_frontend_api_failures.sql`).
 
 Or with the CLI: `supabase db push` (linked project).
 
@@ -101,7 +101,7 @@ Confirm after `0001`:
 - RLS enabled on those tables
 - Trigger `on_auth_user_created` on `auth.users`
 
-Later migrations add coding questions, votes, submissions, the highlights feed, and the practice catalog. Until those tables exist, the API still serves (and writes) `data/coding/store.json`.
+Later migrations add coding questions, votes, submissions, the highlights feed, the practice catalog, and frontend API failure logs. Until those tables exist, the API still serves (and writes) `data/coding/store.json`.
 
 To load the starter **Java** practice set (38 original problems, ids 101–138), run `supabase/seeds/001_java_practice_pack.sql` in the SQL editor after `0009_practice_catalog.sql`. Safe to re-run (upserts on id).
 

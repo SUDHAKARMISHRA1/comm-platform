@@ -40,6 +40,40 @@ export type UserRoleRow = {
   created_at: string;
 };
 
+export type FrontendApiFailureRow = {
+  id: string;
+  user_id: string | null;
+  method: string;
+  path: string;
+  status_code: number;
+  error_code: string | null;
+  error_message: string | null;
+  request_id: string | null;
+  client_platform: string | null;
+  app_version: string | null;
+  user_agent: string | null;
+  page_path: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+export type FrontendApiFailure = {
+  id: string;
+  userId: string | null;
+  method: string;
+  path: string;
+  statusCode: number;
+  errorCode: string | null;
+  errorMessage: string | null;
+  requestId: string | null;
+  clientPlatform: string | null;
+  appVersion: string | null;
+  userAgent: string | null;
+  pagePath: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+};
+
 export type AdminUserOverviewRow = {
   id: string;
   display_name: string | null;
@@ -195,6 +229,30 @@ export type Database = {
         };
         Update: {
           status?: string;
+        };
+        Relationships: [];
+      };
+      frontend_api_failures: {
+        Row: FrontendApiFailureRow;
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          method?: string;
+          path: string;
+          status_code?: number;
+          error_code?: string | null;
+          error_message?: string | null;
+          request_id?: string | null;
+          client_platform?: string | null;
+          app_version?: string | null;
+          user_agent?: string | null;
+          page_path?: string | null;
+          metadata?: Record<string, unknown>;
+          created_at?: string;
+        };
+        Update: {
+          error_message?: string | null;
+          metadata?: Record<string, unknown>;
         };
         Relationships: [];
       };
