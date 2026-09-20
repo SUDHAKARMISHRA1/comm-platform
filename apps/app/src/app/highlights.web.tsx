@@ -4,7 +4,9 @@ import { buildWeeklyActivity } from '@comm-platform/coding';
 import { fetchDashboard } from '@/coding/api/questionApi';
 import { HighlightsFeed } from '@/coding/components/HighlightsFeed';
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { spaNavigate } from '@/lib/spa-nav';
+import { DASHBOARD_STALE_MS } from '@/lib/prefetch-signed-in';
 import { DIFFICULTY_FILL, submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -19,6 +21,7 @@ export default function HighlightsScreen() {
     queryKey: ['dashboard'],
     queryFn: fetchDashboard,
     enabled: Boolean(session) && !authLoading,
+    staleTime: DASHBOARD_STALE_MS,
   });
 
   const name = user?.email?.split('@')[0] ?? 'there';
@@ -71,29 +74,38 @@ export default function HighlightsScreen() {
           </a>
         </header>
 
-        {isLoading ? <p className="hl-muted hl-desktop">Loading your insights…</p> : null}
+        {isLoading ? (
+          <div className="hl-desktop">
+            <PageLoader message="Checking your practice streak…" />
+          </div>
+        ) : null}
 
-        <section className="hl-kpis hl-desktop">
-          <Kpi label="Solved" value={String(solved)} hint={`${completion}% of catalog`} />
-          <Kpi label="In progress" value={String(attempted)} hint="Marked attempted" />
-          <Kpi label="Still open" value={String(remaining)} hint="Not solved yet" />
-          <Kpi label="Recent hit rate" value={recent.length ? `${hitRate}%` : '—'} hint={recent.length ? `${accepted}/${recent.length} accepted` : 'Submit to unlock'} />
-        </section>
+        {data ? (
+          <section className="hl-kpis hl-desktop">
+            <Kpi label="Solved" value={String(solved)} hint={`${completion}% of catalog`} />
+            <Kpi label="In progress" value={String(attempted)} hint="Marked attempted" />
+            <Kpi label="Still open" value={String(remaining)} hint="Not solved yet" />
+            <Kpi label="Recent hit rate" value={recent.length ? `${hitRate}%` : '—'} hint={recent.length ? `${accepted}/${recent.length} accepted` : 'Submit to unlock'} />
+          </section>
+        ) : null}
 
         <div className="hl-layout">
           <div className="hl-main">
             <HighlightsFeed>
-              <article className="hl-panel hl-desktop">
-                <p className="hl-label">Insight</p>
-                <h2>{insight}</h2>
-                <p className="hl-copy">{attraction}</p>
-                {weak ? (
-                  <p className="hl-chip">Focus next: {weak.difficulty} · {weak.percent}% complete ({weak.solved}/{weak.total})</p>
-                ) : null}
-              </article>
+              {data ? (
+                <article className="hl-panel hl-desktop">
+                  <p className="hl-label">Insight</p>
+                  <h2>{insight}</h2>
+                  <p className="hl-copy">{attraction}</p>
+                  {weak ? (
+                    <p className="hl-chip">Focus next: {weak.difficulty} · {weak.percent}% complete ({weak.solved}/{weak.total})</p>
+                  ) : null}
+                </article>
+              ) : null}
             </HighlightsFeed>
           </div>
 
+          {data ? (
           <aside className="hl-side hl-desktop">
             <article className="hl-panel">
               <p className="hl-label">Weekly pulse</p>
@@ -119,11 +131,11 @@ export default function HighlightsScreen() {
             <article className="hl-panel">
               <p className="hl-label">Worth your next hour</p>
               <h2>Recommended</h2>
-              {(data?.recommended ?? []).length === 0 ? (
+              {(data.recommended ?? []).length === 0 ? (
                 <p className="hl-muted">You are caught up on recommendations.</p>
               ) : (
                 <ul className="hl-list">
-                  {data!.recommended.slice(0, 4).map((q) => (
+                  {data.recommended.slice(0, 4).map((q) => (
                     <li key={q.id}>
                       <a href={`/practice/${q.id}`} onClick={(e) => spaNavigate(`/practice/${q.id}`, e)}>
                         <strong>{q.title}</strong>
@@ -139,7 +151,7 @@ export default function HighlightsScreen() {
               <p className="hl-label">Difficulty mix</p>
               <h2>Where you stand</h2>
               <div className="hl-mix">
-                {(data?.difficultyProgress ?? []).map((row) => (
+                {(data.difficultyProgress ?? []).map((row) => (
                   <div key={row.difficulty}>
                     <div className="hl-mix-row">
                       <span>{row.difficulty}</span>
@@ -175,6 +187,7 @@ export default function HighlightsScreen() {
               )}
             </article>
           </aside>
+          ) : null}
         </div>
       </div>
     </AppShell>

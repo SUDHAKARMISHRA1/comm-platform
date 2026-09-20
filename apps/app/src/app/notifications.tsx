@@ -7,6 +7,7 @@ import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { fetchSubmissions } from '@/coding/api/submissionApi';
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { buildNotificationFeed } from '@/lib/notifications';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -27,7 +28,7 @@ export default function NotificationsScreen() {
       <ScrollView contentContainerStyle={styles.page}>
         <Text style={styles.kicker}>Inbox</Text>
         <Text style={styles.title}>Notifications</Text>
-        {subs.isLoading ? <Text style={styles.muted}>Loading…</Text> : null}
+        {subs.isLoading ? <PageLoader /> : null}
         {items.map((n) => (
           <Pressable
             key={n.id}

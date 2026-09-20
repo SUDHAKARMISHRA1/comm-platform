@@ -1,4 +1,5 @@
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { VoteButton } from '@/coding/components/VoteButton';
 import { spaNavigate } from '@/lib/spa-nav';
 import { DIFFICULTIES, usePracticeBoard } from '@/coding/hooks/usePracticeBoard';
@@ -45,8 +46,11 @@ export default function PracticeScreen() {
           </label>
         </header>
 
+        {board.initialLoading ? (
+          <PageLoader />
+        ) : (
+          <>
         {board.maintenanceMessage ? <p className="pr-warn">{board.maintenanceMessage}</p> : null}
-        {board.authLoading || board.catalogQuery.isLoading ? <p className="pr-muted">Loading catalog…</p> : null}
         {board.catalogQuery.error ? <p className="pr-err">Could not load practice catalog.</p> : null}
 
         <section className="pr-tracks" aria-label="Language sections">
@@ -100,8 +104,7 @@ export default function PracticeScreen() {
               </a>
             </div>
           </div>
-          {board.sectionQuery.isLoading ? <p className="pr-muted">Loading interview picks…</p> : null}
-          {board.picks.length === 0 && !board.sectionQuery.isLoading ? (
+          {board.picks.length === 0 ? (
             <p className="pr-empty">No interview votes in {skillName} yet. Use the vote control on a problem if you saw it in a recent interview.</p>
           ) : (
             <ol className="pr-picks">
@@ -155,8 +158,7 @@ export default function PracticeScreen() {
           </button>
         </section>
 
-        {board.boardQuery.isLoading ? <p className="pr-muted">Updating problem boards…</p> : null}
-        {board.boardQuery.error ? <p className="pr-err">Could not load problems.</p> : null}
+        {board.allQuery.error ? <p className="pr-err">Could not load problems.</p> : null}
 
         <section className="pr-boards">
           {DIFFICULTIES.map((diff) => {
@@ -199,6 +201,8 @@ export default function PracticeScreen() {
             );
           })}
         </section>
+          </>
+        )}
       </div>
     </AppShell>
   );

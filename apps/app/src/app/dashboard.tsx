@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
 
@@ -13,6 +13,8 @@ import { SubmissionCalendar } from '@/coding/components/SubmissionCalendar';
 import { fetchDashboard } from '@/coding/api/questionApi';
 import { fetchSubmissions } from '@/coding/api/submissionApi';
 import { inLastMonths } from '@/coding/activity';
+import { PageLoader } from '@/components/page-loader';
+import { DASHBOARD_STALE_MS, LIST_STALE_MS } from '@/lib/prefetch-signed-in';
 import { useAuth } from '@/providers/auth-provider';
 
 const HISTORY_MONTHS = 3;
@@ -25,12 +27,15 @@ export default function DashboardScreen() {
     queryKey: ['dashboard'],
     queryFn: fetchDashboard,
     enabled,
+    staleTime: DASHBOARD_STALE_MS,
   });
   const subs = useQuery({
     queryKey: ['submissions'],
     queryFn: fetchSubmissions,
     enabled,
+    staleTime: LIST_STALE_MS,
   });
+  const waiting = (isLoading && !data) || (subs.isLoading && !subs.data);
   const submissions = subs.data?.submissions ?? [];
   const preview = submissions.slice(0, 2);
   const history = useMemo(
@@ -44,9 +49,11 @@ export default function DashboardScreen() {
         <Text style={styles.kicker}>Dashboard</Text>
         <Text style={styles.title}>Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!</Text>
 
-        {isLoading || subs.isLoading ? <ActivityIndicator color={colors.primary} /> : null}
+        {waiting ? <PageLoader /> : null}
         {error ? <Text style={styles.error}>Could not load dashboard.</Text> : null}
 
+        {waiting ? null : (
+          <>
         <SubmissionCalendar submissions={submissions} />
 
         {data ? (
@@ -125,6 +132,8 @@ export default function DashboardScreen() {
             </ScrollView>
           ) : null}
         </View>
+          </>
+        )}
       </ScrollView>
     </AppShell>
   );

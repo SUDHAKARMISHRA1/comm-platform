@@ -1,15 +1,21 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useRef, type ReactNode } from 'react';
 
-import { fetchFeed } from '@/coding/api/feedApi';
+import { FEED_PAGE_SIZE, fetchFeed } from '@/coding/api/feedApi';
 import { FeedCard } from '@/coding/components/FeedCard';
+import { PageLoader } from '@/components/page-loader';
+import { LIST_STALE_MS } from '@/lib/prefetch-signed-in';
+import { useAuth } from '@/providers/auth-provider';
 
 export function HighlightsFeed({ children }: { children?: ReactNode }) {
+  const { session, loading: authLoading } = useAuth();
   const sentinel = useRef<HTMLDivElement | null>(null);
   const feed = useInfiniteQuery({
     queryKey: ['highlights-feed'],
-    queryFn: ({ pageParam }) => fetchFeed(pageParam, 3),
+    queryFn: ({ pageParam }) => fetchFeed(pageParam, FEED_PAGE_SIZE),
     initialPageParam: 1,
+    enabled: Boolean(session) && !authLoading,
+    staleTime: LIST_STALE_MS,
     getNextPageParam: (last) =>
       last.pagination.page * last.pagination.pageSize < last.pagination.total ? last.pagination.page + 1 : undefined,
   });
@@ -37,7 +43,7 @@ export function HighlightsFeed({ children }: { children?: ReactNode }) {
           <p className="hl-label">Latest from the team</p>
           <h2>Published for you</h2>
         </div>
-        {feed.isLoading ? <p className="hl-muted">Loading the latest article…</p> : null}
+        {feed.isLoading ? <PageLoader message="Lining up today’s highlights…" /> : null}
         {feed.isError ? (
           <p className="hl-muted">Could not load the latest article. Sign in and confirm the API is running.</p>
         ) : null}
@@ -58,7 +64,7 @@ export function HighlightsFeed({ children }: { children?: ReactNode }) {
           {rest.map((post) => (
             <FeedCard key={post.id} post={post} />
           ))}
-          {feed.isFetchingNextPage ? <p className="hl-muted">Loading more…</p> : null}
+          {feed.isFetchingNextPage ? <PageLoader compact message="Loading more highlights…" /> : null}
         </section>
       ) : null}
       <div ref={sentinel} className="hl-feed-sentinel" />

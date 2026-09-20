@@ -1,4 +1,5 @@
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { spaNavigate } from '@/lib/spa-nav';
 import { usePracticeBoard } from '@/coding/hooks/usePracticeBoard';
 
@@ -19,7 +20,7 @@ export default function PracticeSkillsScreen() {
             <p className="pr-lead">Pick a section created from admin to open its problem board.</p>
           </div>
         </header>
-        {board.catalogQuery.isLoading ? <p className="pr-muted">Loading skills…</p> : null}
+        {board.catalogQuery.isLoading ? <PageLoader compact /> : null}
         {board.catalogQuery.error ? <p className="pr-err">Could not load skills.</p> : null}
         <section className="pr-tracks" aria-label="All skills">
           {board.skills.map((s) => {

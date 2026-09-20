@@ -6,7 +6,9 @@ import { fetchSubmissions } from '@/coding/api/submissionApi';
 import { inLastMonths } from '@/coding/activity';
 import { SubmissionCalendar } from '@/coding/components/SubmissionCalendar';
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { spaNavigate } from '@/lib/spa-nav';
+import { DASHBOARD_STALE_MS, LIST_STALE_MS } from '@/lib/prefetch-signed-in';
 import { DIFFICULTY_FILL, submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -16,8 +18,8 @@ export default function DashboardScreen() {
   const { user, session, loading: authLoading } = useAuth();
   const [historyOpen, setHistoryOpen] = useState(false);
   const enabled = Boolean(session) && !authLoading;
-  const dash = useQuery({ queryKey: ['dashboard'], queryFn: fetchDashboard, enabled });
-  const subs = useQuery({ queryKey: ['submissions'], queryFn: fetchSubmissions, enabled });
+  const dash = useQuery({ queryKey: ['dashboard'], queryFn: fetchDashboard, enabled, staleTime: DASHBOARD_STALE_MS });
+  const subs = useQuery({ queryKey: ['submissions'], queryFn: fetchSubmissions, enabled, staleTime: LIST_STALE_MS });
 
   const submissions = subs.data?.submissions ?? [];
   const preview = submissions.slice(0, 2);
@@ -26,6 +28,7 @@ export default function DashboardScreen() {
     [submissions],
   );
   const data = dash.data;
+  const waiting = (dash.isLoading && !dash.data) || (subs.isLoading && !subs.data);
 
   return (
     <AppShell>
@@ -33,9 +36,11 @@ export default function DashboardScreen() {
         <style>{css}</style>
         <p className="db-kicker">Dashboard</p>
         <h1>Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}</h1>
-        {dash.isLoading || subs.isLoading ? <p className="db-muted">Loading your workspace…</p> : null}
+        {waiting ? <PageLoader /> : null}
         {dash.error ? <p className="db-err">Could not load dashboard.</p> : null}
 
+        {waiting ? null : (
+          <>
         <SubmissionCalendar submissions={submissions} />
 
         {data ? (
@@ -150,6 +155,8 @@ export default function DashboardScreen() {
             </div>
           ) : null}
         </section>
+          </>
+        )}
       </div>
     </AppShell>
   );

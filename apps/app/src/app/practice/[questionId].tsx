@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -18,6 +17,7 @@ import { LANGUAGES } from '@comm-platform/coding';
 import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { ResultDialog } from '@/components/result-dialog';
 import { runCode, runTests, submitCode } from '@/coding/api/executionApi';
 import { submitToastCopy } from '@/lib/notifications';
@@ -150,7 +150,7 @@ export default function QuestionDetailScreen() {
   if (isLoading) {
     return (
       <AppShell>
-        <View style={styles.center}><ActivityIndicator color={colors.primary} /><Text style={styles.muted}>Loading question...</Text></View>
+        <PageLoader fullScreen message="Fetching your next challenge…" />
       </AppShell>
     );
   }

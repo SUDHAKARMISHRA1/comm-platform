@@ -1,9 +1,9 @@
 import { Redirect, Stack, useRootNavigationState, useSegments } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
 
 import { colors } from '@comm-platform/ui';
 
 import { SeoHead } from '@/components/seo-head';
+import { PageLoader } from '@/components/page-loader';
 import { seoForSegment } from '@/lib/seo';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -27,11 +27,7 @@ export function AuthGate() {
   const authReady = configured || demoMode;
 
   if (!navigation?.key || loading) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
-        <ActivityIndicator color={colors.primary} />
-      </View>
-    );
+    return <PageLoader fullScreen message="Getting your workspace ready…" />;
   }
 
   if (!authReady && !onPublicScreen && first !== 'setup') {

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { toUserMessage } from '@comm-platform/api';
 import { Button, TextField, colors, radius, space, type } from '@comm-platform/ui';
@@ -10,6 +10,7 @@ import { updateProfileSchema, type UpdateProfileInput } from '@comm-platform/val
 
 import { FormMessage } from '@/components/auth-screen';
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { fetchOwnProfile } from '@/lib/auth-actions';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
@@ -112,7 +113,7 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
         <Text style={styles.title}>Your profile</Text>
-        {profileQuery.isLoading ? <ActivityIndicator color={colors.primary} /> : null}
+        {profileQuery.isLoading ? <PageLoader compact /> : null}
         {profileQuery.isError ? <FormMessage message="Could not load profile." /> : null}
         {profileQuery.data?.avatarUrl ? (
           <Image accessibilityLabel="Current avatar" source={{ uri: profileQuery.data.avatarUrl }} style={styles.avatar} />

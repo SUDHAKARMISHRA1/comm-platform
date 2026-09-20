@@ -1,6 +1,7 @@
 /**
  * Restores the Supabase (or demo) session and keeps `bindApiSession` in sync for coding API calls.
  */
+import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 
@@ -14,6 +15,7 @@ import {
   saveDemoSession,
 } from '@/lib/demo-auth';
 import { persistSessionBackup, readSessionBackup } from '@/lib/session-backup';
+import { prefetchSignedInData, resetSignedInPrefetch } from '@/lib/prefetch-signed-in';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { bindApiSession } from '@/coding/api/client';
 
@@ -33,24 +35,42 @@ const log = createLogger('auth');
 export function AuthProvider({ children }: { children: ReactNode }) {
   const configured = isSupabaseConfigured();
   const demoMode = isDemoAuthEnabled();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(configured || demoMode);
   const [session, setSession] = useState<Session | null>(null);
 
-  const signInDemo = useCallback((email: string) => {
-    const next = createDemoSession(email);
-    saveDemoSession(next);
-    setSession(next);
-    setLoading(false);
-  }, []);
+  const applySession = useCallback(
+    (next: Session | null) => {
+      persistSessionBackup(next);
+      bindApiSession(next);
+      setSession(next);
+      if (next?.user?.id) {
+        prefetchSignedInData(queryClient, next.user.id);
+      } else {
+        resetSignedInPrefetch();
+      }
+    },
+    [queryClient],
+  );
+
+  const signInDemo = useCallback(
+    (email: string) => {
+      const next = createDemoSession(email);
+      saveDemoSession(next);
+      applySession(next);
+      setLoading(false);
+    },
+    [applySession],
+  );
 
   const signOutDemo = useCallback(() => {
     clearDemoSession();
-    setSession(null);
-  }, []);
+    applySession(null);
+  }, [applySession]);
 
   useEffect(() => {
     if (demoMode) {
-      setSession(loadDemoSession());
+      applySession(loadDemoSession());
       setLoading(false);
       return;
     }
@@ -63,12 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const supabase = getSupabase();
     let active = true;
     let restoring = true;
-
-    function applySession(next: Session | null) {
-      if (!active) return;
-      persistSessionBackup(next);
-      setSession(next);
-    }
 
     async function restore() {
       try {
@@ -117,8 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (restoring && (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') && !nextSession) {
         return;
       }
-      persistSessionBackup(nextSession);
-      setSession(nextSession);
+      applySession(nextSession);
       if (!restoring) {
         setLoading(false);
       }
@@ -147,11 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         document.removeEventListener('visibilitychange', onVisible);
       }
     };
-  }, [configured, demoMode]);
-
-  useEffect(() => {
-    bindApiSession(session);
-  }, [session]);
+  }, [applySession, configured, demoMode]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

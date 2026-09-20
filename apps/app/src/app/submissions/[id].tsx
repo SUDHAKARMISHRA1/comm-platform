@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { fetchSubmission } from '@/coding/api/submissionApi';
 import { submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
@@ -22,7 +23,7 @@ export default function SubmissionDetailScreen() {
     <AppShell>
       <ScrollView contentContainerStyle={styles.page}>
         <Link href="/dashboard" asChild><Text style={styles.link}>← Back to Dashboard</Text></Link>
-        {isLoading ? <ActivityIndicator color={colors.primary} /> : null}
+        {isLoading ? <PageLoader /> : null}
         {error ? <Text style={styles.error}>Submission not found.</Text> : null}
         {data ? (
           <View style={styles.card}>

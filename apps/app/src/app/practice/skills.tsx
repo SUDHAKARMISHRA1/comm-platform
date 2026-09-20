@@ -1,9 +1,10 @@
 import { Link } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { usePracticeBoard } from '@/coding/hooks/usePracticeBoard';
 
 export default function PracticeSkillsScreen() {
@@ -19,7 +20,7 @@ export default function PracticeSkillsScreen() {
         </Link>
         <Text style={styles.kicker}>Practice</Text>
         <Text style={styles.title}>All skills</Text>
-        {board.catalogQuery.isLoading ? <ActivityIndicator color={colors.primary} /> : null}
+        {board.catalogQuery.isLoading ? <PageLoader /> : null}
         {board.skills.map((s) => {
           const count = board.skillCounts.get(s.id) ?? 0;
           return (

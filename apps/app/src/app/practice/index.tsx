@@ -1,10 +1,11 @@
 import { Link } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
 import type { Difficulty, QuestionSummary } from '@comm-platform/coding';
 
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { DifficultyBadge } from '@/coding/components/DifficultyBadge';
 import { StatusBadge } from '@/coding/components/StatusBadge';
 import { VoteButton } from '@/coding/components/VoteButton';
@@ -38,12 +39,7 @@ export default function PracticeScreen() {
         </View>
 
         {board.maintenanceMessage ? <Text style={styles.warn}>{board.maintenanceMessage}</Text> : null}
-        {board.authLoading || board.catalogQuery.isLoading ? (
-          <View style={styles.row}>
-            <ActivityIndicator color={colors.primary} />
-            <Text style={styles.muted}>Loading catalog…</Text>
-          </View>
-        ) : null}
+        {board.initialLoading ? <PageLoader /> : null}
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tracks}>
           {board.featuredSkills.map((s) => {

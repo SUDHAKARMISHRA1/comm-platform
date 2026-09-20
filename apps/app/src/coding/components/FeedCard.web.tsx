@@ -11,6 +11,7 @@ import {
   shareFeedPostApi,
 } from '@/coding/api/feedApi';
 import { formatCount, initials, timeAgo, youtubeId } from '@/coding/feedFormat';
+import { PageLoader } from '@/components/page-loader';
 import { useAuth } from '@/providers/auth-provider';
 
 const PREVIEW = 220;
@@ -144,7 +145,7 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
       </div>
       {showComments ? (
         <div className="lf-thread">
-          {commentsQuery.isLoading ? <p className="lf-empty">Loading comments…</p> : null}
+          {commentsQuery.isLoading ? <PageLoader compact message="Loading comments…" /> : null}
           {(commentsQuery.data ?? []).map((comment) => (
             <CommentBlock
               key={comment.id}

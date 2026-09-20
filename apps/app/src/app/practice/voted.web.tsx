@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { VoteButton } from '@/coding/components/VoteButton';
 import { fetchVotedQuestions } from '@/coding/api/questionApi';
 import { spaNavigate } from '@/lib/spa-nav';
@@ -41,7 +42,7 @@ export default function VotedProblemsScreen() {
         <p className="vt-lead">
           These are problems people marked after seeing them in a recent interview. Browse the full ranked list with pagination.
         </p>
-        {query.isLoading ? <p className="vt-muted">Loading ranked problems…</p> : null}
+        {query.isLoading ? <PageLoader /> : null}
         {query.error ? <p className="vt-err">Could not load voted problems.</p> : null}
         {query.data && query.data.questions.length === 0 ? (
           <p className="vt-muted">No interview votes yet. Vote on a problem from Practice if you saw it in an interview.</p>

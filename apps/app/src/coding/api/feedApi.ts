@@ -15,7 +15,9 @@ import {
 
 import { USE_MOCK_API, apiFetch, currentApiUserId } from './client';
 
-export async function fetchFeed(page: number, pageSize = 3): Promise<FeedListResponse> {
+export const FEED_PAGE_SIZE = 6;
+
+export async function fetchFeed(page: number, pageSize = FEED_PAGE_SIZE): Promise<FeedListResponse> {
   if (USE_MOCK_API) return listMockFeed(currentApiUserId(), page, pageSize);
   const qs = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
   return apiFetch(`/feed?${qs}`);

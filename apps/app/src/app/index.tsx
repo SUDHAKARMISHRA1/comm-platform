@@ -1,20 +1,14 @@
 /** Entry route: setup (no env) → highlights (signed in) or home (signed out). */
 import { Redirect } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
 
-import { colors } from '@comm-platform/ui';
-
+import { PageLoader } from '@/components/page-loader';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function IndexScreen() {
   const { configured, loading, session } = useAuth();
 
   if (loading) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
-        <ActivityIndicator color={colors.primary} />
-      </View>
-    );
+    return <PageLoader fullScreen message="Getting your workspace ready…" />;
   }
 
   if (!configured) {

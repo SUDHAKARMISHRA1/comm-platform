@@ -1,10 +1,11 @@
 import { Link, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { DifficultyBadge } from '@/coding/components/DifficultyBadge';
 import { StatusBadge } from '@/coding/components/StatusBadge';
 import { VoteButton } from '@/coding/components/VoteButton';
@@ -43,12 +44,7 @@ export default function VotedProblemsScreen() {
           These are problems people marked after seeing them in a recent interview. Use pagination to browse the full ranked list.
         </Text>
 
-        {query.isLoading ? (
-          <View style={styles.row}>
-            <ActivityIndicator color={colors.primary} />
-            <Text style={styles.muted}>Loading ranked problems…</Text>
-          </View>
-        ) : null}
+        {query.isLoading ? <PageLoader /> : null}
         {query.error ? <Text style={styles.err}>Could not load voted problems.</Text> : null}
         {query.data && query.data.questions.length === 0 ? (
           <Text style={styles.muted}>No interview votes yet. Vote on a problem from Practice if you saw it in an interview.</Text>

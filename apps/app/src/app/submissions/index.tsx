@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { fetchSubmissions } from '@/coding/api/submissionApi';
 import { AppShell } from '@/components/app-shell';
+import { PageLoader } from '@/components/page-loader';
 import { submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -24,7 +25,7 @@ export default function SubmissionsListScreen() {
         <Text style={styles.kicker}>History</Text>
         <Text style={styles.title}>All submissions</Text>
         <Text style={styles.hint}>Open any row to view the submitted source.</Text>
-        {isLoading ? <ActivityIndicator color={colors.primary} /> : null}
+        {isLoading ? <PageLoader /> : null}
         {error ? <Text style={styles.error}>Could not load submissions.</Text> : null}
         {submissions.length === 0 && !isLoading ? (
           <Text style={styles.hint}>No submissions yet. Submit from a practice problem.</Text>
