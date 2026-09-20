@@ -8,7 +8,7 @@ import { seoForSegment } from '@/lib/seo';
 import { useAuth } from '@/providers/auth-provider';
 
 /** Marketing/auth screens anyone can open. */
-const PUBLIC_SEGMENTS = new Set(['home', 'login', 'signup', 'forgot-password', 'reset-password']);
+const PUBLIC_SEGMENTS = new Set(['home', 'login', 'signup', 'forgot-password', 'reset-password', 'contact']);
 /** Signed-in users are sent to /highlights instead of these. */
 const AUTH_SEGMENTS = new Set(['login', 'signup', 'forgot-password']);
 

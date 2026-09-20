@@ -60,4 +60,4 @@ Set `JUDGE0_BASE_URL=http://localhost:2358` in `apps/web/.env.local`. Never call
 
 ## DB migrations
 
-Run `supabase/migrations/0001_init.sql` through `0010_frontend_api_failures.sql`. Coding adapters already hybridize file-store + Supabase; they do not need a rewrite to start using Postgres after the migrations are applied.
+Run `supabase/migrations/0001_init.sql` through `0011_contact_messages.sql`. Coding adapters already hybridize file-store + Supabase; they do not need a rewrite to start using Postgres after the migrations are applied.

@@ -3,6 +3,8 @@ import type {
   AccountStatus,
   AdminUserOverview,
   AdminUserOverviewRow,
+  ContactMessage,
+  ContactMessageRow,
   FrontendApiFailure,
   FrontendApiFailureRow,
   Profile,
@@ -29,6 +31,18 @@ export function accountStatus(row: Pick<AdminUserOverviewRow, 'email_confirmed_a
     return 'unconfirmed';
   }
   return 'active';
+}
+
+export function mapContactMessage(row: ContactMessageRow): ContactMessage {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    email: row.email,
+    description: row.description,
+    createdAt: row.created_at,
+    submittedOn: row.submitted_on,
+  };
 }
 
 export function mapFrontendApiFailure(row: FrontendApiFailureRow): FrontendApiFailure {

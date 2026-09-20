@@ -30,7 +30,7 @@ There is no public marketing site. `http://localhost:3000/` redirects to `/admin
 | Package | Role |
 | --- | --- |
 | `@comm-platform/types` | Shared TypeScript + Supabase `Database` typing |
-| `@comm-platform/validation` | Zod schemas for auth and profile |
+| `@comm-platform/validation` | Zod schemas for auth, profile, and Contact Us |
 | `@comm-platform/api` | Supabase browser-client factory, mappers, logger |
 | `@comm-platform/ui` | React Native Button/TextField + design tokens |
 | `@comm-platform/coding` | Coding domain: mocks, JSON store, Supabase adapters, Judge0/Piston. Client import `.` vs server `./server`. |
@@ -89,7 +89,7 @@ Never put `SUPABASE_SERVICE_ROLE_KEY` in the Expo app or any `NEXT_PUBLIC_` / `E
 
 ## 4. Apply the database migrations
 
-In the Supabase SQL editor, run every file in `supabase/migrations/` in order (`0001_init.sql` … `0010_frontend_api_failures.sql`).
+In the Supabase SQL editor, run every file in `supabase/migrations/` in order (`0001_init.sql` … `0011_contact_messages.sql`).
 
 Or with the CLI: `supabase db push` (linked project).
 
@@ -101,7 +101,7 @@ Confirm after `0001`:
 - RLS enabled on those tables
 - Trigger `on_auth_user_created` on `auth.users`
 
-Later migrations add coding questions, votes, submissions, the highlights feed, the practice catalog, and frontend API failure logs. Until those tables exist, the API still serves (and writes) `data/coding/store.json`.
+Later migrations add coding questions, votes, submissions, the highlights feed, the practice catalog, frontend API failure logs, and Contact Us messages. Until those tables exist, the API still serves (and writes) `data/coding/store.json`.
 
 To load the starter **Java** practice set (38 original problems, ids 101–138), run `supabase/seeds/001_java_practice_pack.sql` in the SQL editor after `0009_practice_catalog.sql`. Safe to re-run (upserts on id).
 
@@ -110,6 +110,8 @@ To load the starter **C** practice set (same 38 problems, ids 201–238), run `s
 To load the starter **C++** practice set (same 38 problems, ids 301–338), run `supabase/seeds/003_cpp_practice_pack.sql`.
 
 To load **Highlights** tech briefings (150 original articles with official YouTube explainers), run `supabase/seeds/004_highlight_tech_articles.sql` after `0008_highlight_posts.sql`. Safe to re-run (upserts on id). Do not paste `scripts/*.mjs` into SQL.
+
+To enable **Contact Us** storage (and the one-message-per-day limit), run `supabase/migrations/0011_contact_messages.sql`.
 
 ## 5. Create the first admin
 

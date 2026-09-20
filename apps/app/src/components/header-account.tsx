@@ -20,6 +20,7 @@ const MENU = [
   { label: 'Setting', href: '/settings' },
   { label: 'All Submissions list', href: '/submissions' },
   { label: 'Contests', href: '/contests' },
+  { label: 'Contact Us', href: '/contact' },
 ] as const;
 
 export { MENU };

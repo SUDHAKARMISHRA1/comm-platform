@@ -125,16 +125,18 @@ export async function apiFetch<T>(path: string, init?: RequestInit, allowRetry =
   }
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    const body = (await response.json().catch(() => null)) as { error?: string; code?: string } | null;
     const message =
-      response.status === 401
+      body?.error ??
+      (response.status === 401
         ? 'Session expired or invalid. Please sign in again.'
         : response.status === 429
           ? 'You have reached the execution limit. Please wait a moment before trying again.'
           : response.status === 404
             ? 'Resource not found.'
-            : (body?.error ?? 'Something went wrong. Please try again.');
-    if (!USE_MOCK_API) {
+            : 'Something went wrong. Please try again.');
+    const skipMonitor = path === '/contact' && (response.status === 429 || body?.code === 'DAILY_LIMIT');
+    if (!USE_MOCK_API && !skipMonitor) {
       reportApiFailure({ method, path, statusCode: response.status, errorMessage: message }, token);
     }
     throw new ApiError(message, response.status);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { signInSchema, signUpSchema, updateProfileSchema } from './index';
+import { contactUsSchema, signInSchema, signUpSchema, updateProfileSchema } from './index';
 
 describe('signUpSchema', () => {
   const valid = {
@@ -47,6 +47,28 @@ describe('updateProfileSchema', () => {
       username: 'ada lovelace',
       bio: '',
     });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('contactUsSchema', () => {
+  const valid = {
+    name: 'Ada Lovelace',
+    email: 'ada@example.com',
+    description: 'I need help with a practice problem that will not run.',
+  };
+
+  it('accepts a valid contact payload', () => {
+    expect(contactUsSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it('rejects a short description', () => {
+    const result = contactUsSchema.safeParse({ ...valid, description: 'Too short' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects an invalid email', () => {
+    const result = contactUsSchema.safeParse({ ...valid, email: 'not-an-email' });
     expect(result.success).toBe(false);
   });
 });

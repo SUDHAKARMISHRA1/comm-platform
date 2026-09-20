@@ -69,6 +69,7 @@ const NAV: NavGroup[] = [
       { href: '/admin/notifications/push/compose', label: 'Compose and publish' },
     ],
   },
+  { id: 'contact', label: 'Contact Us', href: '/admin/contact' },
   { id: 'monitoring', label: 'Frontend monitor', href: '/admin/monitoring' },
   { id: 'settings', label: 'Setting', href: '/admin/settings' },
 ];

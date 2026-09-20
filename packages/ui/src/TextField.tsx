@@ -7,7 +7,7 @@ type TextFieldProps = TextInputProps & {
   error?: string;
 };
 
-export function TextField({ label, error, ...props }: TextFieldProps) {
+export function TextField({ label, error, style, ...props }: TextFieldProps) {
   const fieldLabel = label;
   return (
     <View style={styles.wrap}>
@@ -17,7 +17,7 @@ export function TextField({ label, error, ...props }: TextFieldProps) {
       <TextInput
         accessibilityLabel={fieldLabel}
         placeholderTextColor={colors.textMuted}
-        style={[styles.input, error ? styles.inputError : null]}
+        style={[styles.input, error ? styles.inputError : null, style]}
         {...props}
       />
       {error ? (

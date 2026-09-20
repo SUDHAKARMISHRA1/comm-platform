@@ -74,6 +74,26 @@ export type FrontendApiFailure = {
   createdAt: string;
 };
 
+export type ContactMessageRow = {
+  id: string;
+  user_id: string | null;
+  name: string;
+  email: string;
+  description: string;
+  created_at: string;
+  submitted_on: string;
+};
+
+export type ContactMessage = {
+  id: string;
+  userId: string | null;
+  name: string;
+  email: string;
+  description: string;
+  createdAt: string;
+  submittedOn: string;
+};
+
 export type AdminUserOverviewRow = {
   id: string;
   display_name: string | null;
@@ -253,6 +273,22 @@ export type Database = {
         Update: {
           error_message?: string | null;
           metadata?: Record<string, unknown>;
+        };
+        Relationships: [];
+      };
+      contact_messages: {
+        Row: ContactMessageRow;
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          name: string;
+          email: string;
+          description: string;
+          created_at?: string;
+          submitted_on?: string;
+        };
+        Update: {
+          description?: string;
         };
         Relationships: [];
       };

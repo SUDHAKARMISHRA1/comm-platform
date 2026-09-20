@@ -64,8 +64,30 @@ export const updateProfileSchema = z.object({
   bio: bioSchema.default(''),
 });
 
+export const contactNameSchema = z
+  .string()
+  .trim()
+  .min(2, 'Name must be at least 2 characters')
+  .max(80, 'Name must be 80 characters or fewer');
+
+export const contactDescriptionSchema = z
+  .string()
+  .trim()
+  .min(10, 'Description must be at least 10 characters')
+  .max(2000, 'Description must be 2000 characters or fewer');
+
+export const contactUsSchema = z.object({
+  name: contactNameSchema,
+  email: emailSchema,
+  description: contactDescriptionSchema,
+});
+
+export const CONTACT_DAILY_LIMIT_MESSAGE =
+  'You can send only one message per day. Please try again tomorrow.';
+
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type ContactUsInput = z.infer<typeof contactUsSchema>;

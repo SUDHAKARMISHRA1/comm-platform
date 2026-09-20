@@ -30,6 +30,7 @@ function primaryNav(session: boolean): NavItem[] {
   }
   return [
     { label: 'Home', href: '/home' },
+    { label: 'Contact Us', href: '/contact' },
     { label: 'Sign in', href: '/login' },
     { label: 'Sign up', href: '/signup', primary: true },
   ];

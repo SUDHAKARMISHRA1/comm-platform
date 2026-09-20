@@ -3,6 +3,7 @@ Allow: /
 Allow: /home
 Allow: /login
 Allow: /signup
+Allow: /contact
 Disallow: /dashboard
 Disallow: /practice
 Disallow: /highlights
