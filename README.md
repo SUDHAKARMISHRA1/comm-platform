@@ -109,6 +109,8 @@ To load the starter **C** practice set (same 38 problems, ids 201–238), run `s
 
 To load the starter **C++** practice set (same 38 problems, ids 301–338), run `supabase/seeds/003_cpp_practice_pack.sql`.
 
+To load **Highlights** tech briefings (150 original articles with official YouTube explainers), run `supabase/seeds/004_highlight_tech_articles.sql` after `0008_highlight_posts.sql`. Safe to re-run (upserts on id). Do not paste `scripts/*.mjs` into SQL.
+
 ## 5. Create the first admin
 
 Sign up once in the product app, then in SQL:
