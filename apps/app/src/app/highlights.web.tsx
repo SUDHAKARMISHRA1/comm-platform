@@ -7,6 +7,7 @@ import { AppShell } from '@/components/app-shell';
 import { PageLoader } from '@/components/page-loader';
 import { spaNavigate } from '@/lib/spa-nav';
 import { DASHBOARD_STALE_MS } from '@/lib/prefetch-signed-in';
+import { signupHref } from '@/lib/site-links';
 import { DIFFICULTY_FILL, submissionTone } from '@/coding/statusColors';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -57,6 +58,20 @@ export default function HighlightsScreen() {
     <AppShell>
       <div className="hl">
         <style>{css}</style>
+        {!session ? (
+        <header className="hl-hero">
+          <div>
+            <p className="hl-kicker">Highlights</p>
+            <h1>A look at what members read</h1>
+            <p className="hl-lead">
+              Sample a few published articles with no account. After a short preview we ask you to sign in — and we send you back to the piece you were on.
+            </p>
+          </div>
+          <a className="hl-cta" href={signupHref('/highlights')} onClick={(e) => spaNavigate(signupHref('/highlights'), e)}>
+            Create a free account
+          </a>
+        </header>
+        ) : (
         <header className="hl-hero hl-desktop">
           <div>
             <p className="hl-kicker">Highlights</p>
@@ -73,6 +88,7 @@ export default function HighlightsScreen() {
             {nextProblem ? `Continue ${nextProblem.title}` : 'Open practice'}
           </a>
         </header>
+        )}
 
         {isLoading ? (
           <div className="hl-desktop">
@@ -254,6 +270,20 @@ const css = `
 }
 .hl-feed-head h2 { margin:.35rem 0 0; font-size:1.35rem; }
 .hl-feed-sentinel { height:1px; width:100%; }
+.hl-guest-more {
+  background:#111827; color:#fff; border-radius:.9rem; padding:1.2rem 1.2rem 1.15rem;
+}
+.hl-guest-more-kicker { margin:0; font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#a5b4fc; }
+.hl-guest-more h2 { margin:.4rem 0 0; font-size:1.2rem; color:#fff; }
+.hl-guest-more p { margin:.55rem 0 0; color:#d1d5db; line-height:1.55; font-size:.92rem; }
+.hl-guest-more-actions { display:flex; flex-wrap:wrap; gap:.6rem; margin-top:1rem; }
+.hl-guest-more-actions a {
+  display:inline-flex; align-items:center; justify-content:center; min-height:2.5rem; padding:0 .95rem;
+  border-radius:.5rem; font-weight:700; text-decoration:none; font-size:.875rem;
+}
+.hl-guest-more-actions a:first-child { background:#6366f1; color:#fff; }
+.hl-guest-more-actions a:last-child { background:#fff; color:#111827; }
+
 .lf-card { background:#fff; border:1px solid #e5e7eb; border-radius:.9rem; padding:1rem 1.05rem 0; box-shadow:0 1px 2px rgb(0 0 0/.05); }
 .lf-head { display:flex; gap:.75rem; align-items:center; }
 .lf-avatar { width:44px; height:44px; border-radius:50%; background:#eef2ff; color:#4f46e5; display:inline-flex; align-items:center; justify-content:center; font-weight:800; font-size:.85rem; flex-shrink:0; }

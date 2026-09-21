@@ -13,6 +13,7 @@ import {
 import { formatCount, initials, timeAgo, youtubeId } from '@/coding/feedFormat';
 import { PageLoader } from '@/components/page-loader';
 import { useAuth } from '@/providers/auth-provider';
+import { useGuestFeed } from '@/lib/guest-highlights';
 
 const PREVIEW = 220;
 
@@ -32,6 +33,7 @@ function ThumbIcon({ filled }: { filled?: boolean }) {
 export function FeedCard({ post }: { post: FeedPostCard }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { signedIn, requestAuth } = useGuestFeed();
   const myName = user?.email?.split('@')[0] ?? 'You';
   const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -42,7 +44,7 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
   const commentsQuery = useQuery({
     queryKey: ['feed-comments', post.id],
     queryFn: () => fetchFeedComments(post.id),
-    enabled: showComments,
+    enabled: showComments && signedIn,
   });
 
   const likePost = useMutation({
@@ -52,13 +54,14 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
 
   const sharePost = useMutation({
     mutationFn: async () => {
-      const url = `${window.location.origin}/highlights#post-${post.id}`;
+      const url = `${window.location.origin}/highlights?post=${encodeURIComponent(post.id)}`;
       try {
         if (navigator.share) await navigator.share({ title: post.title, url });
         else await navigator.clipboard.writeText(url);
       } catch {
         await navigator.clipboard.writeText(url);
       }
+      if (!signedIn) return { postId: post.id, shareCount: post.shareCount, sharedByMe: false };
       return shareFeedPostApi(post.id);
     },
     onSuccess: () => {
@@ -115,17 +118,22 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
       ) : null}
       <p className="lf-stats">
         <span>{post.likeCount > 0 ? `👍 ${formatCount(post.likeCount)}` : 'Be the first to like'}</span>
-        <button type="button" onClick={() => setShowComments(true)}>
+        <button type="button" onClick={() => (signedIn ? setShowComments(true) : requestAuth(post.id))}>
           {formatCount(post.commentCount)} comments
         </button>
         <span>{formatCount(post.shareCount)} shares</span>
       </p>
       <div className="lf-actions">
-        <button type="button" className={post.likedByMe ? 'on' : ''} onClick={() => likePost.mutate()} disabled={likePost.isPending}>
+        <button
+          type="button"
+          className={post.likedByMe ? 'on' : ''}
+          onClick={() => (signedIn ? likePost.mutate() : requestAuth(post.id))}
+          disabled={likePost.isPending}
+        >
           <ThumbIcon filled={post.likedByMe} />
           {post.likedByMe ? 'Liked' : 'Like'}
         </button>
-        <button type="button" onClick={() => setShowComments(true)}>
+        <button type="button" onClick={() => (signedIn ? setShowComments(true) : requestAuth(post.id))}>
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
             <path
               fill="none"

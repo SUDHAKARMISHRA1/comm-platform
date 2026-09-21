@@ -9,14 +9,15 @@ import { seoForSegment } from '@/lib/seo';
 import { useAuth } from '@/providers/auth-provider';
 
 /** Marketing/auth screens anyone can open. */
-const PUBLIC_SEGMENTS = new Set(['home', 'login', 'signup', 'forgot-password', 'reset-password', 'contact']);
+const PUBLIC_SEGMENTS = new Set(['home', 'login', 'signup', 'forgot-password', 'reset-password', 'contact', 'highlights']);
 /** Signed-in users are sent to /highlights instead of these. */
 const AUTH_SEGMENTS = new Set(['login', 'signup', 'forgot-password']);
 
 /**
  * Route guard for Expo Router:
  * - missing Supabase config → `/setup`
- * - signed out on a protected route → `/login` (keeps `next` for Practice / Highlights)
+ * - signed out on a protected route → `/login` (keeps `next` for Practice)
+ * - guests may open `/highlights` as a teaser
  * - signed in on login/signup → `next` or `/highlights`
  */
 export function AuthGate() {
@@ -34,10 +35,6 @@ export function AuthGate() {
 
   if (!authReady && !onPublicScreen && first !== 'setup') {
     return <Redirect href="/setup" />;
-  }
-
-  if (authReady && !session && String(first) === 'highlights') {
-    return <Redirect href={loginHref('/highlights')} />;
   }
 
   if (authReady && !session && !onPublicScreen && first !== 'setup') {

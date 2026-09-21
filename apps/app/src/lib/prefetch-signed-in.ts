@@ -37,7 +37,7 @@ export function prefetchSignedInData(queryClient: QueryClient, userId: string) {
     staleTime: LIST_STALE_MS,
   });
   void queryClient.prefetchInfiniteQuery({
-    queryKey: ['highlights-feed'],
+    queryKey: ['highlights-feed', 'in'],
     queryFn: ({ pageParam }) => fetchFeed(Number(pageParam) || 1, FEED_PAGE_SIZE),
     initialPageParam: 1,
     staleTime: LIST_STALE_MS,

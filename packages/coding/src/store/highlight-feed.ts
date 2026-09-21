@@ -129,11 +129,19 @@ export async function getFeedPostAdmin(id: string) {
   };
 }
 
-export async function listPublishedFeed(userId: string, page = 1, pageSize = 5): Promise<FeedListResponse> {
+export async function listPublishedFeed(
+  userId: string,
+  page = 1,
+  pageSize = 5,
+  options?: { preferArticles?: boolean },
+): Promise<FeedListResponse> {
   const { likes, shares, comments } = await engagement();
-  const items = (await loadPosts())
+  let items = (await loadPosts())
     .filter((post) => post.published)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  if (options?.preferArticles) {
+    items = [...items.filter((post) => post.kind === 'article'), ...items.filter((post) => post.kind !== 'article')];
+  }
   const safePage = Math.max(1, page);
   const size = Math.min(20, Math.max(1, pageSize));
   const total = items.length;

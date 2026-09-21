@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams, usePathname } from 'expo-router';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   Modal,
@@ -16,12 +16,14 @@ import { colors, radius, space, type } from '@comm-platform/ui';
 import { HeaderAccount, MENU as ACCOUNT_MENU } from '@/components/header-account';
 import { SiteFooter } from '@/components/site-footer';
 import { persistSessionBackup } from '@/lib/session-backup';
+import { highlightsPath, readGuestHlState, safePostId } from '@/lib/guest-highlights';
+import { loginHref, signupHref } from '@/lib/site-links';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
 
 type NavItem = { label: string; href: string; primary?: boolean };
 
-function primaryNav(session: boolean): NavItem[] {
+function primaryNav(session: boolean, highlightsNext?: string | null): NavItem[] {
   if (session) {
     return [
       { label: 'Highlights', href: '/highlights' },
@@ -29,18 +31,27 @@ function primaryNav(session: boolean): NavItem[] {
       { label: 'Practice', href: '/practice' },
     ];
   }
+  const signIn = highlightsNext ? loginHref(highlightsNext) : '/login';
+  const signUp = highlightsNext ? signupHref(highlightsNext) : '/signup';
   return [
     { label: 'Home', href: '/home' },
+    { label: 'Highlights', href: '/highlights' },
     { label: 'Contact Us', href: '/contact' },
-    { label: 'Sign in', href: '/login' },
-    { label: 'Sign up', href: '/signup', primary: true },
+    { label: 'Sign in', href: signIn },
+    { label: 'Sign up', href: signUp, primary: true },
   ];
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { session, demoMode, signOutDemo } = useAuth();
+  const pathname = usePathname();
+  const params = useLocalSearchParams<{ post?: string }>();
   const [signingOut, setSigningOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const onHighlights = pathname === '/highlights' || pathname?.startsWith('/highlights');
+  const highlightsNext = onHighlights
+    ? highlightsPath(safePostId(params.post) ?? readGuestHlState().lastPostId)
+    : null;
 
   async function signOut() {
     setSigningOut(true);
@@ -73,7 +84,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [menuOpen]);
 
   if (Platform.OS === 'web') {
-    const navItems = primaryNav(Boolean(session));
+    const navItems = primaryNav(Boolean(session), highlightsNext);
     const homeHref = session ? '/highlights' : '/home';
 
     return (
@@ -174,7 +185,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  const navItems = primaryNav(Boolean(session));
+  const navItems = primaryNav(Boolean(session), highlightsNext);
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>

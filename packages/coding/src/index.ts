@@ -1,5 +1,6 @@
 /** Client-safe coding types, mocks, and helpers. Server persistence is `@comm-platform/coding/server`. */
 export * from './types';
+export * from './feed-limits';
 export * from './schema';
 export * from './languages';
 export * from './mocks/data';

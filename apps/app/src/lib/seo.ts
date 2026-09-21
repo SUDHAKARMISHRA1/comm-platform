@@ -72,7 +72,12 @@ const ROUTES: Record<string, SeoConfig> = {
     index: true,
     path: '/contact',
   },
-  highlights: { title: 'Highlights', description: SITE_DESCRIPTION, index: false, path: '/highlights' },
+  highlights: {
+    title: 'Highlights',
+    description: 'Published interview-prep articles from the Comm Platform team. Guests can sample a few pieces; members get the full feed.',
+    index: true,
+    path: '/highlights',
+  },
   dashboard: { title: 'Dashboard', description: SITE_DESCRIPTION, index: false, path: '/dashboard' },
   practice: { title: 'Practice problems', description: SITE_DESCRIPTION, index: false, path: '/practice' },
   submissions: { title: 'Submissions', description: SITE_DESCRIPTION, index: false, path: '/submissions' },

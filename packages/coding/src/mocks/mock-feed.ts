@@ -14,8 +14,19 @@ const shares: FeedShareRecord[] = [];
 const comments: FeedCommentRecord[] = [];
 const commentLikes: FeedCommentLikeRecord[] = [];
 
-export function listMockFeed(userId: string, page = 1, pageSize = 5): FeedListResponse {
-  const published = posts.filter((post) => post.published).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+export function listMockFeed(
+  userId: string,
+  page = 1,
+  pageSize = 5,
+  options?: { preferArticles?: boolean },
+): FeedListResponse {
+  let published = posts.filter((post) => post.published).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  if (options?.preferArticles) {
+    published = [
+      ...published.filter((post) => post.kind === 'article'),
+      ...published.filter((post) => post.kind !== 'article'),
+    ];
+  }
   const size = Math.min(20, Math.max(1, pageSize));
   const safePage = Math.max(1, page);
   const slice = published.slice((safePage - 1) * size, safePage * size);

@@ -4,7 +4,6 @@ import { useAuth } from '@/providers/auth-provider';
 import {
   PRACTICE_TRACKS,
   SOCIAL_LINKS,
-  continueHref,
   copyrightLine,
   practiceHref,
 } from '@/lib/site-links';
@@ -60,7 +59,7 @@ export function SiteFooter() {
   const signedIn = Boolean(session);
   const yearLine = copyrightLine();
   const homeHref = signedIn ? '/dashboard' : '/home';
-  const highlightsHref = continueHref('/highlights', signedIn);
+  const highlightsHref = '/highlights';
 
   return (
     <footer className="cp-footer">

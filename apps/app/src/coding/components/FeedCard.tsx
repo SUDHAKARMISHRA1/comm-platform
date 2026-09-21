@@ -22,11 +22,13 @@ import {
   shareFeedPostApi,
 } from '@/coding/api/feedApi';
 import { formatCount, initials, timeAgo } from '@/coding/feedFormat';
+import { useGuestFeed } from '@/lib/guest-highlights';
 
 const PREVIEW = 180;
 
 export function FeedCard({ post }: { post: FeedPostCard }) {
   const queryClient = useQueryClient();
+  const { signedIn, requestAuth } = useGuestFeed();
   const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(null);
@@ -35,7 +37,7 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
   const commentsQuery = useQuery({
     queryKey: ['feed-comments', post.id],
     queryFn: () => fetchFeedComments(post.id),
-    enabled: showComments,
+    enabled: showComments && signedIn,
   });
 
   const likePost = useMutation({
@@ -45,6 +47,7 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
   const sharePost = useMutation({
     mutationFn: async () => {
       await Share.share({ message: `${post.title}\n\n${post.body.slice(0, 180)}`, title: post.title });
+      if (!signedIn) return { postId: post.id, shareCount: post.shareCount, sharedByMe: false };
       return shareFeedPostApi(post.id);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['highlights-feed'] }),
@@ -120,10 +123,10 @@ export function FeedCard({ post }: { post: FeedPostCard }) {
         {formatCount(post.likeCount)} likes · {formatCount(post.commentCount)} comments · {formatCount(post.shareCount)} shares
       </Text>
       <View style={styles.actions}>
-        <Pressable onPress={() => likePost.mutate()}>
+        <Pressable onPress={() => (signedIn ? likePost.mutate() : requestAuth(post.id))}>
           <Text style={[styles.action, post.likedByMe && styles.on]}>{post.likedByMe ? 'Liked' : 'Like'}</Text>
         </Pressable>
-        <Pressable onPress={() => setShowComments(true)}>
+        <Pressable onPress={() => (signedIn ? setShowComments(true) : requestAuth(post.id))}>
           <Text style={styles.action}>Comment</Text>
         </Pressable>
         <Pressable onPress={() => sharePost.mutate()}>
