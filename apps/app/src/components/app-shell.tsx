@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, space, type } from '@comm-platform/ui';
 
 import { HeaderAccount, MENU as ACCOUNT_MENU } from '@/components/header-account';
+import { SiteFooter } from '@/components/site-footer';
 import { persistSessionBackup } from '@/lib/session-backup';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
@@ -166,12 +167,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         ) : null}
 
         <main id="main-content" className="cp-shell-main">
-          {children}
+          <div className="cp-shell-body">{children}</div>
+          <SiteFooter />
         </main>
-        <footer className="cp-footer">
-          <span className="cp-footer-text">Comm Platform</span>
-          <span className="cp-footer-text">Practice Java, C, and C++ problems.</span>
-        </footer>
       </div>
     );
   }
@@ -207,12 +205,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} nestedScrollEnabled>
         {children}
+        <SiteFooter />
       </ScrollView>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Comm Platform</Text>
-        <Text style={styles.footerText}>Practice Java, C, and C++ problems.</Text>
-      </View>
 
       <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={closeMenu}>
         <Pressable style={styles.menuBackdrop} onPress={closeMenu}>
@@ -537,32 +531,6 @@ html, body, #root {
   margin: .5rem 0;
 }
 
-/* ── Footer ── */
-.cp-footer {
-  flex-shrink: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: .75rem;
-  padding: .75rem 1rem;
-  background: #ffffff;
-  border-top: 1px solid #e5e7eb;
-}
-@media (max-width: 640px) {
-  .cp-footer {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-@media (min-width: 768px) {
-  .cp-footer { padding: .75rem 1.5rem; }
-}
-.cp-footer-text {
-  font-size: .75rem;
-  color: #9ca3af;
-}
-
 /* ── Main scroll area ── */
 .cp-shell-main {
   flex: 1 1 auto;
@@ -570,8 +538,14 @@ html, body, #root {
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
   scrollbar-width: thin;
   scrollbar-color: #d1d5db #f3f4f6;
+}
+.cp-shell-body {
+  flex: 1 0 auto;
+  width: 100%;
 }
 .cp-shell-main::-webkit-scrollbar { width: 6px; }
 .cp-shell-main::-webkit-scrollbar-track { background: #f3f4f6; }
@@ -630,19 +604,6 @@ const styles = StyleSheet.create({
   menuBar: { width: 16, height: 2, borderRadius: 1, backgroundColor: colors.text },
   content: { flex: 1 },
   contentInner: { flexGrow: 1 },
-  footer: {
-    width: '100%',
-    alignSelf: 'stretch',
-    borderTopWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: space.md,
-    paddingVertical: space.md,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: space.md,
-  },
-  footerText: { color: colors.textMuted, fontSize: 12 },
   menuBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.45)',

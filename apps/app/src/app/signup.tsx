@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, Text } from 'react-native';
@@ -13,9 +13,12 @@ import { persistSessionBackup } from '@/lib/session-backup';
 import { isDemoAuthEnabled } from '@/lib/demo-auth';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
+import { loginHref, safeNextPath } from '@/lib/site-links';
 
 export default function SignUpScreen() {
   const { signInDemo } = useAuth();
+  const params = useLocalSearchParams<{ next?: string }>();
+  const nextPath = safeNextPath(params.next) ?? '/highlights';
   const [formError, setFormError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
   const [submitting, setSubmitting] = useState(false);
@@ -28,7 +31,7 @@ export default function SignUpScreen() {
     if (!isSupabaseConfigured()) {
       if (isDemoAuthEnabled()) {
         signInDemo(values.email);
-        router.replace('/highlights');
+        router.replace(nextPath as never);
         return;
       }
       router.replace('/setup');
@@ -51,13 +54,17 @@ export default function SignUpScreen() {
       setSuccess(result.message);
       return;
     }
-    router.replace('/highlights');
+    router.replace(nextPath as never);
   });
 
   return (
     <AuthScreen
       title="Create your account"
-      subtitle="Display name, email, and a password. A profile row is created automatically after signup."
+      subtitle={
+        params.next
+          ? 'Create an account to continue. Already with us? Sign in instead.'
+          : 'Display name, email, and a password. A profile row is created automatically after signup.'
+      }
     >
       <Controller
         control={control}
@@ -118,7 +125,7 @@ export default function SignUpScreen() {
       <FormMessage message={formError} />
       <FormMessage message={success} tone="success" />
       <Button label={submitting ? 'Creating account…' : 'Create account'} disabled={submitting} onPress={onSubmit} />
-      <Link href="/login" asChild>
+      <Link href={(safeNextPath(params.next) ? loginHref(nextPath) : '/login') as never} asChild>
         <Pressable>
           <Text style={{ color: colors.textMuted, fontSize: type.body }}>
             Already have an account? <Text style={{ color: colors.primary, fontWeight: '600' }}>Sign in</Text>

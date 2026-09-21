@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, Text } from 'react-native';
@@ -13,9 +13,12 @@ import { persistSessionBackup } from '@/lib/session-backup';
 import { isDemoAuthEnabled } from '@/lib/demo-auth';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
+import { safeNextPath, signupHref } from '@/lib/site-links';
 
 export default function LoginScreen() {
   const { signInDemo } = useAuth();
+  const params = useLocalSearchParams<{ next?: string }>();
+  const nextPath = safeNextPath(params.next) ?? '/highlights';
   const [formError, setFormError] = useState<string | undefined>();
   const [submitting, setSubmitting] = useState(false);
   const { control, handleSubmit } = useForm<SignInInput>({
@@ -27,7 +30,7 @@ export default function LoginScreen() {
     if (!isSupabaseConfigured()) {
       if (isDemoAuthEnabled()) {
         signInDemo(values.email);
-        router.replace('/highlights');
+        router.replace(nextPath as never);
         return;
       }
       router.replace('/setup');
@@ -45,11 +48,20 @@ export default function LoginScreen() {
       setFormError(result.message);
       return;
     }
-    router.replace('/highlights');
+    router.replace(nextPath as never);
   });
 
   return (
-    <AuthScreen title="Sign in" subtitle={isDemoAuthEnabled() ? 'Demo mode: use any valid email and password (8+ chars) to explore the app locally.' : 'Use the email and password for your Comm Platform account.'}>
+    <AuthScreen
+      title="Sign in"
+      subtitle={
+        params.next
+          ? 'Sign in to continue, or create a free account if you are new here.'
+          : isDemoAuthEnabled()
+            ? 'Demo mode: use any valid email and password (8+ chars) to explore the app locally.'
+            : 'Use the email and password for your Comm Platform account.'
+      }
+    >
       <Controller
         control={control}
         name="email"
@@ -86,7 +98,7 @@ export default function LoginScreen() {
           <Text style={{ color: colors.primary, fontSize: type.body }}>Forgot password?</Text>
         </Pressable>
       </Link>
-      <Link href="/signup" asChild>
+      <Link href={signupHref(safeNextPath(params.next)) as never} asChild>
         <Pressable>
           <Text style={{ color: colors.textMuted, fontSize: type.body }}>
             Need an account? <Text style={{ color: colors.primary, fontWeight: '600' }}>Sign up</Text>
